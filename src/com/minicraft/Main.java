@@ -18,6 +18,7 @@ public class Main extends Application{
 	private InputHandler input;
 	private int widthScreen=400;
 	private int heightScreen=400;
+	private InventoryUI inventaireUI;
 	private boolean inventaireOuvert=false;
 	private CraftingUI craftingUI;
 	private boolean craftingOpen=false;
@@ -43,7 +44,9 @@ public class Main extends Application{
 		primaryStage.setScene(scene);
 		
 		craftingUI= new CraftingUI();
-		craftingUI.addRecipe(new Recipe("Mur de pierre", 3, 1));
+		craftingUI.addRecipe(new Recipe("Mur de pierre", 3, 1).addCost(1, 5));
+		
+		inventaireUI= new InventoryUI();
 		
 		AnimationTimer timer = new AnimationTimer() {
 			public void handle(long now) {
@@ -57,9 +60,12 @@ public class Main extends Application{
 				
 				if (input.isClicked(KeyCode.E)) {
 					inventaireOuvert = !inventaireOuvert;
+					craftingOpen=false;
 				}
+				
 				if (input.isClicked(KeyCode.C)) {
 					craftingOpen = !craftingOpen;
+					inventaireOuvert=false;
 				}
 				
 				pinceau.clearRect(0, 0, 400, 400);
@@ -68,35 +74,28 @@ public class Main extends Application{
 				
 				level.render(pinceau, camX, camY);
 				
-				player.tick(level, input);
-				level.updateItems(player);
-
+				if (inventaireOuvert) {
+					
+				} else if (craftingOpen) {
+					craftingUI.tick(input, player.getInventory());
+				} else {
+					player.tick(level, input);
+					level.updateItems(player);
+				}
+				
 				player.render(pinceau);		
 				pinceau.restore();
 				
-				if (inventaireOuvert) {
-					pinceau.setFill(Color.color(0, 0, 0, 0.8));
-				    pinceau.fillRoundRect(50, 50, 300, 300, 20, 20);
-				    pinceau.setStroke(Color.WHITE);
-				    pinceau.setLineWidth(2);
-				    pinceau.strokeRoundRect(50, 50, 300, 300, 20, 20);
-					
-					pinceau.setFill(Color.WHITE);
-					pinceau.setFont(new javafx.scene.text.Font("Arial",16));
-					pinceau.fillText("INVENTAIRE", 160, 80);
-					
-					int ypos=120;
-					pinceau.fillText("Roche : " + player.getInventory().getAmount(1), 80, ypos);
-					pinceau.fillText("Bois : " + player.getInventory().getAmount(2), 80, ypos + 30);
-				} else if (craftingOpen) {
+				if (craftingOpen) {
 					craftingUI.render(pinceau, player.getInventory());
+				} else if (inventaireOuvert) {
+					inventaireUI.render(pinceau, player);					
 				} else {
 					pinceau.setFill(Color.color(0, 0, 0, 0.5));
 				    pinceau.fillRect(10, 10, 100, 30);
 				    pinceau.setFill(Color.WHITE);
 				    pinceau.fillText("Roche : " + player.getInventory().getAmount(1), 20, 30);
-				}
-								
+				}					
 				input.update();
 			}
 		};

@@ -23,22 +23,23 @@ public class Player {
 	public Player(double startX, double startY) {
 		this.x=startX;
 		this.y=startY;
-		this.vitesse=0.2;
+		this.vitesse=0.1;
 	}
 	
 	public void tick(Level level, InputHandler input) {
 		double futurX=x;
 		double futurY=y;
 		
-		if (input.isPressed(KeyCode.Z) || input.isPressed(KeyCode.UP)) {futurY-=vitesse;dir=1;}
-		if (input.isPressed(KeyCode.S) || input.isPressed(KeyCode.DOWN)) {futurY+=vitesse;dir=0;}
-		if (input.isPressed(KeyCode.D) || input.isPressed(KeyCode.RIGHT)) {futurX+=vitesse;dir=3;}
-		if (input.isPressed(KeyCode.Q) || input.isPressed(KeyCode.LEFT)) {futurX-=vitesse;dir=2;}
+		if (input.isPressed(KeyCode.Z)) {futurY-=vitesse;dir=1;}
+		if (input.isPressed(KeyCode.S)) {futurY+=vitesse;dir=0;}
+		if (input.isPressed(KeyCode.D)) {futurX+=vitesse;dir=3;}
+		if (input.isPressed(KeyCode.Q)) {futurX-=vitesse;dir=2;}
 		
 		boolean bloque= (level.getBlocks(futurX,futurY)==1 ||
 				level.getBlocks(futurX+15,futurY)==1 ||
 				level.getBlocks(futurX,futurY+15)==1 ||
 				level.getBlocks(futurX+15,futurY+15)==1);
+		
 		if (! bloque) {
 			x=futurX;
 			y=futurY;
@@ -52,7 +53,11 @@ public class Player {
 		if (attackTimer>0) {attackTimer--;}
 			
 		if (input.isClicked(KeyCode.SPACE)) {
-			this.interact(level);
+			this.interact(level,0);
+		}
+		
+		if (input.isClicked(KeyCode.F)) {
+			this.interact(level,1);
 		}
 		
 		for (Item item : level.getItems()) {
@@ -68,8 +73,24 @@ public class Player {
 	}
 	
 	public void render(GraphicsContext gc) {
+		//on crée les positions Blocks
+		int xBlock=(int)((x+8)/16);
+		int yBlock=(int)((y+8)/16);
+		int cibleX= xBlock;
+		int cibleY= yBlock;
+		
+		if (dir==0) {cibleY++;}
+		if (dir==1) {cibleY--;}
+		if (dir==3) {cibleX++;}
+		if (dir==2) {cibleX--;}
+		
 		gc.setFill(Color.RED);
 		gc.fillRect(x, y, 16, 16);
+		//on dessine un carré de sélection 
+		gc.setStroke(Color.YELLOW);
+		gc.setLineWidth(1);
+		gc.strokeRect(cibleX * 16, cibleY * 16, 16, 16);
+	
 		
 		if (attackTimer>0) {
 			gc.setFill(Color.WHITE);
@@ -78,19 +99,55 @@ public class Player {
 		    if (dir == 2) gc.fillRect(x - 6, y + 2, 4, 12);
 		    if (dir == 3) gc.fillRect(x + 14, y + 2, 4, 12);
 		}
+		
 	}
 	
-	public void interact(Level level) {
+	public void interact(Level level, int type) {
+		//type=0: detruire, type=1:poser block de pierre
 		this.attackTimer=10;
-		double cibleX= x+8.0;
-		double cibleY= y+8.0;
 		
-		if (dir==0) {cibleY+=10;}
-		if (dir==1) {cibleY-=10;}
-		if (dir==3) {cibleX+=10;}
-		if (dir==2) {cibleX-=10;}
+		int xBlock=(int)((x+8)/16);
+		int yBlock=(int)((y+8)/16);
+		int cibleX= xBlock;
+		int cibleY= yBlock;
+		
+		if (dir==0) {cibleY++;}
+		if (dir==1) {cibleY--;}
+		if (dir==3) {cibleX++;}
+		if (dir==2) {cibleX--;}
+		
+		//hitbox du perso
+		double pLeft = x;
+		double pRight = x + 16; 
+		double pTop = y;
+		double pBottom = y + 16;
 
-		level.setBlocks(cibleX,cibleY,0);	
+		//hitbox du futur mur
+		double bLeft = cibleX * 16;
+		double bRight = bLeft + 16;
+		double bTop = cibleY * 16;
+		double bBottom = bTop + 16;
+
+		
+		boolean seTouchent = !(pLeft >= bRight || pRight <= bLeft || 
+		                       pTop >= bBottom || pBottom <= bTop);
+		
+		int cibleBlock = level.getBlocks(cibleX*16, cibleY*16);
+		
+		if (type != 0) {
+		    //MODE CONSTRUCTION
+		    if (inventory.has(type, 1) && !seTouchent) {
+		        inventory.remove(type, 1);
+		        //setBlock travaille avec les pixels et pas les blocks
+		        level.setBlocks(cibleX*16, cibleY*16, type); 
+		        System.out.println("Bloc posé !");
+		    }
+		} else {
+		    //MODE DESTRUCTION (type == 0)
+		    if (cibleBlock != 0) {
+		         level.setBlocks(cibleX*16, cibleY*16, 0);
+		    }
+		}
 	}
 	
 	public double getX() {return this.x;}

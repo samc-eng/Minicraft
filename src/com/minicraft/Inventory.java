@@ -10,6 +10,7 @@ public class Inventory {
 		int current = inventaire.getOrDefault(id,  0);
 		inventaire.put(id, current+count);
 	}
+	
 	public boolean has(int id, int count) {
 		return inventaire.getOrDefault(id,0)>=count;
 	}
@@ -24,4 +25,5 @@ public class Inventory {
 	public int getAmount(int id) {
 		return inventaire.getOrDefault(id, 0);
 	}
+	
 }

@@ -18,6 +18,7 @@ public class Level {
 		this.floor = new int[width][height];
 		this.blocks = new int[width][height];
 		
+		//des pierres posées aléatoirement
 		for (int i=0; i<width; i++) {
 			for(int j=0; j<height; j++) {
 				if (Math.random()<0.05) {
@@ -35,6 +36,7 @@ public class Level {
 	}
 	
 	public void render(GraphicsContext gc, double camX, double camY) {
+		//on dessine seulement un peu plus que la caméra
 	    int xStart = (int) (camX / 16);
 	    int yStart = (int) (camY / 16);
 	    int xEnd = xStart + (400 / 16) + 2;
@@ -78,14 +80,17 @@ public class Level {
 	    return blocks[tx][ty];	
 	}
 	
+	//on détruit ou pose un block
 	public void setBlocks(double x, double y, int type){
 		int tx = (int)(x/16);
 		int ty = (int)(y/16);
 		
 		if (tx>=0 && ty>=0 && tx<width && ty<height) {
 			if (blocks[tx][ty]==1 && type==0) {
-				blocks[tx][ty]=type;
+				blocks[tx][ty]=0;
 				dropItem(tx*16, ty*16, 1);
+			} else if (blocks[tx][ty]==0 && type != 0) {
+				blocks[tx][ty]=type;
 			}
 		}
 	}
