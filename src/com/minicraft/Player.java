@@ -14,6 +14,8 @@ public class Player {
 	private double vitesse;
 	private int dir;
 	private Image skin;
+	private int anim=0;
+	private boolean isMoved=false;
 	private int attackTimer;
 	private Inventory inventory = new Inventory();
 	
@@ -36,13 +38,14 @@ public class Player {
 	}
 	
 	public void tick(Level level, InputHandler input) {
+		this.isMoved=false;
 		double futurX=x;
 		double futurY=y;
 		
-		if (input.isPressed(KeyCode.Z)) {futurY-=vitesse;dir=1;}
-		if (input.isPressed(KeyCode.S)) {futurY+=vitesse;dir=0;}
-		if (input.isPressed(KeyCode.D)) {futurX+=vitesse;dir=3;}
-		if (input.isPressed(KeyCode.Q)) {futurX-=vitesse;dir=2;}
+		if (input.isPressed(KeyCode.Z)) {futurY-=vitesse;dir=1;isMoved=true;}
+		if (input.isPressed(KeyCode.S)) {futurY+=vitesse;dir=0;isMoved=true;}
+		if (input.isPressed(KeyCode.D)) {futurX+=vitesse;dir=3;isMoved=true;}
+		if (input.isPressed(KeyCode.Q)) {futurX-=vitesse;dir=2;isMoved=true;}
 		
 		boolean bloque= (level.getBlocks(futurX,futurY)==1 ||
 				level.getBlocks(futurX+15,futurY)==1 ||
@@ -60,6 +63,12 @@ public class Player {
 		if (y > level.getHeight() * Config.blockSize - Config.blockSize) {y = level.getHeight() * Config.blockSize - Config.blockSize;};
 		
 		if (attackTimer>0) {attackTimer--;}
+		
+		if (isMoved) { 
+			this.anim++;
+		} else {
+			this.anim=0;
+		}
 			
 		if (input.isClicked(KeyCode.SPACE)) {
 			this.interact(level,0);
@@ -96,34 +105,43 @@ public class Player {
         // on sélectionne Steve
         int skinRow = 8; 
         int skinCol;
-        boolean flip=false;
-
         
-        // dessin du perso
-        if (dir==0) {
-        	skinCol=0;
-        } else if (dir==1) {
-        	skinCol=1;
-        } else if (dir==3) {
-        	skinCol=3;
-        	flip=false;
-        } else {
-        	skinCol=3;
-        	flip=true;
+        // dessin du perso + animation selon la direction
+        boolean flip=false;        
+        int mouv=this.anim/30%2;
+
+        if (dir == 0) { // BAS
+            skinCol = 0;
+            if (isMoved && mouv == 1) flip = true;
+        } 
+        else if (dir == 1) { // HAUT
+            skinCol = 1;
+            if (isMoved && mouv == 1) flip = true; 
+        }
+        else if (dir == 2) { // GAUCHE
+            // si on marche, on alterne entre Col 2 (Neutre) et Col 3 (Pas)
+            skinCol = (isMoved && mouv == 1) ? 3 : 2; 
+            flip = true; // Toujours miroir pour la gauche
+        }
+        else { // DROITE
+            skinCol = (isMoved && mouv == 1) ? 3 : 2;
+            flip = false;
         }
         
         int sourceX = skinCol * 15; 
         int sourceY = skinRow * 8; 
         
+        
+        //on dessine l'animation
         if (flip) {
             gc.drawImage(this.skin, 
                     sourceX, sourceY, 16, 16,  
-                    x, y, -Config.blockSize, Config.blockSize               
+                    x+Config.blockSize, y, -Config.blockSize, Config.blockSize               
                 );
         } else {
             gc.drawImage(this.skin, 
                     sourceX, sourceY, 16, 16,  
-                    x-Config.blockSize, y, Config.blockSize, Config.blockSize               
+                    x, y, Config.blockSize, Config.blockSize               
                 );
         }
 
