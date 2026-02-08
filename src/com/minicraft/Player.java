@@ -23,7 +23,7 @@ public class Player {
 	public Player(double startX, double startY) {
 		this.x=startX;
 		this.y=startY;
-		this.vitesse=0.1;
+		this.vitesse=0.2;
 	}
 	
 	public void tick(Level level, InputHandler input) {
