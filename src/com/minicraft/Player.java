@@ -1,6 +1,7 @@
 package com.minicraft;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +13,7 @@ public class Player {
 	private double y;
 	private double vitesse;
 	private int dir;
+	private Image skin;
 	private int attackTimer;
 	private Inventory inventory = new Inventory();
 	
@@ -24,6 +26,13 @@ public class Player {
 		this.x=startX;
 		this.y=startY;
 		this.vitesse=0.5;
+		
+		try {
+			this.skin=new Image("file:resources/skins.png");
+		} catch (Exception e){
+			System.out.println("Erreur : impossible de charger le skin");
+		}
+		
 	}
 	
 	public void tick(Level level, InputHandler input) {
@@ -84,8 +93,41 @@ public class Player {
 		if (dir==3) {cibleX++;}
 		if (dir==2) {cibleX--;}
 		
-		gc.setFill(Color.RED);
-		gc.fillRect(x, y, Config.blockSize, Config.blockSize);
+        // on sélectionne Steve
+        int skinRow = 8; 
+        int skinCol;
+        boolean flip=false;
+
+        
+        // dessin du perso
+        if (dir==0) {
+        	skinCol=0;
+        } else if (dir==1) {
+        	skinCol=1;
+        } else if (dir==3) {
+        	skinCol=3;
+        	flip=false;
+        } else {
+        	skinCol=3;
+        	flip=true;
+        }
+        
+        int sourceX = skinCol * 15; 
+        int sourceY = skinRow * 8; 
+        
+        if (flip) {
+            gc.drawImage(this.skin, 
+                    sourceX, sourceY, 16, 16,  
+                    x, y, -Config.blockSize, Config.blockSize               
+                );
+        } else {
+            gc.drawImage(this.skin, 
+                    sourceX, sourceY, 16, 16,  
+                    x-Config.blockSize, y, Config.blockSize, Config.blockSize               
+                );
+        }
+
+
 		//on dessine un carré de sélection 
 		gc.setStroke(Color.YELLOW);
 		gc.setLineWidth(1);
