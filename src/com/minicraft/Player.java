@@ -23,7 +23,7 @@ public class Player {
 	public Player(double startX, double startY) {
 		this.x=startX;
 		this.y=startY;
-		this.vitesse=0.2;
+		this.vitesse=0.5;
 	}
 	
 	public void tick(Level level, InputHandler input) {
@@ -47,8 +47,8 @@ public class Player {
 		
 		if (x < 0) {x = 0;}
 		if (y < 0) {y = 0;}
-		if (x > level.getWidth() * 16 - 16) {x = level.getWidth() * 16 - 16;}
-		if (y > level.getHeight() * 16 - 16) {y = level.getHeight() * 16 - 16;};
+		if (x > level.getWidth() * Config.blockSize - Config.blockSize) {x = level.getWidth() * Config.blockSize - Config.blockSize;}
+		if (y > level.getHeight() * Config.blockSize - Config.blockSize) {y = level.getHeight() * Config.blockSize - Config.blockSize;};
 		
 		if (attackTimer>0) {attackTimer--;}
 			
@@ -74,8 +74,8 @@ public class Player {
 	
 	public void render(GraphicsContext gc) {
 		//on crée les positions Blocks
-		int xBlock=(int)((x+8)/16);
-		int yBlock=(int)((y+8)/16);
+		int xBlock=(int)((x+Config.blockSize/2)/Config.blockSize);
+		int yBlock=(int)((y+Config.blockSize/2)/Config.blockSize);
 		int cibleX= xBlock;
 		int cibleY= yBlock;
 		
@@ -85,11 +85,11 @@ public class Player {
 		if (dir==2) {cibleX--;}
 		
 		gc.setFill(Color.RED);
-		gc.fillRect(x, y, 16, 16);
+		gc.fillRect(x, y, Config.blockSize, Config.blockSize);
 		//on dessine un carré de sélection 
 		gc.setStroke(Color.YELLOW);
 		gc.setLineWidth(1);
-		gc.strokeRect(cibleX * 16, cibleY * 16, 16, 16);
+		gc.strokeRect(cibleX * Config.blockSize, cibleY * Config.blockSize, Config.blockSize, Config.blockSize);
 	
 		
 		if (attackTimer>0) {
@@ -106,8 +106,8 @@ public class Player {
 		//type=0: detruire, type=1:poser block de pierre
 		this.attackTimer=10;
 		
-		int xBlock=(int)((x+8)/16);
-		int yBlock=(int)((y+8)/16);
+		int xBlock=(int)((x+Config.blockSize/2)/Config.blockSize);
+		int yBlock=(int)((y+Config.blockSize/2)/Config.blockSize);
 		int cibleX= xBlock;
 		int cibleY= yBlock;
 		
@@ -118,34 +118,34 @@ public class Player {
 		
 		//hitbox du perso
 		double pLeft = x;
-		double pRight = x + 16; 
+		double pRight = x + Config.blockSize; 
 		double pTop = y;
-		double pBottom = y + 16;
+		double pBottom = y + Config.blockSize;
 
 		//hitbox du futur mur
-		double bLeft = cibleX * 16;
-		double bRight = bLeft + 16;
-		double bTop = cibleY * 16;
-		double bBottom = bTop + 16;
+		double bLeft = cibleX * Config.blockSize;
+		double bRight = bLeft + Config.blockSize;
+		double bTop = cibleY * Config.blockSize;
+		double bBottom = bTop + Config.blockSize;
 
 		
 		boolean seTouchent = !(pLeft >= bRight || pRight <= bLeft || 
 		                       pTop >= bBottom || pBottom <= bTop);
 		
-		int cibleBlock = level.getBlocks(cibleX*16, cibleY*16);
+		int cibleBlock = level.getBlocks(cibleX*Config.blockSize, cibleY*Config.blockSize);
 		
 		if (type != 0) {
 		    //MODE CONSTRUCTION
 		    if (inventory.has(type, 1) && !seTouchent) {
 		        inventory.remove(type, 1);
 		        //setBlock travaille avec les pixels et pas les blocks
-		        level.setBlocks(cibleX*16, cibleY*16, type); 
+		        level.setBlocks(cibleX*Config.blockSize, cibleY*Config.blockSize, type); 
 		        System.out.println("Bloc posé !");
 		    }
 		} else {
 		    //MODE DESTRUCTION (type == 0)
 		    if (cibleBlock != 0) {
-		         level.setBlocks(cibleX*16, cibleY*16, 0);
+		         level.setBlocks(cibleX*Config.blockSize, cibleY*Config.blockSize, 0);
 		    }
 		}
 	}

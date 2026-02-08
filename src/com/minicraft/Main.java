@@ -16,8 +16,8 @@ public class Main extends Application{
 	private GraphicsContext pinceau;
 	private Level level;
 	private InputHandler input;
-	private int widthScreen=400;
-	private int heightScreen=400;
+	private double widthScreen;
+	private double heightScreen;
 	private InventoryUI inventaireUI;
 	private boolean inventaireOuvert=false;
 	private CraftingUI craftingUI;
@@ -30,17 +30,20 @@ public class Main extends Application{
 	
 	@Override
 	public void start(Stage primaryStage) {
-		Canvas canva = new Canvas(400,400);
+		Canvas canva = new Canvas(Config.SCREEN_WIDTH,Config.SCREEN_HEIGHT);
 		this.pinceau = canva.getGraphicsContext2D();
 		this.player = new Player(50,50);
 		this.level = new Level(4000,4000);
 		
-		Group root = new Group();
+		javafx.scene.layout.Pane root = new javafx.scene.layout.Pane();
 		root.getChildren().add(canva);
 		
-		Scene scene = new Scene(root,400,400);
+		canva.widthProperty().bind(root.widthProperty());
+		canva.heightProperty().bind(root.heightProperty());
+		
+		Scene scene = new Scene(root,Config.SCREEN_WIDTH,Config.SCREEN_HEIGHT);
 		input = new InputHandler(scene);
-		primaryStage.setTitle("Minicraft clone");
+		primaryStage.setTitle("Minicraft");
 		primaryStage.setScene(scene);
 		
 		craftingUI= new CraftingUI();
@@ -50,13 +53,22 @@ public class Main extends Application{
 		
 		AnimationTimer timer = new AnimationTimer() {
 			public void handle(long now) {
-				double camX=player.getX()-widthScreen/2;
-				double camY=player.getY()-heightScreen/2;
+				//on recupere la taille de la fenetre:
+				widthScreen=canva.getWidth();
+				heightScreen=canva.getHeight();
+				
+				//on transforme le rendu de la caméra pourqu'elle corresponde au zoom
+				double largeurVue = widthScreen/Config.SCALE;
+				double hauteurVue = heightScreen/Config.SCALE;
+
+				
+				double camX=player.getX()+Config.blockSize/2-largeurVue/2;
+				double camY=player.getY()+Config.blockSize/2-hauteurVue/2;
 				
 				if (camX < 0) {camX = 0;}
 				if (camY < 0) {camY = 0;}
-				if (camX > (level.getWidth() * 16) - 400) {camX = (level.getWidth() * 16) - 400;}
-				if (camY > (level.getHeight() * 16) - 400) {camY = (level.getHeight() * 16) - 400;}
+				if (camX > (level.getWidth() * Config.blockSize) - largeurVue) {camX = (level.getWidth() * Config.blockSize) - largeurVue;}
+				if (camY > (level.getHeight() * Config.blockSize) - hauteurVue) {camY = (level.getHeight() * Config.blockSize) - hauteurVue;}
 				
 				if (input.isClicked(KeyCode.E)) {
 					inventaireOuvert = !inventaireOuvert;
@@ -68,11 +80,12 @@ public class Main extends Application{
 					inventaireOuvert=false;
 				}
 				
-				pinceau.clearRect(0, 0, 400, 400);
+				pinceau.clearRect(0, 0, widthScreen, heightScreen);
 				pinceau.save();
+				pinceau.scale(Config.SCALE, Config.SCALE);
 				pinceau.translate(-camX, -camY);
 				
-				level.render(pinceau, camX, camY);
+				level.render(pinceau, camX, camY, largeurVue, hauteurVue);
 				
 				if (inventaireOuvert) {
 					

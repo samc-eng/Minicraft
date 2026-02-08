@@ -35,12 +35,13 @@ public class Level {
 		}
 	}
 	
-	public void render(GraphicsContext gc, double camX, double camY) {
+	public void render(GraphicsContext gc, double camX, double camY, double renderWidth, double renderHeight) {
 		//on dessine seulement un peu plus que la caméra
-	    int xStart = (int) (camX / 16);
-	    int yStart = (int) (camY / 16);
-	    int xEnd = xStart + (400 / 16) + 2;
-	    int yEnd = yStart + (400 / 16) + 2;
+	    int xStart = (int) (camX / Config.blockSize);
+	    int yStart = (int) (camY / Config.blockSize);
+	    
+	    int xEnd = xStart + (int)(renderWidth / Config.blockSize) + 2;
+	    int yEnd = yStart + (int)(renderHeight / Config.blockSize) + 2;
 
 	    if (xStart < 0) {xStart = 0;}
 	    if (yStart < 0) {yStart = 0;}
@@ -54,14 +55,14 @@ public class Level {
 	            }else {
 	            	gc.setFill(Color.GRAY);
 	            }
-	            gc.fillRect(i * 16, j * 16, 16, 16);
+	            gc.fillRect(i * Config.blockSize, j * Config.blockSize, Config.blockSize, Config.blockSize);
 
 
 	            if (blocks[i][j] == 1) {
 	                gc.setFill(Color.DARKGRAY);
-	                gc.fillRect(i * 16, j * 16 - 4, 16, 12);
+	                gc.fillRect(i * Config.blockSize, j * Config.blockSize - 4, Config.blockSize, 12);
 	                gc.setFill(Color.BLACK);
-	                gc.fillRect(i * 16, j * 16 + 8, 16, 4);
+	                gc.fillRect(i * Config.blockSize, j * Config.blockSize + 8, Config.blockSize, 4);
 	            }
 	        }
 	    }
@@ -72,8 +73,8 @@ public class Level {
 	}
 	
 	public int getBlocks(double x, double y) {
-		int tx=(int)(x/16);
-		int ty=(int)(y/16);
+		int tx=(int)(x/Config.blockSize);
+		int ty=(int)(y/Config.blockSize);
 		
 		if (tx < 0 || ty < 0 || tx >= width || ty >= height) return 1;
 
@@ -82,13 +83,13 @@ public class Level {
 	
 	//on détruit ou pose un block
 	public void setBlocks(double x, double y, int type){
-		int tx = (int)(x/16);
-		int ty = (int)(y/16);
+		int tx = (int)(x/Config.blockSize);
+		int ty = (int)(y/Config.blockSize);
 		
 		if (tx>=0 && ty>=0 && tx<width && ty<height) {
 			if (blocks[tx][ty]==1 && type==0) {
 				blocks[tx][ty]=0;
-				dropItem(tx*16, ty*16, 1);
+				dropItem(tx*Config.blockSize, ty*Config.blockSize, 1);
 			} else if (blocks[tx][ty]==0 && type != 0) {
 				blocks[tx][ty]=type;
 			}
