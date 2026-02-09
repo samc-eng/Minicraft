@@ -1,6 +1,7 @@
 package com.minicraft;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,11 +9,21 @@ import java.util.List;
 public class Level {
 	private int width;
 	private int height;
+	private Image[] tiles= new Image[256];
 	private int[][] floor;
 	private int[][] blocks;
 	private List<Item> items= new ArrayList<>();
 	
 	public Level(int width, int height) {
+		try {
+			tiles[0]= new Image("file:resources/grass.png");
+			tiles[1]= new Image("file:resources/stone.png");
+			tiles[2]= new Image("file:resources/rock.png");
+			tiles[3]= new Image("file:resources/tree.png");
+		} catch (Exception e) {
+			System.out.println("Erreur : impossible de charger une texture !");
+		}
+		
 		this.width=width;
 		this.height=height;
 		this.floor = new int[width][height];
@@ -27,7 +38,10 @@ public class Level {
 						blocks[i][j]=1;
 					}
 					
-				} else {
+				} else if (Math.random()<0.02) {
+					floor[i][j]=0;
+					blocks[i][j]=3;
+			    }else {
 					floor[i][j]=0;
 					blocks[i][j]=0;
 				}
@@ -50,25 +64,35 @@ public class Level {
 
 	    for (int i = xStart; i < xEnd; i++) {
 	        for (int j = yStart; j < yEnd; j++) {
-	            if (floor[i][j] == 0) { 
-	            	gc.setFill(Color.GREEN);
-	            }else {
-	            	gc.setFill(Color.GRAY);
+	            int floorID=floor[i][j];
+	            int blockID=blocks[i][j];
+	            
+	            renderTile(gc, floorID, i , j);
+	            
+	            if (blockID!=0) {
+	            	if (blockID==1) {
+	    	            renderTile(gc, 2, i , j);
+	            	} else if (blockID==3){
+	    	            renderTile(gc, 0, i , j);
+	            	}	
+		            renderTile(gc, blockID, i , j);
 	            }
-	            gc.fillRect(i * Config.blockSize, j * Config.blockSize, Config.blockSize, Config.blockSize);
 
-
-	            if (blocks[i][j] == 1) {
-	                gc.setFill(Color.DARKGRAY);
-	                gc.fillRect(i * Config.blockSize, j * Config.blockSize - 4, Config.blockSize, 12);
-	                gc.setFill(Color.BLACK);
-	                gc.fillRect(i * Config.blockSize, j * Config.blockSize + 8, Config.blockSize, 4);
-	            }
 	        }
 	    }
 	    
 	    for (Item item : items) {
 	    	item.render(gc);
+	    }
+	}
+	
+	private void renderTile(GraphicsContext gc, int id, int x, int y) {
+	    if (id >= 0 && id < tiles.length && tiles[id] != null) {
+	        gc.drawImage(tiles[id], 
+	            0, 0, 16, 16,
+	            x * Config.blockSize, y * Config.blockSize, 
+	            Config.blockSize, Config.blockSize
+	        );
 	    }
 	}
 	

@@ -48,9 +48,9 @@ public class Player {
 		if (input.isPressed(KeyCode.Q)) {futurX-=vitesse;dir=2;isMoved=true;}
 		
 		boolean bloque= (level.getBlocks(futurX,futurY)==1 ||
-				level.getBlocks(futurX+15,futurY)==1 ||
-				level.getBlocks(futurX,futurY+15)==1 ||
-				level.getBlocks(futurX+15,futurY+15)==1);
+				level.getBlocks(futurX+Config.blockSize,futurY)==1 ||
+				level.getBlocks(futurX,futurY+Config.blockSize)==1 ||
+				level.getBlocks(futurX+Config.blockSize,futurY+Config.blockSize)==1);
 		
 		if (! bloque) {
 			x=futurX;
