@@ -11,7 +11,7 @@ public class InventoryUI {
 		
 	}
 	
-	
+	//rendu de l'inventaire
 	public void render(GraphicsContext pinceau, Player player) {
 		pinceau.setFill(Color.color(0, 0, 0, 0.8)); 
 	    pinceau.fillRoundRect(50, 50, 300, 300, 20, 20);

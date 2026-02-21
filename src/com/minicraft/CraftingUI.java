@@ -12,6 +12,7 @@ public class CraftingUI {
 	
 	public CraftingUI() {}
 	
+	//ajout d'un craft
 	public void addRecipe(Recipe recipe) {
 		this.listeCraft.add(recipe);
 	}
@@ -42,13 +43,13 @@ public class CraftingUI {
 		
 		for (int i=0; i<listeCraft.size();i++) {
 			Recipe recette=listeCraft.get(i);
-			if (recette.canCraft(inventaire)) {
+			if (recette.canCraft(inventaire)) {//ligne verte si item craftable
 				gc.setFill(Color.LIGHTGREEN);
 			} else {
 				gc.setFill(Color.INDIANRED);
 			}
 			
-			String prefix = (i == selected) ? "> " : "  ";
+			String prefix = (i == selected) ? "> " : "  "; //petite fleche pour montrer la sélection
             gc.fillText(prefix + recette.getName(), 70, 100 + i*30);
 		}
 	}

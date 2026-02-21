@@ -4,10 +4,10 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
 public class Item {
-	//position de l'item
+	//position de l'item :
 	private double x;
 	private double y;
-	//le type d'item ie identifie quel item
+	//le type d'item ie identifie quel item :
 	private int type;
 	private boolean removed = false;
 	

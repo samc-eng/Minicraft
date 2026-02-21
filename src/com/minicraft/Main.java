@@ -102,7 +102,7 @@ public class Main extends Application{
 				}
 				
 				player.render(pinceau);		
-				pinceau.restore();
+				pinceau.restore(); //on recommence à dessiner
 				
 				if (craftingOpen) {
 					craftingUI.render(pinceau, player.getInventory());

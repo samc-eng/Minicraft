@@ -5,8 +5,8 @@ import java.util.Map;
 
 public class Recipe {
 	private String name;
-	private int resultId;
-	private int resultCount;
+	private int resultId; //quel id/type ?
+	private int resultCount; //la quantite obtenu
 	private Map<Integer,Integer> costs = new HashMap<>();
 	
 	public Recipe(String name, int resultId, int resultCount) {
@@ -15,6 +15,7 @@ public class Recipe {
 		this.resultCount=resultCount;
 	}
 	
+	//cout d'un craft :
 	public Recipe addCost(int id, int count) {
 		costs.put(id, count);
 		return this;
@@ -34,7 +35,6 @@ public class Recipe {
 			for (Integer id : costs.keySet()) {
 				inventaire.remove(id, costs.get(id));
 			}
-			
 			inventaire.add(resultId, resultCount);
 			System.out.println("Craft réussi : " + this.name);
 		}
