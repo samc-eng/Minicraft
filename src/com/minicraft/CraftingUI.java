@@ -10,15 +10,13 @@ public class CraftingUI {
 	private List<Recipe> listeCraft = new ArrayList<>();
 	private int selected=1;
 	
-	public CraftingUI() {
-		
-	}
+	public CraftingUI() {}
 	
 	public void addRecipe(Recipe recipe) {
 		this.listeCraft.add(recipe);
 	}
 	
-	public void tick(InputHandler input, Inventory inventaire) {
+	public void tick(InputHandler input, Inventory inventaire) { //maj quand on se déplace daans le menu de craft
 		if (input.isClicked(KeyCode.T)||input.isClicked(KeyCode.DOWN)) {
 			selected+=1;
 			if (selected>listeCraft.size()) {selected=0;}
@@ -28,12 +26,12 @@ public class CraftingUI {
 			if (selected<0) {selected=listeCraft.size()-1;}
 		}
 		
-		if (input.isClicked(KeyCode.ENTER)||input.isClicked(KeyCode.TAB)) {
+		if (input.isClicked(KeyCode.ENTER)||input.isClicked(KeyCode.TAB)) { //on craft
 			listeCraft.get(selected).Craft(inventaire);
 		}	
 	}
 	
-	public void render (GraphicsContext gc, Inventory inventaire) {
+	public void render (GraphicsContext gc, Inventory inventaire) { //rendu de l'inventaire
 		gc.setFill(Color.BROWN);
 		gc.fillRoundRect(50, 50, 200, 200, 10, 10);
         gc.setStroke(Color.WHITE);

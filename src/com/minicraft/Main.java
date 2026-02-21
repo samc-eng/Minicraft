@@ -35,6 +35,7 @@ public class Main extends Application{
 		this.player = new Player(50,50);
 		this.level = new Level(4000,4000);
 		
+		//on crée une racine et un canva qui s'adapte à la taille de la fenêtre
 		javafx.scene.layout.Pane root = new javafx.scene.layout.Pane();
 		root.getChildren().add(canva);
 		
@@ -42,15 +43,18 @@ public class Main extends Application{
 		canva.heightProperty().bind(root.heightProperty());
 		
 		Scene scene = new Scene(root,Config.SCREEN_WIDTH,Config.SCREEN_HEIGHT);
-		input = new InputHandler(scene);
 		primaryStage.setTitle("Minicraft");
 		primaryStage.setScene(scene);
 		
+		//on connecte l'entrée du clavier
+		input = new InputHandler(scene);
 		craftingUI= new CraftingUI();
+		//on crée la recette du mur de pierre
 		craftingUI.addRecipe(new Recipe("Mur de pierre", 3, 1).addCost(1, 5));
 		
 		inventaireUI= new InventoryUI();
 		
+		//boucle de jeu :
 		AnimationTimer timer = new AnimationTimer() {
 			public void handle(long now) {
 				//on recupere la taille de la fenetre:
@@ -65,6 +69,7 @@ public class Main extends Application{
 				double camX=player.getX()+Config.blockSize/2-largeurVue/2;
 				double camY=player.getY()+Config.blockSize/2-hauteurVue/2;
 				
+				//on fixe la caméra sur les côtés
 				if (camX < 0) {camX = 0;}
 				if (camY < 0) {camY = 0;}
 				if (camX > (level.getWidth() * Config.blockSize) - largeurVue) {camX = (level.getWidth() * Config.blockSize) - largeurVue;}
@@ -80,19 +85,19 @@ public class Main extends Application{
 					inventaireOuvert=false;
 				}
 				
-				pinceau.clearRect(0, 0, widthScreen, heightScreen);
+				pinceau.clearRect(0, 0, widthScreen, heightScreen); //a chaque passage on efface tout
 				pinceau.save();
-				pinceau.scale(Config.SCALE, Config.SCALE);
-				pinceau.translate(-camX, -camY);
+				pinceau.scale(Config.SCALE, Config.SCALE); //on effectue le zoom
+				pinceau.translate(-camX, -camY); //on translate l'image selon la position de la caméra
 				
-				level.render(pinceau, camX, camY, largeurVue, hauteurVue);
+				level.render(pinceau, camX, camY, largeurVue, hauteurVue);//rendue du monde visible dessiné
 				
 				if (inventaireOuvert) {
 					
 				} else if (craftingOpen) {
-					craftingUI.tick(input, player.getInventory());
+					craftingUI.tick(input, player.getInventory()); //maj du craft sélectionné
 				} else {
-					player.tick(level, input);
+					player.tick(level, input); //interaction du joueur
 					level.updateItems(player);
 				}
 				

@@ -67,8 +67,10 @@ public class Level {
 	            int floorID=floor[i][j];
 	            int blockID=blocks[i][j];
 	            
+	            //on dessine d'abord le sol
 	            renderTile(gc, floorID, i , j);
 	            
+	            //puis on dessine le potentil blok sur le sol
 	            if (blockID!=0) {
 	            	if (blockID==1) {
 	    	            renderTile(gc, 2, i , j);
@@ -86,6 +88,7 @@ public class Level {
 	    }
 	}
 	
+	//fonction pour dessiner un block a partir d'une image
 	private void renderTile(GraphicsContext gc, int id, int x, int y) {
 	    if (id >= 0 && id < tiles.length && tiles[id] != null) {
 	        gc.drawImage(tiles[id], 
@@ -96,6 +99,7 @@ public class Level {
 	    }
 	}
 	
+	//coordonnées du joueur en block et non pas en pixel
 	public int getBlocks(double x, double y) {
 		int tx=(int)(x/Config.blockSize);
 		int ty=(int)(y/Config.blockSize);
@@ -111,19 +115,24 @@ public class Level {
 		int ty = (int)(y/Config.blockSize);
 		
 		if (tx>=0 && ty>=0 && tx<width && ty<height) {
-			if (blocks[tx][ty]==1 && type==0) {
+			if (blocks[tx][ty]==1 && type==0) { //mode destruction
 				blocks[tx][ty]=0;
-				dropItem(tx*Config.blockSize, ty*Config.blockSize, 1);
-			} else if (blocks[tx][ty]==0 && type != 0) {
+				//drop du block aleatoire autour de sa position
+				double randomX=(Math.random()-0.5);
+				double randomY=(Math.random()-0.5);
+				dropItem((tx+1.0/2+randomX)*Config.blockSize, (ty+1.0/2+randomY)*Config.blockSize, 1);
+			} else if (blocks[tx][ty]==0 && type != 0) { //mode construction
 				blocks[tx][ty]=type;
 			}
 		}
 	}
 	
+	//on actualise chaque item qui flotte
 	public void updateItems(Player player) {
 		for (Item item : items) {
 			item.tick(player);
 		}
+		//on supprime l'item visuellement s'il est removed
 		items.removeIf(item->item.isRemoved());
 	}
 	

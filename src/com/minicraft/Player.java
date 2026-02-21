@@ -27,7 +27,7 @@ public class Player {
 	public Player(double startX, double startY) {
 		this.x=startX;
 		this.y=startY;
-		this.vitesse=0.5;
+		this.vitesse=0.25;
 		
 		try {
 			this.skin=new Image("file:resources/skins.png");
@@ -47,10 +47,10 @@ public class Player {
 		if (input.isPressed(KeyCode.D)) {futurX+=vitesse;dir=3;isMoved=true;}
 		if (input.isPressed(KeyCode.Q)) {futurX-=vitesse;dir=2;isMoved=true;}
 		
-		boolean bloque= (level.getBlocks(futurX,futurY)==1 ||
-				level.getBlocks(futurX+Config.blockSize,futurY)==1 ||
-				level.getBlocks(futurX,futurY+Config.blockSize)==1 ||
-				level.getBlocks(futurX+Config.blockSize,futurY+Config.blockSize)==1);
+		boolean bloque= (level.getBlocks(futurX,futurY)>=1 ||
+				level.getBlocks(futurX+Config.blockSize,futurY)>=1 ||
+				level.getBlocks(futurX,futurY+Config.blockSize)>=1 ||
+				level.getBlocks(futurX+Config.blockSize,futurY+Config.blockSize)>=1);
 		
 		if (! bloque) {
 			x=futurX;
@@ -212,5 +212,7 @@ public class Player {
 	
 	public double getX() {return this.x;}
 	public double getY() {return this.y;}
+	public double getCenterX() {return this.x+Config.blockSize/2;}
+	public double getCenterY() {return this.y+Config.blockSize/2;}
 	public Inventory getInventory() {return this.inventory;}
 }
