@@ -23,7 +23,7 @@ import javafx.scene.media.*;
 public class MainMenu {
     private MediaPlayer mediaPlayer; // déclaration du mediaPlayer pour lancer la musique
     int largeurBouton = 200;
-    // 1. Définition du style CSS (Arrondi, Gras, Couleurs vives)
+    // -- Définition du style CSS (Arrondi, Gras, Couleurs vives) -- //
     String styleBouton =
             "-fx-background-color: linear-gradient(#5dade2, #2e86c1); " + // Dégradé bleu
                     "-fx-background-radius: 30; " +                             // Bords très arrondis
@@ -50,7 +50,7 @@ public class MainMenu {
 
     public void show(Stage window) {
 
-        // --- MUSIQUE DE FOND (CONCIS) ---
+// -- I. Mise en place de la musique de fond -- //
         try {
             Media hit = new Media(getClass().getResource("/menu_music.mp3").toExternalForm());
             this.mediaPlayer = new MediaPlayer(hit);
@@ -61,10 +61,10 @@ public class MainMenu {
             System.out.println("Erreur audio : " + e.getMessage());
         }
 
-        // --- 1. CRÉATION DU LAYOUT --- //
+// -- II. CRÉATION DU LAYOUT -- //
         StackPane root = new StackPane(); // superposition des éléments (fond + menu)
 
-        // --- 2. CHARGEMENT ET AFFICHAGE DE L'IMAGE DE FOND ---
+    // --- II.1 Chargement de l'image de fond, avec test suite au différent problème du départ -- //
         try {
             // On essaie de récupérer le fichier
             java.net.URL url = getClass().getResource("/bg.png");
@@ -74,6 +74,7 @@ public class MainMenu {
                 System.out.println("❌ Fichier introuvable dans le dossier out/production. Fais un REBUILD PROJECT !");
                 root.setStyle("-fx-background-color: red;"); // Le fond devient ROUGE pour t'alerter
             } else {
+                // C'est à proprement dit la partie d'affichage //
                 javafx.scene.image.Image backgroundImage = new javafx.scene.image.Image(url.toExternalForm());
                 javafx.scene.image.ImageView backgroundView = new javafx.scene.image.ImageView(backgroundImage);
 
@@ -89,53 +90,47 @@ public class MainMenu {
             e.printStackTrace();
         }
 
-// -- 0. Ajout du nom du jeu AVEC EFFETS ET ANIMATION -- //
+    // -- II.2 Ajout du nom du jeu AVEC EFFETS ET ANIMATION -- //
         Text title = new Text("MINICRAFT");
 
-// Un style visuel fort (Pixel/3D) avant d'animer
+        // style du texte //
         title.setFont(Font.font("VERDANA", FontWeight.BOLD, 100)); // Très grand
         title.setFill(Color.GOLD); // Intérieur blanc
         title.setStroke(Color.BROWN); // Contour noir épais
         title.setStrokeWidth(3);
 
-
-
-
-// --- CONFIGURATION DE L'ANIMATION "RESPIRATION" ---
-
-// 1. On crée une transition d'échelle (ScaleTransition) de 2 secondes
+        // configuration de l'animation du texte //
         ScaleTransition pulse = new ScaleTransition(Duration.seconds(2), title);
 
-// 1. On définit la taille de DÉPART (un peu plus petite que la normale)
-        pulse.setFromX(0.8); // 90% de la taille
+        // définition de la taille de départ //
+        pulse.setFromX(0.8); // 80% de la taille
         pulse.setFromY(0.8);
 
-// 2. On définit l'agrandissement maximal (ex: 1.1 = +10% de taille)
+        //définition l'agrandissement maximal //
         pulse.setToX(1.2); // Zoom sur l'axe X (largeur)
         pulse.setToY(1.2); // Zoom sur l'axe Y (hauteur)
 
-// 3. On demande un mouvement fluide ("Ease-both" pour ralentir au début et à la fin)
+        // Mouvement fluide ("Ease-both" pour ralentir au début et à la fin) //
         pulse.setInterpolator(javafx.animation.Interpolator.EASE_BOTH);
 
-// 4. On active l'effet "Yoyo" (s'agrandit PUIS rétrécit au lieu de recommencer à zéro)
+        // Activation de l'effet "Yoyo" (s'agrandit PUIS rétrécit au lieu de recommencer à zéro) //
         pulse.setAutoReverse(true);
 
-// 5. On demande à l'animation de se répéter à l'INFINI
+        // Répétition à l'infini de l'animation //
         pulse.setCycleCount(Animation.INDEFINITE);
 
-// 6. ON LANCE L'ANIMATION !
+        // Lancement de l'animation //
         pulse.play();
 
-        // -- 1. CRÉATION DU LAYOUT (LA MISE EN PAGE) -- //
 
-        // Pour l'instant j'affiche seulement des boutons de base mais maintenant l'objectif va être de donner du style au jeux.
+
+    // -- II.3 Création des bouton et d style de ma page -- //
 
         VBox menuBox = new VBox(60); // VBox(40) : On crée une colonne verticale avec 20 pixels d'espace entre chaque bouton
         menuBox.setAlignment(Pos.CENTER); // Aligne tout le contenu de la colonne exactement au milieu de l'écran
         menuBox.setStyle("-fx-background-color: transparent; -fx-padding: 50;");
-        // -- 2. CRÉATION DES BOUTONS -- //
 
-        // Création du Bouton 1 permettant de débuter une nouvelle partie
+        // Création du Bouton 1 permettant de débuter une nouvelle partie - il est fonctionnel //
         Button btnNewGame = new Button("Créer un nouveau monde");
         btnNewGame.setMinWidth(largeurBouton); // On force la même largeur pour tous
         btnNewGame.setStyle(null);
@@ -143,7 +138,7 @@ public class MainMenu {
         btnNewGame.setOnMouseEntered(e-> btnNewGame.setStyle(styleBouton + "-fx-background-color: #3498db; -fx-scale-x: 1.1; -fx-scale-y: 1.1;"));
         btnNewGame.setOnMouseExited(e -> btnNewGame.setStyle(null));
 
-        // Création du Bouton 2 permettant de reprendre la partie précédente, a mettre en place avec le saveManager
+        // Création du Bouton 2 permettant de reprendre la partie précédente, à mettre en place avec le saveManager (pas encore réaliser) //
         Button btnLoadGame = new Button("Continuer la partie");
         btnLoadGame.setStyle(null);
         btnLoadGame.setMinWidth(largeurBouton); // On force la même largeur pour tous les boutons
@@ -151,7 +146,7 @@ public class MainMenu {
         btnLoadGame.setOnMouseEntered(e-> btnLoadGame.setStyle(styleBouton + "-fx-background-color: #3498db; -fx-scale-x: 1.1; -fx-scale-y: 1.1;"));
         btnLoadGame.setOnMouseExited(e -> btnLoadGame.setStyle(null));
 
-        // Création du troisième bouton : quitter //
+        // Création du Bouton 3: quitter - il est fonctionnel //
         Button btnQuitter= new Button ("Quitter");
         btnQuitter.setStyle(null);
         btnQuitter.setMinWidth(largeurBouton); // On force la même largeur pour tous les boutons
@@ -160,33 +155,33 @@ public class MainMenu {
         btnQuitter.setOnMouseExited(e -> btnQuitter.setStyle(null));
         btnQuitter.setOnAction(e -> window.close());
 
-        // TODO  : Ajouter le bouton "Quitter"
 
 
-        // -- Partie 3 : Assemblage --//
+// -- III : Assemblage --//
 
-        menuBox.getChildren().addAll(title, btnNewGame, btnLoadGame, btnQuitter);// On ajoute les 3 boutons dans la colonne (VBox)
+        // On ajoute les 3 boutons dans la colonne (VBox) //
+        menuBox.getChildren().addAll(title, btnNewGame, btnLoadGame, btnQuitter);
         root.getChildren().add(menuBox);
         Scene menuScene = new Scene(root, 1000, 700); // On crée la scène (le contenu) avec une taille de 800x600 pixels
 
-        // On place la scène dans la fenêtre (Stage)
+        // On place la scène dans la fenêtre (Stage) //
         window.setScene(menuScene);
         window.setTitle("Minicraft - Menu Principal");
 
-        // Affichage de la fenêtre
+        // Affichage de la fenêtre //
         root.requestFocus();
         window.show();
     }
 
     /**
-     * Callback : Action déclenchée par le bouton "Nouveau Monde".
+     * Callback : Action déclenchée par le bouton "créer un nouveau Monde".
      */
 
     private void startNewGame(Stage window) {
         System.out.println("Création d'un nouveau monde !");
 
-            Main game = new Main(); // On crée une instance de la classe Main
-            game.launchGame(window); // On lance le moteur de jeu
+            Main game = new Main(); // On crée une instance de la classe Main //
+            game.launchGame(window); // On lance le moteur de jeu //
     }
 
     /**
