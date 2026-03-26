@@ -5,6 +5,8 @@
 module Minicraft {
     requires javafx.controls;
     requires javafx.graphics;
-    
-    exports com.minicraft; 
+    requires javafx.media;
+
+    exports com.minicraft;
+
 }

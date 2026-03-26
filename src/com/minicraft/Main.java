@@ -27,9 +27,13 @@ public class Main extends Application{
 		launch(args);
 	}
 	
-	
 	@Override
-	public void start(Stage primaryStage) {
+	public void start(Stage primaryStage){
+		MainMenu menu = new MainMenu();
+		menu.show(primaryStage);
+	}
+
+	public void launchGame(Stage primaryStage) {
 		Canvas canva = new Canvas(Config.SCREEN_WIDTH,Config.SCREEN_HEIGHT);
 		this.pinceau = canva.getGraphicsContext2D();
 		this.player = new Player(50,50);
