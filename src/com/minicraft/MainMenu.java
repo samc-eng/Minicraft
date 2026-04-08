@@ -155,12 +155,20 @@ public class MainMenu {
         btnQuitter.setOnMouseExited(e -> btnQuitter.setStyle(null));
         btnQuitter.setOnAction(e -> window.close());
 
+        // Création du Bouton 4: Information - il n'est pas fonctionnel //
+        Button btnInfos= new Button ("Informations");
+        btnInfos.setStyle(null);
+        btnInfos.setMinWidth(largeurBouton); // On force la même largeur pour tous les boutons
+        btnInfos.setOnAction(e -> loadExistingGame(window));
+        btnInfos.setOnMouseEntered(e-> btnInfos.setStyle(styleBouton + "-fx-background-color: #3498db; -fx-scale-x: 1.1; -fx-scale-y: 1.1;"));
+        btnInfos.setOnMouseExited(e -> btnInfos.setStyle(null));
+
 
 
 // -- III : Assemblage --//
 
         // On ajoute les 3 boutons dans la colonne (VBox) //
-        menuBox.getChildren().addAll(title, btnNewGame, btnLoadGame, btnQuitter);
+        menuBox.getChildren().addAll(title, btnNewGame, btnLoadGame, btnQuitter, btnInfos);
         root.getChildren().add(menuBox);
         Scene menuScene = new Scene(root, 1000, 700); // On crée la scène (le contenu) avec une taille de 800x600 pixels
 
