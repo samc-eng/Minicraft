@@ -11,6 +11,7 @@ import javafx.animation.AnimationTimer;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
+
 public class Main extends Application{
 	private Player player;
 	private GraphicsContext pinceau;
@@ -21,7 +22,7 @@ public class Main extends Application{
 	private InventoryUI inventaireUI;
 	private boolean inventaireOuvert=false;
 	private CraftingUI craftingUI;
-	private boolean craftingOpen=false;
+	private boolean craftingOpen=false;	
 
 	static public void main(String[] args) {
 		launch(args);

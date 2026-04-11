@@ -115,12 +115,17 @@ public class Level {
 		int ty = (int)(y/Config.blockSize);
 		
 		if (tx>=0 && ty>=0 && tx<width && ty<height) {
-			if (blocks[tx][ty]==1 && type==0) { //mode destruction
+			if (blocks[tx][ty]!=0 && type==0) { //mode destruction
+				int oldBlockID=blocks[tx][ty];
 				blocks[tx][ty]=0;
-				//drop du block aleatoire autour de sa position
-				double randomX=(Math.random()-0.5);
-				double randomY=(Math.random()-0.5);
-				dropItem((tx+1.0/2+randomX)*Config.blockSize, (ty+1.0/2+randomY)*Config.blockSize, 1);
+				
+				ItemDefinition modele = ItemRegistry.get(oldBlockID);
+				if (modele!=null) {
+					//drop du block aleatoire autour de sa position
+					double randomX=(Math.random()-0.5);
+					double randomY=(Math.random()-0.5);
+					dropItem((tx+1.0/2+randomX)*Config.blockSize, (ty+1.0/2+randomY)*Config.blockSize,oldBlockID);
+				}
 			} else if (blocks[tx][ty]==0 && type != 0) { //mode construction
 				blocks[tx][ty]=type;
 			}
@@ -136,11 +141,23 @@ public class Level {
 		items.removeIf(item->item.isRemoved());
 	}
 	
+
+	public void dropItem(double x, double y, int itemId) {
+	    ItemDefinition modele = ItemRegistry.get(itemId);
+	    if (modele == null) { return; }
+	    
+	    Item entiteAuSol;
+	    if (modele.placeable) {
+	        entiteAuSol = new PlaceableItem(x, y, itemId, itemId);
+	    } else {
+	        entiteAuSol = new ResourceItem(x, y, itemId);
+	    }
+	    items.add(entiteAuSol);
+	}
+	
+	
 	public int getWidth() {return this.width;}
 	public int getHeight() {return this.height;}
-	public void dropItem(double x, double y, int type) {
-		items.add(new Item(x,y,type));
-	}
 	public List<Item> getItems(){return this.items;}
 }
 

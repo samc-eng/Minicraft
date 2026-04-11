@@ -18,6 +18,7 @@ public class Player {
 	private boolean isMoved=false;
 	private int attackTimer;
 	private Inventory inventory = new Inventory();
+    private int selectedItemId = 1; // l'item actuellement en main (ID)
 	
 	public boolean up;
 	public boolean down;
@@ -71,11 +72,11 @@ public class Player {
 		}
 			
 		if (input.isClicked(KeyCode.SPACE)) {
-			this.interact(level,0);
+			this.interact(level,false);
 		}
 		
 		if (input.isClicked(KeyCode.F)) {
-			this.interact(level,1);
+			this.interact(level,true);
 		}
 		
 		for (Item item : level.getItems()) {
@@ -84,7 +85,7 @@ public class Player {
 	        double distance = Math.sqrt(dx * dx + dy * dy);
 
 	        if (distance < 12) { 
-	        	inventory.add(item.getType(), 1);
+	        	inventory.add(item.getItemId(), 1);
 	            item.remove();        
 	        }
 		}		
@@ -162,8 +163,7 @@ public class Player {
 		
 	}
 	
-	public void interact(Level level, int type) {
-		//type=0: detruire, type=1:poser block de pierre
+	public void interact(Level level, boolean placeMode) {
 		this.attackTimer=10;
 		
 		int xBlock=(int)((x+Config.blockSize/2)/Config.blockSize);
@@ -176,38 +176,35 @@ public class Player {
 		if (dir==3) {cibleX++;}
 		if (dir==2) {cibleX--;}
 		
-		//hitbox du perso
-		double pLeft = x;
-		double pRight = x + Config.blockSize; 
-		double pTop = y;
-		double pBottom = y + Config.blockSize;
-
-		//hitbox du futur mur
-		double bLeft = cibleX * Config.blockSize;
-		double bRight = bLeft + Config.blockSize;
-		double bTop = cibleY * Config.blockSize;
-		double bBottom = bTop + Config.blockSize;
-
-		
-		boolean seTouchent = !(pLeft >= bRight || pRight <= bLeft || 
-		                       pTop >= bBottom || pBottom <= bTop);
-		
-		int cibleBlock = level.getBlocks(cibleX*Config.blockSize, cibleY*Config.blockSize);
-		
-		if (type != 0) {
-		    //MODE CONSTRUCTION
-		    if (inventory.has(type, 1) && !seTouchent) {
-		        inventory.remove(type, 1);
-		        //setBlock travaille avec les pixels et pas les blocks
-		        level.setBlocks(cibleX*Config.blockSize, cibleY*Config.blockSize, type); 
-		        System.out.println("Bloc posé !");
-		    }
-		} else {
-		    //MODE DESTRUCTION (type == 0)
-		    if (cibleBlock != 0) {
-		         level.setBlocks(cibleX*Config.blockSize, cibleY*Config.blockSize, 0);
-		    }
-		}
+		if (!placeMode) {
+            // MODE DESTRUCTION
+            int cibleBlock = level.getBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize);
+            if (cibleBlock != 0) {
+                level.setBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize, 0);
+            }
+        } else {
+            // MODE CONSTRUCTION — on utilise selectedItemId
+            ItemDefinition def = ItemRegistry.get(selectedItemId);
+            if (def == null || !def.placeable) {
+                System.out.println("Item " + selectedItemId + " non posable.");
+                return;
+            }
+			//hitbox du futur mur
+			double bLeft = cibleX * Config.blockSize;
+			double bRight = bLeft + Config.blockSize;
+			double bTop = cibleY * Config.blockSize;
+			double bBottom = bTop + Config.blockSize;
+	
+			
+			boolean seTouchent = !(x >= bRight || x + Config.blockSize <= bLeft ||
+                    y >= bBottom || y + Config.blockSize <= bTop);
+					
+			if (!seTouchent &&  inventory.has(selectedItemId, 1)) {
+				 inventory.remove(selectedItemId, 1);
+				 level.setBlocks(cibleX, cibleY, selectedItemId);
+				 System.out.println("Bloc[" + this.selectedItemId +"] posé !");
+			}
+        }
 	}
 	
 	public double getX() {return this.x;}
