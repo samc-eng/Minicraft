@@ -1,5 +1,6 @@
 package com.minicraft;
-
+import java.util.ArrayList;
+import java.util.List;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
@@ -22,6 +23,8 @@ public class Main extends Application{
 	private boolean inventaireOuvert=false;
 	private CraftingUI craftingUI;
 	private boolean craftingOpen=false;
+	//Yazid : 
+	private List<Bot> bots = new ArrayList<>();
 
 	static public void main(String[] args) {
 		launch(args);
@@ -38,6 +41,10 @@ public class Main extends Application{
 		this.pinceau = canva.getGraphicsContext2D();
 		this.player = new Player(50,50);
 		this.level = new Level(4000,4000);
+		// Yazid : ajout de 15 bots
+		for (int i = 0; i < 15; i++) {
+		    this.bots.add(new Bot(200 + i * 40, 250));
+		}
 		
 		//on crée une racine et un canva qui s'adapte à la taille de la fenêtre
 		javafx.scene.layout.Pane root = new javafx.scene.layout.Pane();
@@ -96,12 +103,21 @@ public class Main extends Application{
 				
 				level.render(pinceau, camX, camY, largeurVue, hauteurVue);//rendue du monde visible dessiné
 				
+				for (Bot bot : bots) {// Yazid : rendu des bots
+				    bot.render(pinceau);
+				}
+				
 				if (inventaireOuvert) {
 					
 				} else if (craftingOpen) {
 					craftingUI.tick(input, player.getInventory()); //maj du craft sélectionné
 				} else {
 					player.tick(level, input); //interaction du joueur
+
+					for (Bot bot : bots) { // Yazid : Intéraction du joueur avec les bots
+					    bot.tick(level, player);
+					}
+
 					level.updateItems(player);
 				}
 				
@@ -114,9 +130,10 @@ public class Main extends Application{
 					inventaireUI.render(pinceau, player);					
 				} else {
 					pinceau.setFill(Color.color(0, 0, 0, 0.5));
-				    pinceau.fillRect(10, 10, 100, 30);
-				    pinceau.setFill(Color.WHITE);
-				    pinceau.fillText("Roche : " + player.getInventory().getAmount(1), 20, 30);
+					pinceau.fillRect(10, 10, 140, 50);
+					pinceau.setFill(Color.WHITE);
+					pinceau.fillText("Roche : " + player.getInventory().getAmount(1), 20, 30);
+					pinceau.fillText("Vie : " + player.getHealth(), 20, 50);
 				}					
 				input.update();
 			}
