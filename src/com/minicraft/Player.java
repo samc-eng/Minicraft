@@ -24,6 +24,10 @@ public class Player {
 	public boolean right;
 	public boolean left;
 	
+	// Yazid : système de santé (barre de vie) pour l'utilsation des bots 
+	private int health = 10; 
+	private int invulnerabilityTimer = 0;
+	
 	public Player(double startX, double startY) {
 		this.x=startX;
 		this.y=startY;
@@ -63,6 +67,9 @@ public class Player {
 		if (y > level.getHeight() * Config.blockSize - Config.blockSize) {y = level.getHeight() * Config.blockSize - Config.blockSize;};
 		
 		if (attackTimer>0) {attackTimer--;}
+		
+		//Yazid : 
+		if (invulnerabilityTimer > 0) {invulnerabilityTimer--;}
 		
 		if (isMoved) { 
 			this.anim++;
@@ -215,4 +222,22 @@ public class Player {
 	public double getCenterX() {return this.x+Config.blockSize/2;}
 	public double getCenterY() {return this.y+Config.blockSize/2;}
 	public Inventory getInventory() {return this.inventory;}
+	
+	//Yazid : Fonction de dommage pour l'utilsation des bots
+	public void takeDamage(int amount) {
+	    if (invulnerabilityTimer > 0) return;
+
+	    health -= amount;
+	    invulnerabilityTimer = 30;
+
+	    if (health <= 0) {
+	        health = 10;
+	        x = 50;
+	        y = 50;
+	    }
+	}
+
+	public int getHealth() {
+	    return health;
+	}
 }
