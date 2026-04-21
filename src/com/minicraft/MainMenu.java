@@ -40,13 +40,13 @@ public class MainMenu {
     /*private SaveManager saveManager;*/ //déclaration de la variable que l'on va utiliser pour gérer les sauvergardes de parties
 
     public MainMenu() {
-       /*this.saveManager = new SaveManager(); */ //initialisation du gestionnaire de sauvegarde que je vais créer
-   }
+        /*this.saveManager = new SaveManager(); */ //initialisation du gestionnaire de sauvegarde que je vais créer
+    }
 
-   /**
-    * Construit et affiche le menu principal sur la fenêtre du jeu.
-    * @param window La fenêtre principale (Stage) de JavaFX.
-    */
+    /**
+     * Construit et affiche le menu principal sur la fenêtre du jeu.
+     * @param window La fenêtre principale (Stage) de JavaFX.
+     */
 
     public void show(Stage window) {
 
@@ -64,7 +64,7 @@ public class MainMenu {
 // -- II. CRÉATION DU LAYOUT -- //
         StackPane root = new StackPane(); // superposition des éléments (fond + menu)
 
-    // --- II.1 Chargement de l'image de fond, avec test suite au différent problème du départ -- //
+        // --- II.1 Chargement de l'image de fond, avec test suite au différent problème du départ -- //
         try {
             // On essaie de récupérer le fichier
             java.net.URL url = getClass().getResource("/bg.png");
@@ -90,7 +90,7 @@ public class MainMenu {
             e.printStackTrace();
         }
 
-    // -- II.2 Ajout du nom du jeu AVEC EFFETS ET ANIMATION -- //
+        // -- II.2 Ajout du nom du jeu AVEC EFFETS ET ANIMATION -- //
         Text title = new Text("MINICRAFT");
 
         // style du texte //
@@ -124,7 +124,7 @@ public class MainMenu {
 
 
 
-    // -- II.3 Création des bouton et d style de ma page -- //
+        // -- II.3 Création des bouton et d style de ma page -- //
 
         VBox menuBox = new VBox(60); // VBox(40) : On crée une colonne verticale avec 20 pixels d'espace entre chaque bouton
         menuBox.setAlignment(Pos.CENTER); // Aligne tout le contenu de la colonne exactement au milieu de l'écran
@@ -155,12 +155,18 @@ public class MainMenu {
         btnQuitter.setOnMouseExited(e -> btnQuitter.setStyle(null));
         btnQuitter.setOnAction(e -> window.close());
 
-
+        // Création du Bouton 4: Information - il n'est pas fonctionnel //
+        Button btnInfos= new Button ("Informations");
+        btnInfos.setStyle(null);
+        btnInfos.setMinWidth(largeurBouton); // On force la même largeur pour tous les boutons
+        btnInfos.setOnAction(e -> loadExistingGame(window));
+        btnInfos.setOnMouseEntered(e-> btnInfos.setStyle(styleBouton + "-fx-background-color: #3498db; -fx-scale-x: 1.1; -fx-scale-y: 1.1;"));
+        btnInfos.setOnMouseExited(e -> btnInfos.setStyle(null));
 
 // -- III : Assemblage --//
 
         // On ajoute les 3 boutons dans la colonne (VBox) //
-        menuBox.getChildren().addAll(title, btnNewGame, btnLoadGame, btnQuitter);
+        menuBox.getChildren().addAll(title, btnNewGame, btnLoadGame, btnQuitter, btnInfos);
         root.getChildren().add(menuBox);
         Scene menuScene = new Scene(root, 1000, 700); // On crée la scène (le contenu) avec une taille de 800x600 pixels
 
@@ -180,8 +186,15 @@ public class MainMenu {
     private void startNewGame(Stage window) {
         System.out.println("Création d'un nouveau monde !");
 
-            Main game = new Main(); // On crée une instance de la classe Main //
-            game.launchGame(window); // On lance le moteur de jeu //
+        // Arrêter la musique du menu avant de lancer le jeu
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+        }
+
+        // ON N'APPELLE PLUS Main DIRECTEMENT ICI !
+        // On utilise notre classe GameScene qui fait le lien
+        GameScene gameScene = new GameScene(window, this);
+        gameScene.show();
     }
 
     /**
