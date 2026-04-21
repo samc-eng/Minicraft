@@ -44,7 +44,7 @@ public class GameScene {
         this.gameView = gameEngine.getGameView(stage, this.scene);
 
         // --- ÉTAPE 3 : CRÉATION DU BOUTON DE RETOUR ---
-        Button btnBack = new Button("Menu principale (L)");
+        Button btnBack = new Button("Menu principale (ESC)");
         styleButton(btnBack); // Application du design CSS
 
         // Définit ce qui se passe quand on clique sur le bouton à la souris
@@ -106,7 +106,7 @@ public class GameScene {
         // --- GESTION DU CLAVIER (TOUCHE L) ---
         // On ajoute un filtre sur la fenêtre pour intercepter la touche L avant tout le monde
         stage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-            if (event.getCode() == KeyCode.L) {
+            if (event.getCode() == KeyCode.ESCAPE) {
                 System.out.println(">>> TOUCHE L DÉTECTÉE PAR LE STAGE <<<");
                 returnToMenu();
                 event.consume(); // On "consomme" l'événement pour qu'il ne s'envoie pas au jeu
