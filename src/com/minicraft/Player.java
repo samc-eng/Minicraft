@@ -215,4 +215,13 @@ public class Player {
 	public double getCenterX() {return this.x+Config.blockSize/2;}
 	public double getCenterY() {return this.y+Config.blockSize/2;}
 	public Inventory getInventory() {return this.inventory;}
+
+	public void setX(double newX) {
+		this.x = newX;
+	}
+
+	// Permet de modifier la position Y du joueur
+	public void setY(double newY) {
+		this.y = newY;
+	}
 }

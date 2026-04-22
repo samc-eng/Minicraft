@@ -14,6 +14,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.media.*;
+import java.util.*;
 
 /**
  * Interface graphique d'accueil du jeu.
@@ -130,45 +131,43 @@ public class MainMenu {
         menuBox.setAlignment(Pos.CENTER); // Aligne tout le contenu de la colonne exactement au milieu de l'écran
         menuBox.setStyle("-fx-background-color: transparent; -fx-padding: 50;");
 
-        // Création du Bouton 1 permettant de débuter une nouvelle partie - il est fonctionnel //
+        // Création du Bouton 1 permettant de débuter une nouvelle partie
         Button btnNewGame = new Button("Créer un nouveau monde");
-        btnNewGame.setMinWidth(largeurBouton); // On force la même largeur pour tous
-        btnNewGame.setStyle(null);
+        btnNewGame.setMinWidth(largeurBouton);
+        btnNewGame.setStyle(null); // On repasse en style par défaut (rectangle gris)
         btnNewGame.setOnAction(e -> startNewGame(window));
         btnNewGame.setOnMouseEntered(e-> btnNewGame.setStyle(styleBouton + "-fx-background-color: #3498db; -fx-scale-x: 1.1; -fx-scale-y: 1.1;"));
         btnNewGame.setOnMouseExited(e -> btnNewGame.setStyle(null));
 
-        // Création du Bouton 2 permettant de reprendre la partie précédente, à mettre en place avec le saveManager (pas encore réaliser) //
+        // Création du Bouton 2 pour continuer
         Button btnLoadGame = new Button("Continuer la partie");
+        btnLoadGame.setMinWidth(largeurBouton);
         btnLoadGame.setStyle(null);
-        btnLoadGame.setMinWidth(largeurBouton); // On force la même largeur pour tous les boutons
         btnLoadGame.setOnAction(e -> loadExistingGame(window));
         btnLoadGame.setOnMouseEntered(e-> btnLoadGame.setStyle(styleBouton + "-fx-background-color: #3498db; -fx-scale-x: 1.1; -fx-scale-y: 1.1;"));
         btnLoadGame.setOnMouseExited(e -> btnLoadGame.setStyle(null));
 
-        // Création du Bouton 3: quitter - il est fonctionnel //
+        // Création du Bouton 3: quitter
         Button btnQuitter= new Button ("Quitter");
+        btnQuitter.setMinWidth(largeurBouton);
         btnQuitter.setStyle(null);
-        btnQuitter.setMinWidth(largeurBouton); // On force la même largeur pour tous les boutons
-        btnQuitter.setOnAction(e -> loadExistingGame(window));
         btnQuitter.setOnMouseEntered(e-> btnQuitter.setStyle(styleBouton + "-fx-background-color: #3498db; -fx-scale-x: 1.1; -fx-scale-y: 1.1;"));
         btnQuitter.setOnMouseExited(e -> btnQuitter.setStyle(null));
         btnQuitter.setOnAction(e -> window.close());
 
-        // Création du Bouton 4: Information - il n'est pas fonctionnel //
+        // Création du Bouton 4: Information
         Button btnInfos= new Button ("Informations");
+        btnInfos.setMinWidth(largeurBouton);
         btnInfos.setStyle(null);
-        btnInfos.setMinWidth(largeurBouton); // On force la même largeur pour tous les boutons
-        btnInfos.setOnAction(e -> loadExistingGame(window));
         btnInfos.setOnMouseEntered(e-> btnInfos.setStyle(styleBouton + "-fx-background-color: #3498db; -fx-scale-x: 1.1; -fx-scale-y: 1.1;"));
         btnInfos.setOnMouseExited(e -> btnInfos.setStyle(null));
 
 // -- III : Assemblage --//
 
-        // On ajoute les 3 boutons dans la colonne (VBox) //
+        // On ajoute les 4 boutons dans la colonne (VBox) //
         menuBox.getChildren().addAll(title, btnNewGame, btnLoadGame, btnQuitter, btnInfos);
         root.getChildren().add(menuBox);
-        Scene menuScene = new Scene(root, 1000, 700); // On crée la scène (le contenu) avec une taille de 800x600 pixels
+        Scene menuScene = new Scene(root, 1000, 700);
 
         // On place la scène dans la fenêtre (Stage) //
         window.setScene(menuScene);
@@ -186,13 +185,10 @@ public class MainMenu {
     private void startNewGame(Stage window) {
         System.out.println("Création d'un nouveau monde !");
 
-        // Arrêter la musique du menu avant de lancer le jeu
         if (mediaPlayer != null) {
             mediaPlayer.stop();
         }
 
-        // ON N'APPELLE PLUS Main DIRECTEMENT ICI !
-        // On utilise notre classe GameScene qui fait le lien
         GameScene gameScene = new GameScene(window, this);
         gameScene.show();
     }
@@ -202,8 +198,54 @@ public class MainMenu {
      */
 
     private void loadExistingGame(Stage window) {
-        // TODO : Ouvrir un sous-menu pour choisir le fichier de sauvegarde,
-        // puis appeler saveManager.loadGame("nomDuFichier");
-        /*saveManager.loadGame("save1.txt");*/
+        Scanner sc = SaveManager.getSaveScanner();
+
+        if (sc != null && sc.hasNextLine()) {
+            if (mediaPlayer != null) mediaPlayer.stop();
+
+            // 1. Lire les données du joueur
+            String[] pData = sc.nextLine().split(",");
+            double px = Double.parseDouble(pData[0]);
+            double py = Double.parseDouble(pData[1]);
+            int roche = Integer.parseInt(pData[2]);
+            int bois = Integer.parseInt(pData[3]);
+
+            // 2. Créer le moteur et la scène
+            GameScene gameScene = new GameScene(window, this);
+            Level lvl = gameScene.getGameEngine().getLevel();
+
+            // 3. Lire les dimensions et les maps
+            String[] dimensions = sc.nextLine().split(",");
+            int w = Integer.parseInt(dimensions[0]);
+            int h = Integer.parseInt(dimensions[1]);
+
+            // Charger le sol
+            String[] floorData = sc.nextLine().split(",");
+            int[][] newFloor = new int[w][h];
+            int idx = 0;
+            for(int i=0; i<w; i++) for(int j=0; j<h; j++) newFloor[i][j] = Integer.parseInt(floorData[idx++]);
+
+            // Charger les blocs (Arbres/Roches)
+            String[] blocksData = sc.nextLine().split(",");
+            int[][] newBlocks = new int[w][h];
+            idx = 0;
+            for(int i=0; i<w; i++) for(int j=0; j<h; j++) newBlocks[i][j] = Integer.parseInt(blocksData[idx++]);
+
+            // 4. Appliquer tout au jeu
+            lvl.setFloorArray(newFloor);
+            lvl.setBlocksArray(newBlocks);
+
+            Player p = gameScene.getGameEngine().getPlayer();
+            p.setX(px);
+            p.setY(py);
+
+            // --- REDONNER L'INVENTAIRE AU JOUEUR ---
+            // On utilise la méthode add de Samuel pour injecter les ressources chargées
+            p.getInventory().add(1, roche); // ID 1 pour la roche
+            p.getInventory().add(2, bois);  // ID 2 pour le bois
+
+            gameScene.show();
+            sc.close();
+        }
     }
 }

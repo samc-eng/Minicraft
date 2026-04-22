@@ -19,6 +19,7 @@ public class Main extends Application {
     private double heightScreen;
     private InventoryUI inventaireUI;
     private boolean inventaireOuvert = false;
+    private GraphicsContext gc; // Ajouté si nécessaire pour certains rendus
     private CraftingUI craftingUI;
     private boolean craftingOpen = false;
 
@@ -43,8 +44,18 @@ public class Main extends Application {
         return this.gameRoot;
     }
 
+    /**
+     * GETTER : Permet d'accéder au joueur.
+     */
     public Player getPlayer() {
         return this.player;
+    }
+
+    /**
+     * GETTER : Permet d'accéder au niveau (Ajouté pour la sauvegarde).
+     */
+    public Level getLevel() {
+        return this.level;
     }
 
     // MODIFICATION : On reçoit la Scene pour initialiser l'InputHandler proprement
