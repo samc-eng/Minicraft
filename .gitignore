@@ -10,4 +10,8 @@
 **/.checkstyle
 **/*.iml
 **/*.idea
+<<<<<<< HEAD
 .vscode/
+=======
+save.txt
+>>>>>>> origin/interface-menu-suite
