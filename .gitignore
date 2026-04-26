@@ -10,3 +10,4 @@
 **/.checkstyle
 **/*.iml
 **/*.idea
+.vscode/
