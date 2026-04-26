@@ -10,7 +10,6 @@ import javafx.geometry.Pos;
 import javafx.animation.Animation;
 import javafx.animation.ScaleTransition;
 import javafx.util.Duration;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
@@ -54,10 +53,10 @@ public class MainMenu {
 
 // -- I. Mise en place de la musique de fond -- //
         try {
-            Media hit = new Media(getClass().getResource("/menu_music.mp3").toExternalForm());
+            Media hit = new Media(new java.io.File("resources/menu_music.mp3").toURI().toString());
             this.mediaPlayer = new MediaPlayer(hit);
-            this.mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE); // Boucle infinie
-            this.mediaPlayer.setVolume(0.5); // Volume à 50%
+            this.mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+            this.mediaPlayer.setVolume(0.5);
             this.mediaPlayer.play();
         } catch (Exception e) {
             System.out.println("Erreur audio : " + e.getMessage());
@@ -68,23 +67,16 @@ public class MainMenu {
 
         // --- II.1 Chargement de l'image de fond, avec test suite au différent problème du départ -- //
         try {
-            // On essaie de récupérer le fichier
-            java.net.URL url = getClass().getResource("/bg.png");
-
-            if (url == null) {
-                // SI CA ARRIVE ICI : Le fichier n'est pas dans le dossier compilé
-                System.out.println("❌ Fichier introuvable dans le dossier out/production. Fais un REBUILD PROJECT !");
-                root.setStyle("-fx-background-color: red;"); // Le fond devient ROUGE pour t'alerter
+            java.io.File fichier = new java.io.File("resources/bg.png");
+            if (!fichier.exists()) {
+                System.out.println("❌ Fichier bg.png introuvable !");
+                root.setStyle("-fx-background-color: red;");
             } else {
-                // C'est à proprement dit la partie d'affichage //
-                javafx.scene.image.Image backgroundImage = new javafx.scene.image.Image(url.toExternalForm());
+                javafx.scene.image.Image backgroundImage = new javafx.scene.image.Image(fichier.toURI().toString());
                 javafx.scene.image.ImageView backgroundView = new javafx.scene.image.ImageView(backgroundImage);
-
                 backgroundView.fitWidthProperty().bind(window.widthProperty());
                 backgroundView.fitHeightProperty().bind(window.heightProperty());
                 backgroundView.setPreserveRatio(false);
-
-                // On l'ajoute à l'index 0 pour être sûr qu'elle soit DERRIÈRE
                 root.getChildren().add(0, backgroundView);
                 System.out.println("✅ Image chargée !");
             }

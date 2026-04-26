@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "MiniCraft",
+            "request": "launch",
+            "mainClass": "com.minicraft.Main",
+            "vmArgs": "--module-path /home/sam/Téléchargements/openjfx-25.0.1_linux-x64_bin-sdk/javafx-sdk-25.0.1/lib --add-modules javafx.controls,javafx.graphics,javafx.media"
+        }
+    ]
+}

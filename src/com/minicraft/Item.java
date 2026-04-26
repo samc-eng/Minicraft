@@ -23,8 +23,6 @@ public abstract class Item {
     	//effet flottant
         double floatingOffset = Math.sin(System.currentTimeMillis() * 0.005) * 4;
 
-        ItemDefinition def = ItemRegistry.get(itemId);
-        String name = (def != null) ? def.name : "Inconnu";
 
         // Couleur selon l'item
         switch (itemId) {

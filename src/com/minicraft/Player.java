@@ -3,10 +3,7 @@ package com.minicraft;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
-import java.util.HashMap;
-import java.util.Map;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 
 public class Player {
 	private double x;
@@ -201,7 +198,7 @@ public class Player {
 					
 			if (!seTouchent &&  inventory.has(selectedItemId, 1)) {
 				 inventory.remove(selectedItemId, 1);
-				 level.setBlocks(cibleX, cibleY, selectedItemId);
+				 level.setBlocks(cibleX*Config.blockSize, cibleY*Config.blockSize, selectedItemId);
 				 System.out.println("Bloc[" + this.selectedItemId +"] posé !");
 			}
         }
