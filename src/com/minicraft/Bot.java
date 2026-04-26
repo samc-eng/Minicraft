@@ -11,8 +11,8 @@ public class Bot {
     private double vitesse = 0.18;
     private int attackCooldown = 0;
     private static final Image BOT_SPRITE = new Image(
-    	    Bot.class.getResourceAsStream("/bot.png")
-    	);
+        new java.io.File("resources/bot.png").toURI().toString()
+    );
 
     public Bot(double x, double y) {
         this.x = x;
