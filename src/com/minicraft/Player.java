@@ -15,6 +15,8 @@ public class Player {
 	private boolean isMoved=false;
 	private int attackTimer;
 	private Inventory inventory = new Inventory();
+	private int health = 10;
+	private int invulnerabilityTimer = 0;
     private int selectedItemId = 1; // l'item actuellement en main (ID)
 	
 	public boolean up;
@@ -61,6 +63,7 @@ public class Player {
 		if (y > level.getHeight() * Config.blockSize - Config.blockSize) {y = level.getHeight() * Config.blockSize - Config.blockSize;};
 		
 		if (attackTimer>0) {attackTimer--;}
+		if (invulnerabilityTimer > 0) invulnerabilityTimer--;
 		
 		if (isMoved) { 
 			this.anim++;
@@ -218,4 +221,18 @@ public class Player {
 	public void setY(double newY) {
 		this.y = newY;
 	}
+
+	public void takeDamage(int amount) {
+		if (invulnerabilityTimer > 0) return;
+		health -= amount;
+		invulnerabilityTimer = 30;
+		if (health <= 0) {
+			health = 10;
+			x = 50;
+			y = 50;
+		}
+	}
+
+	public int getHealth() { return health; }
+
 }
