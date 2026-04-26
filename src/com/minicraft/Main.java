@@ -8,21 +8,6 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.animation.AnimationTimer;
 import javafx.scene.input.KeyCode;
-<<<<<<< HEAD
-
-
-public class Main extends Application{
-	private Player player;
-	private GraphicsContext pinceau;
-	private Level level;
-	private InputHandler input;
-	private double widthScreen;
-	private double heightScreen;
-	private InventoryUI inventaireUI;
-	private boolean inventaireOuvert=false;
-	private CraftingUI craftingUI;
-	private boolean craftingOpen=false;	
-=======
 import javafx.scene.layout.Pane;
 
 public class Main extends Application {
@@ -37,7 +22,6 @@ public class Main extends Application {
     private GraphicsContext gc; // Ajouté si nécessaire pour certains rendus
     private CraftingUI craftingUI;
     private boolean craftingOpen = false;
->>>>>>> origin/interface-menu-suite
 
     // Panneau principal qui contient le Canvas
     private Pane gameRoot;

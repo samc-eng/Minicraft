@@ -98,7 +98,6 @@ public class Level {
 	public void setBlocks(double x, double y, int type){
 		int tx = (int)(x/Config.blockSize);
 		int ty = (int)(y/Config.blockSize);
-<<<<<<< HEAD
 		
 		if (tx>=0 && ty>=0 && tx<width && ty<height) {
 			if (blocks[tx][ty]!=0 && type==0) { //mode destruction
@@ -114,24 +113,6 @@ public class Level {
 				}
 			} else if (blocks[tx][ty]==0 && type != 0) { //mode construction
 				blocks[tx][ty]=type;
-=======
-
-		if (tx >= 0 && ty >= 0 && tx < width && ty < height) {
-			// Si on appelle setBlocks avec type = 0, c'est qu'on veut CASSER
-			if (type == 0) {
-				if (blocks[tx][ty] != 0) {
-					int ancienType = blocks[tx][ty]; // On garde le type pour le drop
-					blocks[tx][ty] = 0; // ON VIDE LE BLOC (il disparaît visuellement)
-
-					// Faire tomber l'item
-					double randomX = (Math.random() - 0.5);
-					double randomY = (Math.random() - 0.5);
-					dropItem((tx + 0.5 + randomX) * Config.blockSize, (ty + 0.5 + randomY) * Config.blockSize, ancienType);
-				}
-			} else {
-				// Sinon on pose un bloc
-				blocks[tx][ty] = type;
->>>>>>> origin/interface-menu-suite
 			}
 		}
 	}
@@ -142,8 +123,6 @@ public class Level {
 		}
 		items.removeIf(item -> item.isRemoved());
 	}
-<<<<<<< HEAD
-	
 
 	public void dropItem(double x, double y, int itemId) {
 	    ItemDefinition modele = ItemRegistry.get(itemId);
@@ -158,18 +137,6 @@ public class Level {
 	    items.add(entiteAuSol);
 	}
 	
-	
-	public int getWidth() {return this.width;}
-	public int getHeight() {return this.height;}
-	public List<Item> getItems(){return this.items;}
-}
-
-
-
-
-
-=======
->>>>>>> origin/interface-menu-suite
 
 	// Getters et Setters pour la sauvegarde
 	public int[][] getFloorArray() { return this.floor; }
@@ -178,6 +145,5 @@ public class Level {
 	public void setBlocksArray(int[][] loadedBlocks) { this.blocks = loadedBlocks; }
 	public int getWidth() { return this.width; }
 	public int getHeight() { return this.height; }
-	public void dropItem(double x, double y, int type) { items.add(new Item(x, y, type)); }
 	public List<Item> getItems() { return this.items; }
 }
