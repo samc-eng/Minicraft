@@ -2,8 +2,8 @@ package com.minicraft;
 
 public class ResourceItem extends Item {
 	 
-	public ResourceItem(double x, double y, int itemID) {
-		super(x,y,itemID);
+	public ResourceItem(double x, double y, ItemStack stack) {
+		super(x,y,stack);
 	}
 	
 	@Override

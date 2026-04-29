@@ -3,8 +3,8 @@ package com.minicraft;
 public class PlaceableItem extends Item {
     private final int blockId;
 
-    public PlaceableItem(double x, double y, int itemId, int blockId) {
-        super(x, y, itemId);
+    public PlaceableItem(double x, double y, ItemStack stack, int blockId) {
+        super(x, y, stack);
         this.blockId = blockId;
     }
 

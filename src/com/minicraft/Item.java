@@ -8,13 +8,15 @@ public abstract class Item {
     protected double x;
     protected double y;
     //id de l'item
+    protected final ItemStack stack;
     protected final int itemId;
     private boolean removed = false;
 
-    public Item(double x, double y, int itemId) {
+    public Item(double x, double y, ItemStack stack) {
         this.x = x;
         this.y = y;
-        this.itemId = itemId;
+        this.stack = stack;
+        this.itemId=stack.getItemId();
     }
 
     public abstract boolean isPlaceable();
