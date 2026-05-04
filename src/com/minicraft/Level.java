@@ -15,10 +15,10 @@ public class Level {
 
 	public Level(int width, int height) {
 		try {
-			tiles[0] = new Image("file:resources/grass.png");
-			tiles[1] = new Image("file:resources/stone.png"); // Texture de pierre (sol)
-			tiles[2] = new Image("file:resources/rock.png");  // Texture de roche (objet)
-			tiles[3] = new Image("file:resources/tree.png");  // Texture d'arbre (objet)
+			tiles[0] = new Image("file:resources/textures/blocks/grass.png");
+			tiles[1] = new Image("file:resources/textures/blocks/stone.png"); // Texture de pierre (sol)
+			tiles[2] = new Image("file:resources/textures/blocks/rock.png");  // Texture de roche (objet)
+			tiles[3] = new Image("file:resources/textures/blocks/tree.png");  // Texture d'arbre (objet)
 		} catch (Exception e) {
 			System.out.println("Erreur : impossible de charger une texture !");
 		}
