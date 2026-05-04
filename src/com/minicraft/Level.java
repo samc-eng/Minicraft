@@ -106,10 +106,11 @@ public class Level {
 				
 				ItemDefinition modele = ItemRegistry.get(oldBlockID);
 				if (modele!=null) {
+					ItemStack dropStack= new ItemStack(oldBlockID, 1);
 					//drop du block aleatoire autour de sa position
 					double randomX=(Math.random()-0.5);
 					double randomY=(Math.random()-0.5);
-					dropItem((tx+1.0/2+randomX)*Config.blockSize, (ty+1.0/2+randomY)*Config.blockSize,oldBlockID);
+					dropItem((tx+1.0/2+randomX)*Config.blockSize, (ty+1.0/2+randomY)*Config.blockSize,dropStack);
 				}
 			} else if (blocks[tx][ty]==0 && type != 0) { //mode construction
 				blocks[tx][ty]=type;
@@ -124,15 +125,15 @@ public class Level {
 		items.removeIf(item -> item.isRemoved());
 	}
 
-	public void dropItem(double x, double y, int itemId) {
-	    ItemDefinition modele = ItemRegistry.get(itemId);
+	public void dropItem(double x, double y, ItemStack stack) {
+	    ItemDefinition modele = stack.getDefinition();
 	    if (modele == null) { return; }
 	    
 	    Item entiteAuSol;
 	    if (modele.placeable) {
-	        entiteAuSol = new PlaceableItem(x, y, itemId, itemId);
+	        entiteAuSol = new PlaceableItem(x, y, stack, stack.getItemId());
 	    } else {
-	        entiteAuSol = new ResourceItem(x, y, itemId);
+	        entiteAuSol = new ResourceItem(x, y, stack);
 	    }
 	    items.add(entiteAuSol);
 	}
