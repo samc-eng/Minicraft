@@ -8,40 +8,28 @@ import java.util.List;
 public class Level {
 	private int width;
 	private int height;
-	private Image[] tiles = new Image[256];
 	private int[][] floor;
 	private int[][] blocks;
 	private List<Item> items = new ArrayList<>();
 
 	public Level(int width, int height) {
-		try {
-			tiles[0] = TextureManager.getTexture("blocks/grass.png");
-			tiles[1] = TextureManager.getTexture("blocks/stone.png"); 
-			tiles[2] = TextureManager.getTexture("blocks/rock.png"); 
-			tiles[3] = TextureManager.getTexture("blocks/tree.png"); 
-		} catch (Exception e) {
-			System.out.println("Erreur : impossible de charger une texture !");
-		}
-
 		this.width = width;
 		this.height = height;
 		this.floor = new int[width][height];
 		this.blocks = new int[width][height];
 
-		// --- GÉNÉRATION DU MONDE CORRIGÉE ---
+		// génération provisoire du monde
 		for (int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				// Par défaut, le sol est de l'herbe (ID 0)
-				floor[i][j] = 0;
+				floor[i][j] = 1;
 				blocks[i][j] = 0;
 
 				double rand = Math.random();
 				if (rand < 0.05) {
-					// On place une ROCHE (ID 2 pour le visuel, mais ID 1 dans le tableau blocks pour la logique)
-					blocks[i][j] = 1;
+					blocks[i][j] = 5;
 				} else if (rand < 0.07) { // 0.02 de chance (0.05 + 0.02)
-					// On place un ARBRE (ID 3)
-					blocks[i][j] = 3;
+					blocks[i][j] = 25;
 				}
 			}
 		}
@@ -78,11 +66,12 @@ public class Level {
 	}
 
 	private void renderTile(GraphicsContext gc, int id, int x, int y) {
-		if (id >= 0 && id < tiles.length && tiles[id] != null) {
-			gc.drawImage(tiles[id],
-					0, 0, 16, 16,
-					x * Config.blockSize, y * Config.blockSize,
-					Config.blockSize, Config.blockSize
+		ItemDefinition def = ItemRegistry.get(id);
+		if (def != null && def.texture != null) {
+			gc.drawImage(def.texture,
+				0, 0, 16, 16,
+				x * Config.blockSize, y * Config.blockSize,
+				Config.blockSize, Config.blockSize
 			);
 		}
 	}

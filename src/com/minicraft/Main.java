@@ -23,7 +23,7 @@ public class Main extends Application {
     private double heightScreen;
     private InventoryUI inventaireUI;
     private boolean inventaireOuvert = false;
-    private GraphicsContext gc; // Ajouté si nécessaire pour certains rendus
+    //private GraphicsContext gc; // Ajouté si nécessaire pour certains rendus
     private CraftingUI craftingUI;
     private boolean craftingOpen = false;
     private List<Bot> bots = new ArrayList<>();

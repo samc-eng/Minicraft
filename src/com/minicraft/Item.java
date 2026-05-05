@@ -24,22 +24,15 @@ public abstract class Item {
     public void render(GraphicsContext gc) {
     	//effet flottant
         double floatingOffset = Math.sin(System.currentTimeMillis() * 0.005) * 4;
-
-
-        // Couleur selon l'item
-        switch (itemId) {
-            case 1  -> gc.setFill(Color.LIGHTGRAY);  // Pierre
-            case 2  -> gc.setFill(Color.GRAY);        // Mur
-            case 3  -> gc.setFill(Color.BROWN);       // Planche
-            case 12 -> gc.setFill(Color.TAN);         // Pioche bois
-            case 13 -> gc.setFill(Color.SILVER);      // Pioche fer
-            default -> gc.setFill(Color.PINK);        // ID inconnu
+    
+        ItemDefinition def = ItemRegistry.get(itemId);
+        if (def != null && def.texture != null) {
+            gc.drawImage(def.texture, x, y + floatingOffset, Config.itemSize, Config.itemSize);
+        } else {
+            // fallback si texture manquante
+            gc.setFill(Color.PINK);
+            gc.fillRect(x, y + floatingOffset, Config.itemSize, Config.itemSize);
         }
-
-        gc.fillRect(x, y + floatingOffset, Config.itemSize, Config.itemSize);
-        gc.setStroke(Color.BLACK);
-        gc.setLineWidth(0.5);
-        gc.strokeRect(x, y + floatingOffset, Config.itemSize, Config.itemSize);
     }
 
     public void tick(Player player) {
