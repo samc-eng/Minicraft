@@ -26,6 +26,7 @@ public class Main extends Application {
     //private GraphicsContext gc; // Ajouté si nécessaire pour certains rendus
     private CraftingUI craftingUI;
     private boolean craftingOpen = false;
+    private HUD hud;
     private List<Bot> bots = new ArrayList<>();
 
     // Panneau principal qui contient le Canvas
@@ -85,6 +86,7 @@ public class Main extends Application {
         this.input = new InputHandler(scene);
 
         craftingUI = new CraftingUI();
+        hud = new HUD();
         craftingUI.addRecipe(new Recipe("Mur de pierre", 3, 1).addCost(1, 5));
         inventaireUI = new InventoryUI();
 
@@ -148,7 +150,7 @@ public class Main extends Application {
                     pinceau.fillRect(10, 10, 100, 30);
                     pinceau.setFill(Color.WHITE);
                     pinceau.fillText("Roche : " + player.getInventory().getAmount(1), 20, 30);
-                    pinceau.fillText("Vie : " + player.getHealth(), 20, 50);
+                    hud.render(pinceau, player);
                 }
                 input.update();
             }
