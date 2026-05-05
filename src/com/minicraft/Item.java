@@ -56,6 +56,7 @@ public abstract class Item {
 
    
     public int getItemId()       { return itemId; }
+    public ItemStack getStack()  { return stack; }
     public double getX()         { return x; }
     public double getY()         { return y; }
     public double getCenterX()   { return x + Config.itemSize / 2; }

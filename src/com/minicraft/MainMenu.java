@@ -235,8 +235,8 @@ public class MainMenu {
 
             // --- REDONNER L'INVENTAIRE AU JOUEUR ---
             // On utilise la méthode add de Samuel pour injecter les ressources chargées
-            p.getInventory().add(1, roche); // ID 1 pour la roche
-            p.getInventory().add(2, bois);  // ID 2 pour le bois
+            p.getInventory().add(new ItemStack(1, roche));    // ID 1 = Grass
+            p.getInventory().add(new ItemStack(100, bois));   // ID 100 = Wood
 
             gameScene.show();
             sc.close();

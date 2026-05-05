@@ -94,25 +94,30 @@ public class Level {
 		return blocks[tx][ty];
 	}
 
-	// --- MÉTHODE DE DESTRUCTION CORRIGÉE ---
+	//Modification du monde
 	public void setBlocks(double x, double y, int type){
 		int tx = (int)(x/Config.blockSize);
 		int ty = (int)(y/Config.blockSize);
 		
 		if (tx>=0 && ty>=0 && tx<width && ty<height) {
-			if (blocks[tx][ty]!=0 && type==0) { //mode destruction
-				int oldBlockID=blocks[tx][ty];
-				blocks[tx][ty]=0;
-				
-				ItemDefinition modele = ItemRegistry.get(oldBlockID);
-				if (modele!=null) {
-					ItemStack dropStack= new ItemStack(oldBlockID, 1);
-					//drop du block aleatoire autour de sa position
-					double randomX=(Math.random()-0.5);
-					double randomY=(Math.random()-0.5);
-					dropItem((tx+1.0/2+randomX)*Config.blockSize, (ty+1.0/2+randomY)*Config.blockSize,dropStack);
-				}
-			} else if (blocks[tx][ty]==0 && type != 0) { //mode construction
+			if (type == 0 && blocks[tx][ty] != 0) {
+				int oldBlockId = blocks[tx][ty];
+				blocks[tx][ty] = 0;
+
+				double dropX = (tx + 0.5 + (Math.random() - 0.5)) * Config.blockSize;
+				double dropY = (ty + 0.5 + (Math.random() - 0.5)) * Config.blockSize;
+
+				// Pour chaque drop possible de ce bloc
+				for (Drop drop : DropTable.get(oldBlockId)) {
+					if (drop.rolls()) {
+						// On crée un ItemStack avec la bonne quantité
+						ItemStack stack = new ItemStack(drop.itemId, drop.rollAmount());
+						// On le droppe au sol
+						dropItem(dropX, dropY, stack);
+					}
+    		}
+		}
+			else if (blocks[tx][ty]==0 && type != 0) { //mode construction
 				blocks[tx][ty]=type;
 			}
 		}

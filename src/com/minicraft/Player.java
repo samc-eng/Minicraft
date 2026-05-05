@@ -85,7 +85,7 @@ public class Player {
 	        double distance = Math.sqrt(dx * dx + dy * dy);
 
 	        if (distance < 12) { 
-	        	inventory.add(item.getItemId(), 1);
+	        	inventory.add(item.getStack());
 	            item.remove();        
 	        }
 		}		
