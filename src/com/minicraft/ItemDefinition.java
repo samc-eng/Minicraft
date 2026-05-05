@@ -18,6 +18,6 @@ public class ItemDefinition {
         this.placeable = placeable;
         this.hasDurability = hasDurability;
         this.maxDurability = maxDurability;
-        this.texture=new Image("file:resources/textures/" + imagePath);
+        this.texture=TextureManager.getTexture(imagePath);
     }
 }

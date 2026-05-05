@@ -67,8 +67,9 @@ public class Main extends Application {
     public void launchGame(Stage primaryStage, Scene scene) {
         Canvas canva = new Canvas(Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT);
         this.pinceau = canva.getGraphicsContext2D();
-        this.player = new Player(50, 50);
         this.level = new Level(4000, 4000);
+        double[] spawn=level.getSafeSpawn();
+        this.player = new Player(spawn[0], spawn[1]);
         for (int i=0; i<15; i++){
             this.bots.add(new Bot(200 + i*40,250));
         }

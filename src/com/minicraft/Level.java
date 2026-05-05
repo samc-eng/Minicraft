@@ -15,10 +15,10 @@ public class Level {
 
 	public Level(int width, int height) {
 		try {
-			tiles[0] = new Image("file:resources/textures/blocks/grass.png");
-			tiles[1] = new Image("file:resources/textures/blocks/stone.png"); // Texture de pierre (sol)
-			tiles[2] = new Image("file:resources/textures/blocks/rock.png");  // Texture de roche (objet)
-			tiles[3] = new Image("file:resources/textures/blocks/tree.png");  // Texture d'arbre (objet)
+			tiles[0] = TextureManager.getTexture("blocks/grass.png");
+			tiles[1] = TextureManager.getTexture("blocks/stone.png"); 
+			tiles[2] = TextureManager.getTexture("blocks/rock.png"); 
+			tiles[3] = TextureManager.getTexture("blocks/tree.png"); 
 		} catch (Exception e) {
 			System.out.println("Erreur : impossible de charger une texture !");
 		}
@@ -137,6 +137,36 @@ public class Level {
 	    }
 	    items.add(entiteAuSol);
 	}
+
+	//on trouve un point sûr pour apparaitre
+	public double[] getSafeSpawn(){
+		boolean isSafe=false;
+		int tx = 50;
+		int ty = 50;
+
+		while (! isSafe){
+			tx = (int) (Math.random() * (width - 4)) + 2;
+            ty = (int) (Math.random() * (height - 4)) + 2;
+
+			isSafe = true; 
+
+            //on scanne un carré de 3x3 autour de ce point
+            for (int i = tx - 1; i <= tx + 1; i++) {
+                for (int j = ty - 1; j <= ty + 1; j++) {
+                    if (blocks[i][j] != 0) { 
+                        isSafe = false; 
+                        break; 
+                    }
+                }
+                if (!isSafe) break;
+            }
+		}
+
+		double pixelX = tx * Config.blockSize + (Config.blockSize / 2.0);
+        double pixelY = ty * Config.blockSize + (Config.blockSize / 2.0);
+
+        return new double[]{pixelX, pixelY};
+	}
 	
 
 	// Getters et Setters pour la sauvegarde
@@ -146,5 +176,5 @@ public class Level {
 	public void setBlocksArray(int[][] loadedBlocks) { this.blocks = loadedBlocks; }
 	public int getWidth() { return this.width; }
 	public int getHeight() { return this.height; }
-	public List<Item> getItems() { return this.items; }
+	public List<Item> getItems() { return this.items;}
 }
