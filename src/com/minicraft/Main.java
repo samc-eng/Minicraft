@@ -132,7 +132,7 @@ public class Main extends Application {
                     for (Bot bot : bots) {
                         bot.tick(level, player);
                     }
-                    level.updateItems(player);
+                    level.updateEntities(player);
                 }
 
                 player.render(pinceau);
@@ -144,10 +144,17 @@ public class Main extends Application {
                     inventaireUI.render(pinceau, player);
                 } else {
                     pinceau.setFill(Color.color(0, 0, 0, 0.5));
-                    pinceau.fillRect(10, 10, 100, 30);
+                    pinceau.fillRect(10, 10, 120, 25); // Fond pour la roche
                     pinceau.setFill(Color.WHITE);
-                    pinceau.fillText("Roche : " + player.getInventory().getAmount(1), 20, 30);
-                    pinceau.fillText("Vie : " + player.getHealth(), 20, 50);
+                    pinceau.setFont(javafx.scene.text.Font.font("Arial", 14));
+                    pinceau.fillText("Roche : " + player.getInventory().getAmount(1), 20, 28);
+
+                    // --- Affichage VIE ---
+                    pinceau.setFill(Color.color(0, 0, 0, 0.5));
+                    pinceau.fillRect(10, 40, 120, 25); // Fond identique pour la vie (décalé vers le bas)
+                    pinceau.setFill(Color.WHITE);
+                    pinceau.fillText("Vie : " + player.getHealth(), 20, 58);
+
                 }
                 input.update();
             }
