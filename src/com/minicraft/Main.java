@@ -71,8 +71,9 @@ public class Main extends Application {
         this.level = new Level(4000, 4000);
         double[] spawn=level.getSafeSpawn();
         this.player = new Player(spawn[0], spawn[1]);
-        for (int i=0; i<15; i++){
-            this.bots.add(new Bot(200 + i*40,250));
+        for (int i=0; i<10; i++){
+            double[] spawnBot=level.getSafeSpawn();
+            this.bots.add(new Bot(spawn[0]+ i*40, spawn[1]));
         }
 
         this.gameRoot = new Pane();
