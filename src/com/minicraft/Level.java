@@ -8,40 +8,28 @@ import java.util.List;
 public class Level {
 	private int width;
 	private int height;
-	private Image[] tiles = new Image[256];
 	private int[][] floor;
 	private int[][] blocks;
 	private List<Item> items = new ArrayList<>();
 
 	public Level(int width, int height) {
-		try {
-			tiles[0] = new Image("file:resources/grass.png");
-			tiles[1] = new Image("file:resources/stone.png"); // Texture de pierre (sol)
-			tiles[2] = new Image("file:resources/rock.png");  // Texture de roche (objet)
-			tiles[3] = new Image("file:resources/tree.png");  // Texture d'arbre (objet)
-		} catch (Exception e) {
-			System.out.println("Erreur : impossible de charger une texture !");
-		}
-
 		this.width = width;
 		this.height = height;
 		this.floor = new int[width][height];
 		this.blocks = new int[width][height];
 
-		// --- GÉNÉRATION DU MONDE CORRIGÉE ---
+		// génération provisoire du monde
 		for (int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
 				// Par défaut, le sol est de l'herbe (ID 0)
-				floor[i][j] = 0;
+				floor[i][j] = 1;
 				blocks[i][j] = 0;
 
 				double rand = Math.random();
 				if (rand < 0.05) {
-					// On place une ROCHE (ID 2 pour le visuel, mais ID 1 dans le tableau blocks pour la logique)
-					blocks[i][j] = 1;
+					blocks[i][j] = 5;
 				} else if (rand < 0.07) { // 0.02 de chance (0.05 + 0.02)
-					// On place un ARBRE (ID 3)
-					blocks[i][j] = 3;
+					blocks[i][j] = 25;
 				}
 			}
 		}
@@ -78,11 +66,12 @@ public class Level {
 	}
 
 	private void renderTile(GraphicsContext gc, int id, int x, int y) {
-		if (id >= 0 && id < tiles.length && tiles[id] != null) {
-			gc.drawImage(tiles[id],
-					0, 0, 16, 16,
-					x * Config.blockSize, y * Config.blockSize,
-					Config.blockSize, Config.blockSize
+		ItemDefinition def = ItemRegistry.get(id);
+		if (def != null && def.texture != null) {
+			gc.drawImage(def.texture,
+				0, 0, 16, 16,
+				x * Config.blockSize, y * Config.blockSize,
+				Config.blockSize, Config.blockSize
 			);
 		}
 	}
@@ -94,25 +83,30 @@ public class Level {
 		return blocks[tx][ty];
 	}
 
-	// --- MÉTHODE DE DESTRUCTION CORRIGÉE ---
+	//Modification du monde
 	public void setBlocks(double x, double y, int type){
 		int tx = (int)(x/Config.blockSize);
 		int ty = (int)(y/Config.blockSize);
 		
 		if (tx>=0 && ty>=0 && tx<width && ty<height) {
-			if (blocks[tx][ty]!=0 && type==0) { //mode destruction
-				int oldBlockID=blocks[tx][ty];
-				blocks[tx][ty]=0;
-				
-				ItemDefinition modele = ItemRegistry.get(oldBlockID);
-				if (modele!=null) {
-					ItemStack dropStack= new ItemStack(oldBlockID, 1);
-					//drop du block aleatoire autour de sa position
-					double randomX=(Math.random()-0.5);
-					double randomY=(Math.random()-0.5);
-					dropItem((tx+1.0/2+randomX)*Config.blockSize, (ty+1.0/2+randomY)*Config.blockSize,dropStack);
-				}
-			} else if (blocks[tx][ty]==0 && type != 0) { //mode construction
+			if (type == 0 && blocks[tx][ty] != 0) {
+				int oldBlockId = blocks[tx][ty];
+				blocks[tx][ty] = 0;
+
+				double dropX = (tx + 0.5 + (Math.random() - 0.5)) * Config.blockSize;
+				double dropY = (ty + 0.5 + (Math.random() - 0.5)) * Config.blockSize;
+
+				// Pour chaque drop possible de ce bloc
+				for (Drop drop : DropTable.get(oldBlockId)) {
+					if (drop.rolls()) {
+						// On crée un ItemStack avec la bonne quantité
+						ItemStack stack = new ItemStack(drop.itemId, drop.rollAmount());
+						// On le droppe au sol
+						dropItem(dropX, dropY, stack);
+					}
+    		}
+		}
+			else if (blocks[tx][ty]==0 && type != 0) { //mode construction
 				blocks[tx][ty]=type;
 			}
 		}
@@ -137,6 +131,36 @@ public class Level {
 	    }
 	    items.add(entiteAuSol);
 	}
+
+	//on trouve un point sûr pour apparaitre
+	public double[] getSafeSpawn(){
+		boolean isSafe=false;
+		int tx = 50;
+		int ty = 50;
+
+		while (! isSafe){
+			tx = (int) (Math.random() * (width - 4)) + 2;
+            ty = (int) (Math.random() * (height - 4)) + 2;
+
+			isSafe = true; 
+
+            //on scanne un carré de 3x3 autour de ce point
+            for (int i = tx - 1; i <= tx + 1; i++) {
+                for (int j = ty - 1; j <= ty + 1; j++) {
+                    if (blocks[i][j] != 0) { 
+                        isSafe = false; 
+                        break; 
+                    }
+                }
+                if (!isSafe) break;
+            }
+		}
+
+		double pixelX = tx * Config.blockSize + (Config.blockSize / 2.0);
+        double pixelY = ty * Config.blockSize + (Config.blockSize / 2.0);
+
+        return new double[]{pixelX, pixelY};
+	}
 	
 
 	// Getters et Setters pour la sauvegarde
@@ -146,5 +170,5 @@ public class Level {
 	public void setBlocksArray(int[][] loadedBlocks) { this.blocks = loadedBlocks; }
 	public int getWidth() { return this.width; }
 	public int getHeight() { return this.height; }
-	public List<Item> getItems() { return this.items; }
+	public List<Item> getItems() { return this.items;}
 }

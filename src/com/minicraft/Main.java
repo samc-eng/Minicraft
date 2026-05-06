@@ -23,9 +23,10 @@ public class Main extends Application {
     private double heightScreen;
     private InventoryUI inventaireUI;
     private boolean inventaireOuvert = false;
-    private GraphicsContext gc; // Ajouté si nécessaire pour certains rendus
+    //private GraphicsContext gc; // Ajouté si nécessaire pour certains rendus
     private CraftingUI craftingUI;
     private boolean craftingOpen = false;
+    private HUD hud;
     private List<Bot> bots = new ArrayList<>();
 
     // Panneau principal qui contient le Canvas
@@ -67,10 +68,12 @@ public class Main extends Application {
     public void launchGame(Stage primaryStage, Scene scene) {
         Canvas canva = new Canvas(Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT);
         this.pinceau = canva.getGraphicsContext2D();
-        this.player = new Player(50, 50);
         this.level = new Level(4000, 4000);
-        for (int i=0; i<15; i++){
-            this.bots.add(new Bot(200 + i*40,250));
+        double[] spawn=level.getSafeSpawn();
+        this.player = new Player(spawn[0], spawn[1]);
+        for (int i=0; i<10; i++){
+            double[] spawnBot=level.getSafeSpawn();
+            this.bots.add(new Bot(spawn[0]+ i*40, spawn[1]));
         }
 
         this.gameRoot = new Pane();
@@ -84,6 +87,7 @@ public class Main extends Application {
         this.input = new InputHandler(scene);
 
         craftingUI = new CraftingUI();
+        hud = new HUD();
         craftingUI.addRecipe(new Recipe("Mur de pierre", 3, 1).addCost(1, 5));
         inventaireUI = new InventoryUI();
 
@@ -147,7 +151,7 @@ public class Main extends Application {
                     pinceau.fillRect(10, 10, 100, 30);
                     pinceau.setFill(Color.WHITE);
                     pinceau.fillText("Roche : " + player.getInventory().getAmount(1), 20, 30);
-                    pinceau.fillText("Vie : " + player.getHealth(), 20, 50);
+                    hud.render(pinceau, player);
                 }
                 input.update();
             }

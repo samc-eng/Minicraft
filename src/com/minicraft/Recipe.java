@@ -35,7 +35,7 @@ public class Recipe {
 			for (Integer id : costs.keySet()) {
 				inventaire.remove(id, costs.get(id));
 			}
-			inventaire.add(resultId, resultCount);
+			inventaire.add(new ItemStack(resultId, resultCount));
 			System.out.println("Craft réussi : " + this.name);
 		}
 	}

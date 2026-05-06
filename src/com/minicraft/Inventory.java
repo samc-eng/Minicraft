@@ -7,23 +7,20 @@ public class Inventory {
 	private List<ItemStack> inventaire = new ArrayList<>();
 	
 	//ajout d'un item de type id
-	public void add(int itemId, int count) {
-        if (!ItemRegistry.exists(itemId)) return;
+	public void add(ItemStack stack) {
+        ItemDefinition def = ItemRegistry.get(stack.getItemId());
+        if (def == null) return;
 
-        ItemDefinition def = ItemRegistry.get(itemId);
-
-        // Si stackable, on cherche une pile existante non pleine
+        // Stackable → cherche pile existante
         if (def.maxStack > 1) {
-            for (ItemStack stack : inventaire) {
-                if (stack.getItemId() == itemId && !stack.isFull()) {
-                    stack.add(count);
+            for (ItemStack s : inventaire) {
+                if (s.getItemId() == stack.getItemId() && !s.isFull()) {
+                    s.add(stack.getAmount());
                     return;
                 }
             }
         }
-
-        // Sinon (outil ou pas de place) → nouvelle pile
-        inventaire.add(new ItemStack(itemId, count));
+        inventaire.add(stack);
     }
 	
 	//demande si contient assez d'une même resource
