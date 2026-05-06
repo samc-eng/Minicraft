@@ -87,4 +87,8 @@ public class Bot {
     public double getCenterY() {
         return y + Config.blockSize / 2.0;
     }
+
+    public double getX() { return x; }
+    public double getY() { return y; }
+
 }

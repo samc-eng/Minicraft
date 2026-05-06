@@ -11,6 +11,8 @@ public class Level {
 	private int[][] floor;
 	private int[][] blocks;
 	private List<Item> items = new ArrayList<>();
+	// --- NOUVEAU : Liste des Bots ---
+	private List<Bot> bots = new ArrayList<>();
 
 	public Level(int width, int height) {
 		this.width = width;
@@ -21,7 +23,7 @@ public class Level {
 		// génération provisoire du monde
 		for (int i = 0; i < width; i++) {
 			for(int j = 0; j < height; j++) {
-				// Par défaut, le sol est de l'herbe (ID 0)
+				// Par défaut, le sol est de l'herbe (ID 1)
 				floor[i][j] = 1;
 				blocks[i][j] = 0;
 
@@ -48,21 +50,26 @@ public class Level {
 
 		for (int i = xStart; i < xEnd; i++) {
 			for (int j = yStart; j < yEnd; j++) {
-				// On dessine l'herbe au sol d'abord
+				// 1. Sol (Herbe)
 				renderTile(gc, floor[i][j], i, j);
 
-				// 2. On dessine le bloc par-dessus seulement s'il n'est pas vide (0)
+				// 2. Blocs
 				int blockID = blocks[i][j];
 				if (blockID != 0) {
-					// Si c'est une roche (ID 1 dans blocks), on dessine la texture correspondante
-					renderTile(gc, blockID, i, j);
+					int textureID;
+					switch (blockID) {
+						case 1:  textureID = 2; break; // Roche logique -> Texture Roche
+						case 2:  textureID = 2; break; // Sécurité : Roche visuelle -> Texture Roche
+						case 3:  textureID = 3; break; // Arbre
+						default: textureID = blockID;
+					}
+					renderTile(gc, textureID, i, j);
 				}
 			}
 		}
 
-		for (Item item : items) {
-			item.render(gc);
-		}
+		for (Item item : items) item.render(gc);
+		for (Bot bot : bots) bot.render(gc);
 	}
 
 	private void renderTile(GraphicsContext gc, int id, int x, int y) {
@@ -87,7 +94,7 @@ public class Level {
 	public void setBlocks(double x, double y, int type){
 		int tx = (int)(x/Config.blockSize);
 		int ty = (int)(y/Config.blockSize);
-		
+
 		if (tx>=0 && ty>=0 && tx<width && ty<height) {
 			if (type == 0 && blocks[tx][ty] != 0) {
 				int oldBlockId = blocks[tx][ty];
@@ -112,24 +119,47 @@ public class Level {
 		}
 	}
 
-	public void updateItems(Player player) {
+	// --- MISE À JOUR : Items et Bots ---
+	public void updateEntities(Player player) {
+		// Update items
 		for (Item item : items) {
 			item.tick(player);
 		}
 		items.removeIf(item -> item.isRemoved());
+
+		// Update bots
+		for (Bot bot : bots) {
+			bot.tick(this, player);
+		}
 	}
 
 	public void dropItem(double x, double y, ItemStack stack) {
-	    ItemDefinition modele = stack.getDefinition();
-	    if (modele == null) { return; }
-	    
-	    Item entiteAuSol;
-	    if (modele.placeable) {
-	        entiteAuSol = new PlaceableItem(x, y, stack, stack.getItemId());
-	    } else {
-	        entiteAuSol = new ResourceItem(x, y, stack);
-	    }
-	    items.add(entiteAuSol);
+		ItemDefinition modele = stack.getDefinition();
+		if (modele == null) return;
+
+		Item entiteAuSol;
+		if (modele.placeable) {
+			entiteAuSol = new PlaceableItem(x, y, stack, stack.getItemId());
+		} else {
+			entiteAuSol = new ResourceItem(x, y, stack);
+		}
+		items.add(entiteAuSol);
+	}
+
+	// --- NOUVEAU : Méthodes pour les Bots ---
+	public void addBot(double x, double y) {
+		Bot nouveauBot = new Bot(x, y);
+		this.bots.add(nouveauBot); // C'est cette ligne qui permet au SaveManager de les voir !
+		System.out.println("BOT ENREGISTRÉ : La liste contient maintenant " + bots.size() + " bots.");
+	}
+
+	public List<Bot> getBots() {
+		return this.bots;
+	}
+
+	// Pour vider les bots lors d'un nouveau chargement
+	public void clearBots() {
+		this.bots.clear();
 	}
 
 	//on trouve un point sûr pour apparaitre
