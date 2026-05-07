@@ -12,7 +12,11 @@ public class TextureManager {
             return textures.get(path);
         }
 
-        textures.put(path, new Image("file:resources/textures/" + path));
+        Image img = new Image("file:resources/textures/" + path);
+        if (img.isError()) {
+            System.err.println("[TextureManager] ERREUR chargement : file:resources/textures/" + path);
+        }
+        textures.put(path, img);
         return textures.get(path);
         
     }

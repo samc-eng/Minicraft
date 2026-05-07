@@ -2,6 +2,7 @@ package com.minicraft;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,16 +74,45 @@ public class Level {
 		for (Item item : items) {
 			item.render(gc);
 		}
+
+		// Halo pulsant sur les entrées de grotte pour les rendre visibles
+		double pulse = (Math.sin(System.currentTimeMillis() / 300.0) + 1.0) / 2.0;
+		double alpha = 0.25 + pulse * 0.45;
+		double expand = pulse * Config.blockSize * 0.6;
+		gc.setStroke(Color.color(0.7, 0.1, 1.0, alpha));
+		gc.setLineWidth(2.5);
+		for (int[] portal : portals) {
+			double px = portal[0] * Config.blockSize - expand / 2;
+			double py = portal[1] * Config.blockSize - expand / 2;
+			double sz = Config.blockSize + expand;
+			gc.strokeRect(px, py, sz, sz);
+			gc.setFill(Color.color(0.7, 0.1, 1.0, alpha * 0.3));
+			gc.fillRect(px, py, sz, sz);
+		}
 	}
 
 	private void renderTile(GraphicsContext gc, int id, int x, int y) {
 		ItemDefinition def = ItemRegistry.get(id);
-		if (def != null && def.texture != null) {
-			gc.drawImage(def.texture,
-				0, 0, 16, 16,
-				x * Config.blockSize, y * Config.blockSize,
-				Config.blockSize, Config.blockSize
-			);
+		double px = x * Config.blockSize;
+		double py = y * Config.blockSize;
+		double sz = Config.blockSize;
+
+		if (def != null && def.texture != null && !def.texture.isError()) {
+			gc.drawImage(def.texture, 0, 0, 16, 16, px, py, sz, sz);
+		} else {
+			// Couleur de secours selon l'ID pour garder les blocs visibles
+			Color fallback;
+			if      (id == MapGenerator.BLOCK_CAVE_ENTRANCE) fallback = Color.PURPLE;
+			else if (id == MapGenerator.BLOCK_OBSIDIAN)      fallback = Color.color(0.15, 0.0, 0.25);
+			else if (id == MapGenerator.FLOOR_GRASS)         fallback = Color.color(0.3, 0.65, 0.2);
+			else if (id == MapGenerator.FLOOR_WATER)         fallback = Color.color(0.15, 0.4, 0.8);
+			else if (id == MapGenerator.FLOOR_SAND)          fallback = Color.color(0.85, 0.75, 0.4);
+			else if (id == MapGenerator.FLOOR_STONE)         fallback = Color.GRAY;
+			else if (id == MapGenerator.BLOCK_ROCK)          fallback = Color.DARKGRAY;
+			else if (id == MapGenerator.BLOCK_TREE)          fallback = Color.DARKGREEN;
+			else                                             fallback = Color.MAGENTA;
+			gc.setFill(fallback);
+			gc.fillRect(px, py, sz, sz);
 		}
 	}
 
