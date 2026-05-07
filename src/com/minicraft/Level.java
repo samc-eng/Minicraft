@@ -11,27 +11,37 @@ public class Level {
 	private int[][] floor;
 	private int[][] blocks;
 	private List<Item> items = new ArrayList<>();
+	private int depth;
+	private long seed;
+	private List<int[]> portals = new ArrayList<>();
 
+	// Constructeur surface (depth = 0)
 	public Level(int width, int height) {
-		this.width = width;
+		this(width, height, 0, new java.util.Random().nextLong());
+	}
+
+	// Constructeur générique — surface (depth=0) ou souterrain (depth>=1)
+	public Level(int width, int height, int depth, long seed) {
+		this.width  = width;
 		this.height = height;
-		this.floor = new int[width][height];
+		this.depth  = depth;
+		this.seed   = seed;
+		this.floor  = new int[width][height];
 		this.blocks = new int[width][height];
 
-		// génération provisoire du monde
-		for (int i = 0; i < width; i++) {
-			for(int j = 0; j < height; j++) {
-				// Par défaut, le sol est de l'herbe (ID 0)
-				floor[i][j] = 1;
-				blocks[i][j] = 0;
+		MapGenerator generator = new MapGenerator();
 
-				double rand = Math.random();
-				if (rand < 0.05) {
-					blocks[i][j] = 5;
-				} else if (rand < 0.07) { // 0.02 de chance (0.05 + 0.02)
-					blocks[i][j] = 25;
-				}
-			}
+		if (depth == 0) {
+			// --- Surface ---
+			generator.fillWithOcean(width, height, floor);
+			generator.generateIslands(width, height, floor, seed);
+			generator.generateForests(width, height, floor, blocks, seed);
+			generator.generateRocks(width, height, floor, blocks, seed);
+			generator.placeCaveEntrances(width, height, floor, blocks, portals, seed);
+		} else {
+			// --- Souterrain ---
+			generator.generateCave(width, height, floor, blocks, portals, seed, depth);
+			generator.placeOres(width, height, blocks, seed, depth);
 		}
 	}
 
@@ -147,7 +157,7 @@ public class Level {
             //on scanne un carré de 3x3 autour de ce point
             for (int i = tx - 1; i <= tx + 1; i++) {
                 for (int j = ty - 1; j <= ty + 1; j++) {
-                    if (blocks[i][j] != 0) { 
+					if (blocks[i][j] != 0 || floor[i][j] == MapGenerator.FLOOR_WATER) {
                         isSafe = false; 
                         break; 
                     }
@@ -163,6 +173,16 @@ public class Level {
 	}
 	
 
+	/**
+	 * Retourne true si la tuile bloque le mouvement.
+	 * La porte d'obsidienne (entrée de grotte) est traversable — la transition
+	 * est gérée par Main, pas par la collision.
+	 */
+	public boolean isSolid(double x, double y) {
+		int b = getBlocks(x, y);
+		return b >= 1 && b != MapGenerator.BLOCK_CAVE_ENTRANCE;
+	}
+
 	// Getters et Setters pour la sauvegarde
 	public int[][] getFloorArray() { return this.floor; }
 	public int[][] getBlocksArray() { return this.blocks; }
@@ -170,5 +190,8 @@ public class Level {
 	public void setBlocksArray(int[][] loadedBlocks) { this.blocks = loadedBlocks; }
 	public int getWidth() { return this.width; }
 	public int getHeight() { return this.height; }
-	public List<Item> getItems() { return this.items;}
+	public List<Item> getItems() { return this.items; }
+	public int getDepth() { return this.depth; }
+	public long getSeed() { return this.seed; }
+	public List<int[]> getPortals() { return this.portals; }
 }

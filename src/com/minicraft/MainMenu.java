@@ -229,6 +229,10 @@ public class MainMenu {
             lvl.setFloorArray(newFloor);
             lvl.setBlocksArray(newBlocks);
 
+            // 5. Régénérer la minimap avec les données chargées
+            gameScene.getGameEngine().getMiniMap().generate(newFloor, newBlocks, w, h,
+                    gameScene.getGameEngine().getLevel().getPortals());
+
             Player p = gameScene.getGameEngine().getPlayer();
             p.setX(px);
             p.setY(py);
