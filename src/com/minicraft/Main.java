@@ -27,7 +27,17 @@ public class Main extends Application {
     private CraftingUI craftingUI;
     private boolean craftingOpen = false;
     private HUD hud;
+    private MiniMap miniMap;
+    private boolean miniMapVisible = true;
+    private boolean fullMapOpen    = false;
     private List<Bot> bots = new ArrayList<>();
+
+    // Gestion multi-niveaux
+    private Level   surfaceLevel;
+    private Level[] undergroundLevels  = new Level[5];
+    private int     currentDepth       = 0;
+    private int     transitionCooldown = 0;
+    private int[]   lastSurfacePortal  = null; // portail de surface utilisé pour descendre
 
     // Panneau principal qui contient le Canvas
     private Pane gameRoot;
@@ -64,16 +74,42 @@ public class Main extends Application {
         return this.level;
     }
 
+    public MiniMap getMiniMap() {
+        return this.miniMap;
+    }
+
+    /** Cherche une tuile libre adjacente au premier portail du niveau et y téléporte le joueur. */
+    private void spawnNearPortal(Level targetLevel) {
+        if (targetLevel.getPortals().isEmpty()) {
+            double[] s = targetLevel.getSafeSpawn();
+            player.setX(s[0]); player.setY(s[1]);
+            return;
+        }
+        int[] p = targetLevel.getPortals().get(0);
+        int[][] offsets = {{0,1},{0,-1},{1,0},{-1,0},{1,1},{-1,1},{1,-1},{-1,-1}};
+        for (int[] off : offsets) {
+            double tx = (p[0] + off[0]) * Config.blockSize;
+            double ty = (p[1] + off[1]) * Config.blockSize;
+            if (!targetLevel.isSolid(tx, ty)) {
+                player.setX(tx);
+                player.setY(ty);
+                return;
+            }
+        }
+        double[] s = targetLevel.getSafeSpawn();
+        player.setX(s[0]); player.setY(s[1]);
+    }
+
     // MODIFICATION : On reçoit la Scene pour initialiser l'InputHandler proprement
     public void launchGame(Stage primaryStage, Scene scene) {
         Canvas canva = new Canvas(Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT);
         this.pinceau = canva.getGraphicsContext2D();
-        this.level = new Level(4000, 4000);
-        double[] spawn=level.getSafeSpawn();
+        this.surfaceLevel = new Level(4000, 4000);
+        this.level        = this.surfaceLevel;
+        double[] spawn = level.getSafeSpawn();
         this.player = new Player(spawn[0], spawn[1]);
-        for (int i=0; i<10; i++){
-            double[] spawnBot=level.getSafeSpawn();
-            this.bots.add(new Bot(spawn[0]+ i*40, spawn[1]));
+        for (int i = 0; i < 10; i++) {
+            this.bots.add(new Bot(spawn[0] + i * 40, spawn[1]));
         }
 
         this.gameRoot = new Pane();
@@ -85,6 +121,9 @@ public class Main extends Application {
         // --- CLAVIER ---
         // On branche l'InputHandler sur la scène fournie par GameScene
         this.input = new InputHandler(scene);
+
+        miniMap = new MiniMap();
+        miniMap.generate(level.getFloorArray(), level.getBlocksArray(), level.getWidth(), level.getHeight(), level.getPortals());
 
         craftingUI = new CraftingUI();
         hud = new HUD();
@@ -107,6 +146,52 @@ public class Main extends Application {
                 if (camX > (level.getWidth() * Config.blockSize) - largeurVue) camX = (level.getWidth() * Config.blockSize) - largeurVue;
                 if (camY > (level.getHeight() * Config.blockSize) - hauteurVue) camY = (level.getHeight() * Config.blockSize) - hauteurVue;
 
+                // --- Transitions entre niveaux ---
+                if (transitionCooldown > 0) {
+                    transitionCooldown--;
+                } else {
+                    int ptx = (int)(player.getX() / Config.blockSize);
+                    int pty = (int)(player.getY() / Config.blockSize);
+                    for (int[] portal : level.getPortals()) {
+                        if (Math.abs(ptx - portal[0]) <= 1 && Math.abs(pty - portal[1]) <= 1) {
+                            if (currentDepth == 0) {
+                                // Surface → Grotte : mémoriser le portail d'entrée
+                                lastSurfacePortal = portal;
+                                currentDepth = 1;
+                                if (undergroundLevels[0] == null) {
+                                    undergroundLevels[0] = new Level(1000, 1000, 1, surfaceLevel.getSeed());
+                                }
+                                level = undergroundLevels[0];
+                                spawnNearPortal(level);
+                            } else {
+                                // Grotte → Surface : réapparaître à l'entrée utilisée
+                                currentDepth = 0;
+                                level = surfaceLevel;
+                                if (lastSurfacePortal != null) {
+                                    player.setX(lastSurfacePortal[0] * Config.blockSize + Config.blockSize);
+                                    player.setY(lastSurfacePortal[1] * Config.blockSize + Config.blockSize);
+                                } else {
+                                    double[] newSpawn = level.getSafeSpawn();
+                                    player.setX(newSpawn[0]);
+                                    player.setY(newSpawn[1]);
+                                }
+                            }
+                            miniMap.generate(level.getFloorArray(), level.getBlocksArray(),
+                                             level.getWidth(), level.getHeight(), level.getPortals());
+                            transitionCooldown = 90;
+                            break;
+                        }
+                    }
+                }
+
+                if (input.isClicked(KeyCode.M)) {
+                    miniMapVisible = !miniMapVisible;
+                }
+
+                if (input.isClicked(KeyCode.TAB)) {
+                    fullMapOpen = !fullMapOpen;
+                }
+
                 if (input.isClicked(KeyCode.E)) {
                     inventaireOuvert = !inventaireOuvert;
                     craftingOpen = false;
@@ -123,8 +208,8 @@ public class Main extends Application {
                 pinceau.translate(-camX, -camY);
 
                 level.render(pinceau, camX, camY, largeurVue, hauteurVue);
-                for (Bot bot : bots) {
-                    bot.render(pinceau);
+                if (currentDepth == 0) {
+                    for (Bot bot : bots) bot.render(pinceau);
                 }
 
                 if (inventaireOuvert) {
@@ -133,8 +218,8 @@ public class Main extends Application {
                     craftingUI.tick(input, player.getInventory());
                 } else {
                     player.tick(level, input);
-                    for (Bot bot : bots) {
-                        bot.tick(level, player);
+                    if (currentDepth == 0) {
+                        for (Bot bot : bots) bot.tick(level, player);
                     }
                     level.updateEntities(player);
                 }
@@ -152,6 +237,20 @@ public class Main extends Application {
                     pinceau.setFill(Color.WHITE);
                     pinceau.fillText("Roche : " + player.getInventory().getAmount(1), 20, 30);
                     hud.render(pinceau, player);
+                }
+
+                if (fullMapOpen) {
+                    miniMap.renderFullscreen(pinceau,
+                        player.getX(), player.getY(),
+                        camX, camY,
+                        largeurVue, hauteurVue,
+                        widthScreen, heightScreen);
+                } else if (miniMapVisible) {
+                    miniMap.render(pinceau,
+                        player.getX(), player.getY(),
+                        camX, camY,
+                        largeurVue, hauteurVue,
+                        widthScreen, heightScreen);
                 }
                 input.update();
             }

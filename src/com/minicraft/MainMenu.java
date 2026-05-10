@@ -121,20 +121,42 @@ public class MainMenu {
         if (sc == null) return;
         try {
             if (mediaPlayer != null) mediaPlayer.stop();
+            // 1. Lire les données du joueur
             String[] pData = sc.nextLine().split(",");
+            double px = Double.parseDouble(pData[0]);
+            double py = Double.parseDouble(pData[1]);
+            int roche = Integer.parseInt(pData[2]);
+            int bois = Integer.parseInt(pData[3]);
+
+            // 2. Créer le moteur et la scène
             GameScene gameScene = new GameScene(window, this);
             Level lvl = gameScene.getGameEngine().getLevel();
-            lvl.getItems().clear();
-            lvl.clearBots();
-            String[] dim = sc.nextLine().split(",");
-            int w = Integer.parseInt(dim[0]), h = Integer.parseInt(dim[1]);
-            String[] fData = sc.nextLine().split(",");
-            int[][] nF = new int[w][h]; int fI = 0;
-            for(int i=0; i<w; i++) for(int j=0; j<h; j++) nF[i][j] = Integer.parseInt(fData[fI++]);
-            String[] bData = sc.nextLine().split(",");
-            int[][] nB = new int[w][h]; int bI = 0;
-            for(int i=0; i<w; i++) for(int j=0; j<h; j++) nB[i][j] = Integer.parseInt(bData[bI++]);
-            lvl.setFloorArray(nF); lvl.setBlocksArray(nB);
+
+            // 3. Lire les dimensions et les maps
+            String[] dimensions = sc.nextLine().split(",");
+            int w = Integer.parseInt(dimensions[0]);
+            int h = Integer.parseInt(dimensions[1]);
+
+            // Charger le sol
+            String[] floorData = sc.nextLine().split(",");
+            int[][] newFloor = new int[w][h];
+            int idx = 0;
+            for(int i=0; i<w; i++) for(int j=0; j<h; j++) newFloor[i][j] = Integer.parseInt(floorData[idx++]);
+
+            // Charger les blocs (Arbres/Roches)
+            String[] blocksData = sc.nextLine().split(",");
+            int[][] newBlocks = new int[w][h];
+            idx = 0;
+            for(int i=0; i<w; i++) for(int j=0; j<h; j++) newBlocks[i][j] = Integer.parseInt(blocksData[idx++]);
+
+            // 4. Appliquer tout au jeu
+            lvl.setFloorArray(newFloor);
+            lvl.setBlocksArray(newBlocks);
+
+            // 5. Régénérer la minimap avec les données chargées
+            gameScene.getGameEngine().getMiniMap().generate(newFloor, newBlocks, w, h,
+                    gameScene.getGameEngine().getLevel().getPortals());
+
             Player p = gameScene.getGameEngine().getPlayer();
 
             p.setX(Double.parseDouble(pData[0])); p.setY(Double.parseDouble(pData[1]));

@@ -2,6 +2,7 @@ package com.minicraft;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,27 +14,37 @@ public class Level {
 	private List<Item> items = new ArrayList<>();
 	// --- NOUVEAU : Liste des Bots ---
 	private List<Bot> bots = new ArrayList<>();
+	private int depth;
+	private long seed;
+	private List<int[]> portals = new ArrayList<>();
 
+	// Constructeur surface (depth = 0)
 	public Level(int width, int height) {
-		this.width = width;
+		this(width, height, 0, new java.util.Random().nextLong());
+	}
+
+	// Constructeur générique — surface (depth=0) ou souterrain (depth>=1)
+	public Level(int width, int height, int depth, long seed) {
+		this.width  = width;
 		this.height = height;
-		this.floor = new int[width][height];
+		this.depth  = depth;
+		this.seed   = seed;
+		this.floor  = new int[width][height];
 		this.blocks = new int[width][height];
 
-		// génération provisoire du monde
-		for (int i = 0; i < width; i++) {
-			for(int j = 0; j < height; j++) {
-				// Par défaut, le sol est de l'herbe (ID 1)
-				floor[i][j] = 1;
-				blocks[i][j] = 0;
+		MapGenerator generator = new MapGenerator();
 
-				double rand = Math.random();
-				if (rand < 0.05) {
-					blocks[i][j] = 5;
-				} else if (rand < 0.07) { // 0.02 de chance (0.05 + 0.02)
-					blocks[i][j] = 25;
-				}
-			}
+		if (depth == 0) {
+			// --- Surface ---
+			generator.fillWithOcean(width, height, floor);
+			generator.generateIslands(width, height, floor, seed);
+			generator.generateForests(width, height, floor, blocks, seed);
+			generator.generateRocks(width, height, floor, blocks, seed);
+			generator.placeCaveEntrances(width, height, floor, blocks, portals, seed);
+		} else {
+			// --- Souterrain ---
+			generator.generateCave(width, height, floor, blocks, portals, seed, depth);
+			generator.placeOres(width, height, blocks, seed, depth);
 		}
 	}
 
@@ -68,18 +79,50 @@ public class Level {
 			}
 		}
 
-		for (Item item : items) item.render(gc);
+		for (Item item : items) {
+			item.render(gc);
+		}
 		for (Bot bot : bots) bot.render(gc);
+
+
+		// Halo pulsant sur les entrées de grotte pour les rendre visibles
+		double pulse = (Math.sin(System.currentTimeMillis() / 300.0) + 1.0) / 2.0;
+		double alpha = 0.25 + pulse * 0.45;
+		double expand = pulse * Config.blockSize * 0.6;
+		gc.setStroke(Color.color(0.7, 0.1, 1.0, alpha));
+		gc.setLineWidth(2.5);
+		for (int[] portal : portals) {
+			double px = portal[0] * Config.blockSize - expand / 2;
+			double py = portal[1] * Config.blockSize - expand / 2;
+			double sz = Config.blockSize + expand;
+			gc.strokeRect(px, py, sz, sz);
+			gc.setFill(Color.color(0.7, 0.1, 1.0, alpha * 0.3));
+			gc.fillRect(px, py, sz, sz);
+		}
 	}
 
 	private void renderTile(GraphicsContext gc, int id, int x, int y) {
 		ItemDefinition def = ItemRegistry.get(id);
-		if (def != null && def.texture != null) {
-			gc.drawImage(def.texture,
-				0, 0, 16, 16,
-				x * Config.blockSize, y * Config.blockSize,
-				Config.blockSize, Config.blockSize
-			);
+		double px = x * Config.blockSize;
+		double py = y * Config.blockSize;
+		double sz = Config.blockSize;
+
+		if (def != null && def.texture != null && !def.texture.isError()) {
+			gc.drawImage(def.texture, 0, 0, 16, 16, px, py, sz, sz);
+		} else {
+			// Couleur de secours selon l'ID pour garder les blocs visibles
+			Color fallback;
+			if      (id == MapGenerator.BLOCK_CAVE_ENTRANCE) fallback = Color.PURPLE;
+			else if (id == MapGenerator.BLOCK_OBSIDIAN)      fallback = Color.color(0.15, 0.0, 0.25);
+			else if (id == MapGenerator.FLOOR_GRASS)         fallback = Color.color(0.3, 0.65, 0.2);
+			else if (id == MapGenerator.FLOOR_WATER)         fallback = Color.color(0.15, 0.4, 0.8);
+			else if (id == MapGenerator.FLOOR_SAND)          fallback = Color.color(0.85, 0.75, 0.4);
+			else if (id == MapGenerator.FLOOR_STONE)         fallback = Color.GRAY;
+			else if (id == MapGenerator.BLOCK_ROCK)          fallback = Color.DARKGRAY;
+			else if (id == MapGenerator.BLOCK_TREE)          fallback = Color.DARKGREEN;
+			else                                             fallback = Color.MAGENTA;
+			gc.setFill(fallback);
+			gc.fillRect(px, py, sz, sz);
 		}
 	}
 
@@ -177,7 +220,7 @@ public class Level {
             //on scanne un carré de 3x3 autour de ce point
             for (int i = tx - 1; i <= tx + 1; i++) {
                 for (int j = ty - 1; j <= ty + 1; j++) {
-                    if (blocks[i][j] != 0) { 
+					if (blocks[i][j] != 0 || floor[i][j] == MapGenerator.FLOOR_WATER) {
                         isSafe = false; 
                         break; 
                     }
@@ -193,6 +236,16 @@ public class Level {
 	}
 	
 
+	/**
+	 * Retourne true si la tuile bloque le mouvement.
+	 * La porte d'obsidienne (entrée de grotte) est traversable — la transition
+	 * est gérée par Main, pas par la collision.
+	 */
+	public boolean isSolid(double x, double y) {
+		int b = getBlocks(x, y);
+		return b >= 1 && b != MapGenerator.BLOCK_CAVE_ENTRANCE;
+	}
+
 	// Getters et Setters pour la sauvegarde
 	public int[][] getFloorArray() { return this.floor; }
 	public int[][] getBlocksArray() { return this.blocks; }
@@ -200,5 +253,8 @@ public class Level {
 	public void setBlocksArray(int[][] loadedBlocks) { this.blocks = loadedBlocks; }
 	public int getWidth() { return this.width; }
 	public int getHeight() { return this.height; }
-	public List<Item> getItems() { return this.items;}
+	public List<Item> getItems() { return this.items; }
+	public int getDepth() { return this.depth; }
+	public long getSeed() { return this.seed; }
+	public List<int[]> getPortals() { return this.portals; }
 }

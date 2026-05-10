@@ -1,17 +1,3 @@
-**/*.class
-**/bin/
-**/target/
-**/tmp/*
-**/.project
-**/.classpath
-**/workspace
-**/.metadata
-**/.settings
-**/.checkstyle
-**/*.iml
-**/*.idea
-<<<<<<< HEAD
-.vscode/
-=======
-save.txt
->>>>>>> origin/interface-menu-suite
+.DS_Store
+*/.DS_Store
+out/
