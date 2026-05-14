@@ -16,7 +16,8 @@ public class Player {
 	private int attackTimer;
 	private Inventory inventory = new Inventory();
 	private int health = 10;
-	private int invulnerabilityTimer = 0;
+	private int energy = 10;
+	private int invulnerabilityTimer = 3;
     private int selectedItemId = 1; // l'item actuellement en main (ID)
 	
 	public boolean up;
@@ -234,5 +235,6 @@ public class Player {
 	}
 
 	public int getHealth() { return health; }
+	public int getEnergy() { return energy; }
 
 }
