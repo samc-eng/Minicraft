@@ -201,4 +201,11 @@ public class Level {
 	public int getWidth() { return this.width; }
 	public int getHeight() { return this.height; }
 	public List<Item> getItems() { return this.items;}
+	// Retourne l'ID du bloc a la case (tx, ty) en coordonnees de grille
+		public int getTile(int tx, int ty) {
+					if (tx < 0 || ty < 0 || tx >= width || ty >= height) return 0;
+					return blocks[tx][ty];
+		}
+
+		public int getHeight() { return this.height; }
 }
