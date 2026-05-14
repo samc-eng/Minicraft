@@ -203,6 +203,29 @@ public class Main extends Application {
             craftingUI.addWorkbenchRecipe(new Recipe("Lingot d'or", 106, 1)
                                                       .addCost(104, 2)
                                                       .addCost(102, 1));
+                    // --- ARMURES EN CUIR (cuir = bois ici, ID 100) ---
+                    craftingUI.addWorkbenchRecipe(new Recipe("Casque en cuir",    300, 1).addCost(100, 5));
+                    craftingUI.addWorkbenchRecipe(new Recipe("Plastron en cuir",  301, 1).addCost(100, 8));
+                    craftingUI.addWorkbenchRecipe(new Recipe("Jambieres en cuir", 302, 1).addCost(100, 7));
+                    craftingUI.addWorkbenchRecipe(new Recipe("Bottes en cuir",    303, 1).addCost(100, 4));
+
+                    // --- ARMURES EN FER ---
+                    craftingUI.addWorkbenchRecipe(new Recipe("Casque en fer",    310, 1).addCost(105, 5));
+                    craftingUI.addWorkbenchRecipe(new Recipe("Plastron en fer",  311, 1).addCost(105, 8));
+                    craftingUI.addWorkbenchRecipe(new Recipe("Jambieres en fer", 312, 1).addCost(105, 7));
+                    craftingUI.addWorkbenchRecipe(new Recipe("Bottes en fer",    313, 1).addCost(105, 4));
+
+                    // --- ARMURES EN OR ---
+                    craftingUI.addWorkbenchRecipe(new Recipe("Casque en or",    320, 1).addCost(106, 5));
+                    craftingUI.addWorkbenchRecipe(new Recipe("Plastron en or",  321, 1).addCost(106, 8));
+                    craftingUI.addWorkbenchRecipe(new Recipe("Jambieres en or", 322, 1).addCost(106, 7));
+                    craftingUI.addWorkbenchRecipe(new Recipe("Bottes en or",    323, 1).addCost(106, 4));
+
+                    // --- ARMURES EN GEM ---
+                    craftingUI.addWorkbenchRecipe(new Recipe("Casque en gem",    330, 1).addCost(107, 5));
+                    craftingUI.addWorkbenchRecipe(new Recipe("Plastron en gem",  331, 1).addCost(107, 8));
+                    craftingUI.addWorkbenchRecipe(new Recipe("Jambieres en gem", 332, 1).addCost(107, 7));
+                    craftingUI.addWorkbenchRecipe(new Recipe("Bottes en gem",    333, 1).addCost(107, 4));
 
             AnimationTimer timer = new AnimationTimer() {
                             public void handle(long now) {
