@@ -28,7 +28,7 @@ public class Player {
 	public Player(double startX, double startY) {
 		this.x=startX;
 		this.y=startY;
-		this.vitesse=4;
+		this.vitesse=0.25;
 		
 		try {
 			this.skin=new Image("file:resources/skins.png");
@@ -78,6 +78,10 @@ public class Player {
 		
 		if (input.isClicked(KeyCode.F)) {
 			this.interact(level,true);
+		}
+
+		if (input.isPressed(KeyCode.SHIFT) && energy>0) {
+			this.vitesse=0.5;
 		}
 		
 		for (Item item : level.getItems()) {
@@ -182,6 +186,7 @@ public class Player {
             int cibleBlock = level.getBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize);
             if (cibleBlock != 0) {
                 level.setBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize, 0);
+				this.loseEnergy(3);
             }
         } else {
             // MODE CONSTRUCTION — on utilise selectedItemId
@@ -232,6 +237,11 @@ public class Player {
 			x = 50;
 			y = 50;
 		}
+	}
+
+	public void loseEnergy(int amount) {
+		energy -= amount;
+		if (energy<=0) energy=10;
 	}
 
 	public int getHealth() { return health; }
