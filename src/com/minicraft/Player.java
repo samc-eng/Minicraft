@@ -232,7 +232,9 @@ public class Player {
 
 	public void takeDamage(int amount) {
 		if (invulnerabilityTimer > 0) return;
-		health -= amount;
+				int reduction = armorSlots.getArmorReduction();
+				int degatsReels = Math.max(1, amount - reduction); // minimum 1 degat toujours
+				health -= degatsReels;
 		invulnerabilityTimer = 30;
 		if (health <= 0) {
 			health = 10;
@@ -249,4 +251,9 @@ public class Player {
 	public int getHealth() { return health; }
 	public int getEnergy() { return energy; }
 
+
+	// Slots d'armure du joueur
+	private ArmorSlots armorSlots = new ArmorSlots();
+
+	public ArmorSlots getArmorSlots() { return armorSlots; }
 }

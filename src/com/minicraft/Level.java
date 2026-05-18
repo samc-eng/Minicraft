@@ -256,4 +256,8 @@ public class Level {
 	public int getDepth() { return this.depth; }
 	public long getSeed() { return this.seed; }
 	public List<int[]> getPortals() { return this.portals; }
+	public int getTile(int tx, int ty) {
+		if (tx < 0 || ty < 0 || tx >= width || ty >= height) return 0;
+		return blocks[tx][ty];
+	}
 }
