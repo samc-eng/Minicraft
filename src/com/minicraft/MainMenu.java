@@ -123,10 +123,6 @@ public class MainMenu {
             if (mediaPlayer != null) mediaPlayer.stop();
             // 1. Lire les données du joueur
             String[] pData = sc.nextLine().split(",");
-            double px = Double.parseDouble(pData[0]);
-            double py = Double.parseDouble(pData[1]);
-            int roche = Integer.parseInt(pData[2]);
-            int bois = Integer.parseInt(pData[3]);
 
             // 2. Créer le moteur et la scène
             GameScene gameScene = new GameScene(window, this);

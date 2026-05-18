@@ -48,10 +48,10 @@ public class Player {
 		if (input.isPressed(KeyCode.D)) {futurX+=vitesse;dir=3;isMoved=true;}
 		if (input.isPressed(KeyCode.Q)) {futurX-=vitesse;dir=2;isMoved=true;}
 		
-		boolean bloque= (level.isSolid(futurX, futurY) ||
-				level.isSolid(futurX+Config.blockSize, futurY) ||
-				level.isSolid(futurX, futurY+Config.blockSize) ||
-				level.isSolid(futurX+Config.blockSize, futurY+Config.blockSize));
+		boolean bloque= (level.isSolid(futurX+4, futurY+4) ||
+				level.isSolid(futurX+Config.blockSize-4, futurY+4) ||
+				level.isSolid(futurX+4, futurY+Config.blockSize) ||
+				level.isSolid(futurX+Config.blockSize-4, futurY+Config.blockSize));
 		
 		if (! bloque) {
 			x=futurX;
@@ -80,8 +80,10 @@ public class Player {
 			this.interact(level,true);
 		}
 
-		if (input.isPressed(KeyCode.SHIFT) && energy>0) {
+		if (input.isPressed(KeyCode.SHIFT) && energy>3) {
 			this.vitesse=0.5;
+		} else {
+			this.vitesse=0.25;
 		}
 		
 		for (Item item : level.getItems()) {
@@ -202,8 +204,8 @@ public class Player {
 			double bBottom = bTop + Config.blockSize;
 	
 			
-			boolean seTouchent = !(x >= bRight || x + Config.blockSize <= bLeft ||
-                    y >= bBottom || y + Config.blockSize <= bTop);
+			boolean seTouchent = !(x+8 <= bRight|| x + Config.blockSize-8 >= bLeft ||
+                    y+8<= bBottom || y + Config.blockSize-8 >= bTop);
 					
 			if (!seTouchent &&  inventory.has(selectedItemId, 1)) {
 				 inventory.remove(selectedItemId, 1);
