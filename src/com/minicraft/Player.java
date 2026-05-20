@@ -19,7 +19,9 @@ public class Player {
 	private int energy = 10;
 	private int invulnerabilityTimer = 3;
     private int selectedItemId = 1; // l'item actuellement en main (ID)
-	
+	private int selectedSlot = 0;
+	private ItemStack[] slot = new ItemStack[9];
+
 	public boolean up;
 	public boolean down;
 	public boolean right;
@@ -251,7 +253,12 @@ public class Player {
 	public int getHealth() { return health; }
 	public int getEnergy() { return energy; }
 
-
+	private void setSelectedSlot(int selectedSlot) {
+		if (selectedSlot>0 && selectedSlot<=8) {
+			this.selectedSlot=selectedSlot;
+		}
+	}
+	private ItemStack getSelectedItem(){ return slot[selectedItemId]; }
 	// Slots d'armure du joueur
 	private ArmorSlots armorSlots = new ArmorSlots();
 
