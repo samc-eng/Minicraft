@@ -18,7 +18,6 @@ public class Player {
 	private int health = 10;
 	private int energy = 10;
 	private int invulnerabilityTimer = 3;
-    private int selectedItemId = 1; // l'item actuellement en main (ID)
 	private int selectedSlot = 0;
 	private ItemStack[] slot = new ItemStack[9];
 
@@ -259,18 +258,15 @@ public class Player {
 		this.y = newY;
 	}
 
-	public void takeDamage(int amount) {
-		if (invulnerabilityTimer > 0) return;
-				int reduction = armorSlots.getArmorReduction();
-				int degatsReels = Math.max(1, amount - reduction); // minimum 1 degat toujours
-				health -= degatsReels;
-		invulnerabilityTimer = 30;
-		if (health <= 0) {
-			health = 10;
-			x = 50;
-			y = 50;
-		}
-	}
+	// Fait perdre de la vie au joueur
+    public void takeDamage(int damage) {
+        this.health -= damage;
+        if (this.health < 0) {
+            this.health = 0;
+        }
+        System.out.println("Aïe ! Le joueur a pris " + damage + " dégâts. Vie restante : " + this.health);
+        // Bonus : On rajoutera plus tard un petit effet de recul (knockback) !
+    }
 
 	// Méthode unifiée pour ajouter un objet à la fois dans l'inventaire et la Hotbar
     public void pickUpItem(ItemStack stack) {
@@ -338,4 +334,13 @@ public class Player {
 	public int getSelectedSlot() { 
 		return this.selectedSlot; 
 	}
+
+	// Retourne les coordonnées du joueur en cases (Tiles) pour l'IA des monstres
+    public int getTileX() {
+        return (int) (getCenterX() / Config.blockSize);
+    }
+
+    public int getTileY() {
+        return (int) (getCenterY() / Config.blockSize);
+    }
 }
