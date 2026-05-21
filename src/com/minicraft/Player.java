@@ -49,6 +49,19 @@ public class Player {
 		if (input.isPressed(KeyCode.S)) {futurY+=vitesse;dir=0;isMoved=true;}
 		if (input.isPressed(KeyCode.D)) {futurX+=vitesse;dir=3;isMoved=true;}
 		if (input.isPressed(KeyCode.Q)) {futurX-=vitesse;dir=2;isMoved=true;}
+
+		// --- SÉLECTION DE LA HOTBAR ---
+		if (input.isClicked(KeyCode.F1)) { setSelectedSlot(0); }
+		if (input.isClicked(KeyCode.F2)) { setSelectedSlot(1); }
+		if (input.isClicked(KeyCode.F3)) { setSelectedSlot(2); }
+		if (input.isClicked(KeyCode.F4)) { setSelectedSlot(3); }
+		if (input.isClicked(KeyCode.F5)) { setSelectedSlot(4); }
+		if (input.isClicked(KeyCode.F6)) { setSelectedSlot(5); }
+		if (input.isClicked(KeyCode.F7)) { setSelectedSlot(6); }
+		if (input.isClicked(KeyCode.F8)) { setSelectedSlot(7); }
+		if (input.isClicked(KeyCode.F9)) { setSelectedSlot(8); }
+
+
 		
 		boolean bloque= (level.isSolid(futurX+4, futurY+4) ||
 				level.isSolid(futurX+Config.blockSize-4, futurY+4) ||
@@ -89,15 +102,16 @@ public class Player {
 		}
 		
 		for (Item item : level.getItems()) {
-			double dx = (x + 6) - (item.getX() + 8);
-	        double dy = (y + 6) - (item.getY() + 8);
-	        double distance = Math.sqrt(dx * dx + dy * dy);
+            double dx = (x + 6) - (item.getX() + 8);
+            double dy = (y + 6) - (item.getY() + 8);
+            double distance = Math.sqrt(dx * dx + dy * dy);
 
-	        if (distance < 12) { 
-	        	inventory.add(item.getStack());
-	            item.remove();        
-	        }
-		}		
+            if (distance < 12) { 
+                // On utilise notre nouvelle méthode unifiée
+                this.pickUpItem(item.getStack());
+                item.remove();        
+            }
+        }		
 	}
 	
 	public void render(GraphicsContext gc) {
@@ -172,6 +186,7 @@ public class Player {
 		
 	}
 	
+	
 	public void interact(Level level, boolean placeMode) {
 		this.attackTimer=10;
 		
@@ -193,28 +208,40 @@ public class Player {
 				this.loseEnergy(3);
             }
         } else {
-            // MODE CONSTRUCTION — on utilise selectedItemId
-            ItemDefinition def = ItemRegistry.get(selectedItemId);
-            if (def == null || !def.placeable) {
-                System.out.println("Item " + selectedItemId + " non posable.");
-                return;
-            }
-			//hitbox du futur mur
-			double bLeft = cibleX * Config.blockSize;
-			double bRight = bLeft + Config.blockSize;
-			double bTop = cibleY * Config.blockSize;
-			double bBottom = bTop + Config.blockSize;
-	
+            // MODE CONSTRUCTION
+			ItemStack stackInHand = getSelectedItem();
 			
-			boolean seTouchent = !(x+8 <= bRight|| x + Config.blockSize-8 >= bLeft ||
-                    y+8<= bBottom || y + Config.blockSize-8 >= bTop);
+			// Si la main n'est pas vide
+			if (stackInHand != null) {
+				ItemDefinition def = stackInHand.getDefinition();
+				
+				// Si l'objet est posable
+				if (def != null && def.placeable) {
 					
-			if (!seTouchent &&  inventory.has(selectedItemId, 1)) {
-				 inventory.remove(selectedItemId, 1);
-				 level.setBlocks(cibleX*Config.blockSize, cibleY*Config.blockSize, selectedItemId);
-				 System.out.println("Bloc[" + this.selectedItemId +"] posé !");
+					// Hitbox du futur mur (tu avais très bien codé ça !)
+					double bLeft = cibleX * Config.blockSize;
+					double bRight = bLeft + Config.blockSize;
+					double bTop = cibleY * Config.blockSize;
+					double bBottom = bTop + Config.blockSize;
+					
+					boolean seTouchent = !(x+8 <= bRight || x + Config.blockSize-8 >= bLeft ||
+										y+8 <= bBottom || y + Config.blockSize-8 >= bTop);
+					
+					// S'il n'y a pas de collision avec le joueur
+					if (!seTouchent) {
+						// 1. On pose le bloc sur la carte
+						level.setBlocks(cibleX*Config.blockSize, cibleY*Config.blockSize, def.id);
+						
+						// 2. On utilise notre nouvelle méthode pour diminuer la quantité !
+						consumeSelectedItem(); 
+						
+						System.out.println("Bloc [" + def.name + "] posé !");
+					}
+				} else {
+					System.out.println("Cet objet n'est pas un bloc posable.");
+				}
 			}
-        }
+		}
 	}
 	
 	public double getX() {return this.x;}
@@ -245,6 +272,32 @@ public class Player {
 		}
 	}
 
+	// Méthode unifiée pour ajouter un objet à la fois dans l'inventaire et la Hotbar
+    public void pickUpItem(ItemStack stack) {
+        // 1. On l'ajoute à l'inventaire de Rayan (pour que les recettes de craft le détectent)
+        this.inventory.add(stack);
+        
+        // 2. On l'ajoute à notre Hotbar (pour l'affichage du HUD et la pose)
+        int id = stack.getItemId();
+        int amount = stack.getAmount();
+
+        // A. On regarde si cet item est déjà dans la Hotbar pour s'empiler
+        for (int i = 0; i < 9; i++) {
+            if (slot[i] != null && slot[i].getItemId() == id && !slot[i].isFull()) {
+                slot[i].add(amount);
+                return;
+            }
+        }
+
+        // B. Sinon, on cherche la première case vide (null)
+        for (int i = 0; i < 9; i++) {
+            if (slot[i] == null) {
+                slot[i] = new ItemStack(id, amount);
+                return;
+            }
+        }
+    }
+
 	public void loseEnergy(int amount) {
 		energy -= amount;
 		if (energy<=0) energy=10;
@@ -253,14 +306,36 @@ public class Player {
 	public int getHealth() { return health; }
 	public int getEnergy() { return energy; }
 
-	private void setSelectedSlot(int selectedSlot) {
-		if (selectedSlot>0 && selectedSlot<=8) {
+	public void setSelectedSlot(int selectedSlot) {
+		if (selectedSlot>=0 && selectedSlot<=8) {
 			this.selectedSlot=selectedSlot;
 		}
 	}
-	private ItemStack getSelectedItem(){ return slot[selectedItemId]; }
+
+	public void consumeSelectedItem() {
+        ItemStack currentItem = getSelectedItem();
+        if (currentItem != null) {
+            
+            // 1. On utilise ta propre méthode pour enlever 1
+            currentItem.remove(1); 
+            
+            // 2. On vérifie avec ton getter si la quantité est tombée à 0
+            if (currentItem.getAmount() <= 0) {
+                this.slot[selectedSlot] = null; // On vide la case
+            }
+        }
+    }
+	private ItemStack getSelectedItem(){ return slot[selectedSlot]; }
 	// Slots d'armure du joueur
 	private ArmorSlots armorSlots = new ArmorSlots();
 
 	public ArmorSlots getArmorSlots() { return armorSlots; }
+
+	public ItemStack[] getHotbar() { 
+		return this.slot; 
+	}
+
+	public int getSelectedSlot() { 
+		return this.selectedSlot; 
+	}
 }

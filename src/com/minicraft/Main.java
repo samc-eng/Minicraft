@@ -44,6 +44,13 @@ public class Main extends Application {
         launch(args);
     }
 
+    private boolean hasInHotbar(int itemId) {
+        for (ItemStack s : player.getHotbar()) {
+            if (s != null && s.getItemId() == itemId) return true;
+        }
+        return false;
+    }
+
     @Override
     public void start(Stage primaryStage) {
         MainMenu menu = new MainMenu();
@@ -98,6 +105,24 @@ public class Main extends Application {
         this.pinceau = canva.getGraphicsContext2D();
         this.surfaceLevel = new Level(4000, 4000);
         this.level        = this.surfaceLevel;
+
+        // Écouteur pour la molette de la souris
+    scene.setOnScroll(event -> {
+        int currentSlot = player.getSelectedSlot();
+        
+        if (event.getDeltaY() > 0) {
+            // Molette vers le haut (on va vers la gauche)
+            currentSlot--;
+            if (currentSlot < 0) currentSlot = 8; // Boucle à la fin
+        } else if (event.getDeltaY() < 0) {
+            // Molette vers le bas (on va vers la droite)
+            currentSlot++;
+            if (currentSlot > 8) currentSlot = 0; // Boucle au début
+        }
+        
+        // On met à jour le slot du joueur (Il faut rendre ta méthode setSelectedSlot 'public' !)
+        player.setSelectedSlot(currentSlot); 
+    });
 
         double[] spawn = level.getSafeSpawn();
         this.player = new Player(spawn[0], spawn[1]);
@@ -305,8 +330,8 @@ public class Main extends Application {
                 if (inventaireOuvert) {
                     inventaireUI.render(pinceau, player);
                 } else if (craftingOpen || workbenchOpen) {
-                    craftingUI.tick(input, player.getInventory());
-                    craftingUI.render(pinceau, player.getInventory());
+                    craftingUI.tick(input, player);
+                    craftingUI.render(pinceau, player);
                 }
 
                 // --- Minimap ---

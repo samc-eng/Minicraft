@@ -48,57 +48,63 @@ public class CraftingUI {
 		        this.selected = 0;
 	}
 
-    public void tick(InputHandler input, Inventory inventaire) {
-		        if (listeCraft.isEmpty()) return;
+    public void tick(InputHandler input, Player player) { // <-- Changement ici
+        Inventory inventaire = player.getInventory();
+        if (listeCraft.isEmpty()) return;
 
-	        if (input.isClicked(KeyCode.T) || input.isClicked(KeyCode.DOWN)) {
-				            selected += 1;
-				            if (selected >= listeCraft.size()) { selected = 0; }
-			}
-		        if (input.isClicked(KeyCode.G) || input.isClicked(KeyCode.UP)) {
-					            selected -= 1;
-					            if (selected < 0) { selected = listeCraft.size() - 1; }
-				}
+        if (input.isClicked(KeyCode.T) || input.isClicked(KeyCode.DOWN)) {
+            selected += 1;
+            if (selected >= listeCraft.size()) { selected = 0; }
+        }
+        if (input.isClicked(KeyCode.G) || input.isClicked(KeyCode.UP)) {
+            selected -= 1;
+            if (selected < 0) { selected = listeCraft.size() - 1; }
+        }
 
-	        if (input.isClicked(KeyCode.ENTER) || input.isClicked(KeyCode.TAB)) {
-				            listeCraft.get(selected).Craft(inventaire);
-			}
-	}
+        if (input.isClicked(KeyCode.ENTER) || input.isClicked(KeyCode.TAB)) {
+            // On donne le joueur ENTIER à la recette !
+            listeCraft.get(selected).Craft(player); 
+        }
+    }
 
-    public void render(GraphicsContext gc, Inventory inventaire) {
-		        // Fond du panneau
-	        gc.setFill(modeEtabli ? Color.SADDLEBROWN : Color.BROWN);
-		        gc.fillRoundRect(50, 50, 230, 280, 10, 10);
-		        gc.setStroke(Color.WHITE);
-		        gc.strokeRoundRect(50, 50, 230, 280, 10, 10);
+    
+    public void render(GraphicsContext gc, Player player) {
+        // C'EST CETTE LIGNE QUI MANQUAIT AU TOUT DÉBUT :
+        Inventory inventaire = player.getInventory(); 
+        
+        // Fond du panneau
+        gc.setFill(modeEtabli ? Color.SADDLEBROWN : Color.BROWN);
+        gc.fillRoundRect(50, 50, 230, 280, 10, 10);
+        gc.setStroke(Color.WHITE);
+        gc.strokeRoundRect(50, 50, 230, 280, 10, 10);
 
-	        // Titre
-	        gc.setFill(Color.WHITE);
-		        String titre = modeEtabli ? "ETABLI" : "CRAFT (main)";
-		        gc.fillText(titre, 80, 75);
+        // Titre
+        gc.setFill(Color.WHITE);
+        String titre = modeEtabli ? "ETABLI" : "CRAFT (main)";
+        gc.fillText(titre, 80, 75);
 
-	        if (listeCraft.isEmpty()) {
-				            gc.setFill(Color.LIGHTGRAY);
-				            gc.fillText("Aucune recette disponible", 65, 110);
-				            return;
-			}
+        if (listeCraft.isEmpty()) {
+            gc.setFill(Color.LIGHTGRAY);
+            gc.fillText("Aucune recette disponible", 65, 110);
+            return;
+        }
 
-	        // Liste des recettes
-	        for (int i = 0; i < listeCraft.size(); i++) {
-				            Recipe recette = listeCraft.get(i);
+        // Liste des recettes
+        for (int i = 0; i < listeCraft.size(); i++) {
+            Recipe recette = listeCraft.get(i);
 
-		            if (recette.canCraft(inventaire)) {
-						                gc.setFill(Color.LIGHTGREEN);
-					} else {
-						                gc.setFill(Color.INDIANRED);
-					}
+            if (recette.canCraft(inventaire)) {
+                gc.setFill(Color.LIGHTGREEN);
+            } else {
+                gc.setFill(Color.INDIANRED);
+            }
 
-		            String prefix = (i == selected) ? "> " : "  ";
-				            gc.fillText(prefix + recette.getName(), 65, 100 + i * 22);
-			}
+            String prefix = (i == selected) ? "> " : "  ";
+            gc.fillText(prefix + recette.getName(), 65, 100 + i * 22);
+        }
 
-	        // Légende
-	        gc.setFill(Color.LIGHTYELLOW);
-		        gc.fillText("[T/G] naviguer  [Entree] crafter", 55, 320);
-	}
+        // Légende
+        gc.setFill(Color.LIGHTYELLOW);
+        gc.fillText("[T/G] naviguer  [Entree] crafter", 55, 320);
+    }
 }
