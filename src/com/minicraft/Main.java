@@ -22,7 +22,7 @@ public class Main extends Application {
     private boolean craftingOpen  = false;
     private boolean workbenchOpen = false;
     private InventoryUI inventaireUI;
-    private boolean inventaireOuvert = false;
+    private boolean inventaireOuvert = false; // true quand le menu d'inventaire est ouvert
     private HUD hud;
     private MiniMap miniMap;
     private boolean miniMapVisible = true;
@@ -73,11 +73,8 @@ public class Main extends Application {
     public int     getCurrentDepth()         { return this.currentDepth; }
     public int[]   getLastSurfacePortal()    { return this.lastSurfacePortal; }
 
-    // Restaure l'état complet du jeu depuis une sauvegarde.
-    // - surface : niveau de surface (toujours présent)
-    // - cave    : grotte visitée (null si jamais entré)
-    // - depth   : où le joueur se trouve (0 surface, >=1 grotte)
-    // - lastPortal : portail par lequel le joueur est descendu (null sinon)
+    // appelle apres un chargement pour remettre la carte et la grotte
+    // surface = la map de base, cave = la grotte (peut etre null), depth = ou est le joueur
     public void loadGameState(Level surface, Level cave, int depth, int[] lastPortal) {
         this.surfaceLevel = surface;
         if (cave != null) {
@@ -172,6 +169,7 @@ public class Main extends Application {
         hud          = new HUD();
         inventaireUI = new InventoryUI();
 
+        // les clics ne servent que quand l'inventaire est ouvert pour bouger les items
         scene.setOnMouseClicked(event -> {
             if (!inventaireOuvert) return;
             inventaireUI.handleClick(player, event.getX(), event.getY());

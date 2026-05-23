@@ -49,7 +49,7 @@ public class Player {
 		if (input.isPressed(KeyCode.D)) {futurX+=vitesse;dir=3;isMoved=true;}
 		if (input.isPressed(KeyCode.Q)) {futurX-=vitesse;dir=2;isMoved=true;}
 
-		// --- SÉLECTION DE LA HOTBAR ---
+		// touches pour choisir la case selectionnee dans la hotbar (1 a 9, ou F1 a F9)
 		if (input.isClicked(KeyCode.DIGIT1) || input.isClicked(KeyCode.F1)) { setSelectedSlot(0); }
 		if (input.isClicked(KeyCode.DIGIT2) || input.isClicked(KeyCode.F2)) { setSelectedSlot(1); }
 		if (input.isClicked(KeyCode.DIGIT3) || input.isClicked(KeyCode.F3)) { setSelectedSlot(2); }
@@ -190,10 +190,12 @@ public class Player {
 	}
 	
 	
+	// jette un item de la case selectionnee de la hotbar par terre devant le joueur (touche H)
 	public void dropSelectedItem(Level level) {
 		ItemStack stack = slot[selectedSlot];
 		if (stack == null) return;
 
+		// on calcule la case devant le joueur
 		int xBlock = (int)((x + Config.blockSize/2) / Config.blockSize);
 		int yBlock = (int)((y + Config.blockSize/2) / Config.blockSize);
 		int cibleX = xBlock;
@@ -248,14 +250,14 @@ public class Player {
 				return;
 			}
 
-			// Vérifie qu'il n'y a pas déjà un bloc dans la case cible
+			// on regarde si il y a deja quelque chose devant
 			int existing = level.getBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize);
 			if (existing != 0) {
 				System.out.println("Impossible de poser : la case est déjà occupée (bloc " + existing + ").");
 				return;
 			}
 
-			// On pose le bloc et on consomme l'item
+			// on pose le bloc et on retire 1 de la hotbar
 			level.setBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize, def.id);
 			consumeSelectedItem();
 			System.out.println("Bloc [" + def.name + "] posé !");
@@ -287,28 +289,31 @@ public class Player {
         // Bonus : On rajoutera plus tard un petit effet de recul (knockback) !
     }
 
-    // Ajoute un item à la possession du joueur : hotbar d'abord (empilage puis case vide),
-    // puis inventaire si la hotbar est pleine. Aucune duplication.
+    // appele quand le joueur recupere un item :
+    // on essaye d'abord d'empiler dans la hotbar, sinon une case vide, sinon ca part dans l'inventaire
     public void pickUpItem(ItemStack stack) {
         int id     = stack.getItemId();
         int amount = stack.getAmount();
 
+        // est-ce qu'on peut empiler avec une case existante ?
         for (int i = 0; i < 9; i++) {
             if (slot[i] != null && slot[i].getItemId() == id && !slot[i].isFull()) {
                 slot[i].add(amount);
                 return;
             }
         }
+        // sinon premiere case vide
         for (int i = 0; i < 9; i++) {
             if (slot[i] == null) {
                 slot[i] = new ItemStack(id, amount);
                 return;
             }
         }
+        // hotbar pleine, ca va dans l'inventaire
         this.inventory.add(stack);
     }
 
-    // Total disponible (hotbar + inventaire) pour un item donné.
+    // combien j'ai de cet item au total (hotbar + inventaire)
     public int amountOf(int id) {
         int total = this.inventory.getAmount(id);
         for (ItemStack s : slot) {
@@ -321,7 +326,7 @@ public class Player {
         return amountOf(id) >= count;
     }
 
-    // Consomme `count` unités de `id` (hotbar d'abord, puis inventaire). Retourne false si insuffisant.
+    // retire `count` items, en commencant par la hotbar puis l'inventaire
     public boolean consume(int id, int count) {
         if (!has(id, count)) return false;
         int remaining = count;

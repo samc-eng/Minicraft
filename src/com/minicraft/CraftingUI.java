@@ -9,10 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-// Interface de craft : visuelle, avec icônes des résultats et des ingrédients.
-// Deux modes :
-//   - CRAFT main (touche C)   : panneau brun
-//   - ETABLI    (touche B)    : panneau bleu acier, plus large
+// menu de craft (touche C ou B pour l'etabli)
+// affiche les recettes avec icones, et change de couleur selon le mode
 public class CraftingUI {
 
     private static final int PANEL_W      = 440;
@@ -58,7 +56,7 @@ public class CraftingUI {
         if (input.isClicked(KeyCode.G) || input.isClicked(KeyCode.UP)) {
             selected = (selected - 1 + listeCraft.size()) % listeCraft.size();
         }
-        // Garde la recette sélectionnée à l'écran
+        // on decale la liste pour que la recette selectionnee reste visible
         if (selected < scrollOffset) scrollOffset = selected;
         if (selected >= scrollOffset + VISIBLE_ROWS) scrollOffset = selected - VISIBLE_ROWS + 1;
 
@@ -81,28 +79,28 @@ public class CraftingUI {
         double canvasH = gc.getCanvas().getHeight();
 
         int rowsShown = Math.min(VISIBLE_ROWS, Math.max(1, listeCraft.size()));
-        double panelH = HEADER_H + rowsShown * ROW_H + 40; // 40 pour le footer
+        double panelH = HEADER_H + rowsShown * ROW_H + 40; // +40 pour le bas du panneau
         double panelX = (canvasW - PANEL_W) / 2.0;
         double panelY = (canvasH - panelH) / 2.0;
 
-        // Voile assombrissant
+        // fond noir transparent
         gc.setFill(Color.rgb(0, 0, 0, 0.55));
         gc.fillRect(0, 0, canvasW, canvasH);
 
-        // Couleurs selon mode
+        // les couleurs changent si on est dans le mode etabli ou pas
         Color bg          = modeEtabli ? Color.rgb(30, 42, 60, 0.97) : Color.rgb(50, 35, 22, 0.97);
         Color borderColor = modeEtabli ? Color.rgb(120, 180, 255)    : Color.GOLD;
         Color headerBg    = modeEtabli ? Color.rgb(45, 60, 85, 1.0)  : Color.rgb(70, 50, 30, 1.0);
         String title      = modeEtabli ? "ETABLI"                    : "CRAFT (main)";
 
-        // Panneau
+        // la boite du menu
         gc.setFill(bg);
         gc.fillRoundRect(panelX, panelY, PANEL_W, panelH, 14, 14);
         gc.setStroke(borderColor);
         gc.setLineWidth(3);
         gc.strokeRoundRect(panelX, panelY, PANEL_W, panelH, 14, 14);
 
-        // Bandeau d'en-tête
+        // bandeau du haut avec le titre
         gc.setFill(headerBg);
         gc.fillRoundRect(panelX, panelY, PANEL_W, HEADER_H, 14, 14);
         gc.setStroke(borderColor);
@@ -120,7 +118,7 @@ public class CraftingUI {
             return;
         }
 
-        // Liste des recettes
+        // on affiche les recettes une par une
         double listX = panelX;
         double listY = panelY + HEADER_H;
         int end = Math.min(listeCraft.size(), scrollOffset + VISIBLE_ROWS);
@@ -130,7 +128,7 @@ public class CraftingUI {
             drawRecipeRow(gc, r, player, listX, ry, PANEL_W, i == selected);
         }
 
-        // Footer
+        // ligne du bas avec les controles et la position
         gc.setFont(FONT_HINT);
         gc.setFill(Color.rgb(220, 220, 220));
         String hint = "↑/↓ naviguer    Entrée crafter    " +
@@ -138,11 +136,12 @@ public class CraftingUI {
         gc.fillText(hint, panelX + PADDING, panelY + panelH - 14);
     }
 
+    // dessine une ligne pour une recette
     private void drawRecipeRow(GraphicsContext gc, Recipe r, Player player,
                                double x, double y, double w, boolean isSelected) {
         boolean craftable = r.canCraft(player);
 
-        // Fond de la ligne (highlight si sélectionnée)
+        // si c'est la recette selectionnee on met un fond colore (vert ou rouge)
         if (isSelected) {
             gc.setFill(craftable ? Color.rgb(80, 140, 70, 0.6)
                                  : Color.rgb(140, 60, 60, 0.6));
@@ -152,7 +151,7 @@ public class CraftingUI {
             gc.strokeRect(x + 4, y + 2, w - 8, ROW_H - 4);
         }
 
-        // Icône résultat
+        // icone de l'objet qu'on obtient
         double iconX = x + PADDING;
         double iconY = y + (ROW_H - ICON_BIG) / 2.0;
         ItemDefinition resDef = ItemRegistry.get(r.getResultId());
@@ -166,12 +165,12 @@ public class CraftingUI {
                         iconX + ICON_BIG - 18, iconY + ICON_BIG - 2);
         }
 
-        // Nom de la recette
+        // nom
         gc.setFont(FONT_NAME);
         gc.setFill(craftable ? Color.WHITE : Color.rgb(200, 200, 200));
         gc.fillText(r.getName(), iconX + ICON_BIG + 10, y + 22);
 
-        // Ingrédients (icônes + quantité possédée / requise)
+        // ingredients : pour chaque ressource il faut on affiche l'icone + "j'ai / il faut"
         double ingX = iconX + ICON_BIG + 10;
         double ingY = y + 30;
         gc.setFont(FONT_CNT);
@@ -184,7 +183,7 @@ public class CraftingUI {
             if (def != null && def.texture != null) {
                 gc.drawImage(def.texture, ingX, ingY, ICON_SMALL, ICON_SMALL);
             }
-            // Texte "has/req" — rouge si manque
+            // vert si on a assez, rouge sinon
             gc.setFill(has >= req ? Color.rgb(170, 255, 170) : Color.rgb(255, 130, 130));
             gc.fillText(has + "/" + req, ingX + ICON_SMALL + 2, ingY + ICON_SMALL - 5);
             ingX += ICON_SMALL + 40;

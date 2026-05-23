@@ -5,22 +5,23 @@ import java.util.Map;
 
 public class Recipe {
     private String name;
-    private int resultId; //quel id/type ?
-    private int resultCount; //la quantite obtenu
-    private Map<Integer,Integer> costs = new HashMap<>();
-    
+    private int resultId;     // l'id de ce qu'on obtient
+    private int resultCount;  // combien on en obtient
+    private Map<Integer,Integer> costs = new HashMap<>(); // les ingredients : id -> nombre
+
     public Recipe(String name, int resultId, int resultCount) {
         this.name=name;
         this.resultId=resultId;
         this.resultCount=resultCount;
     }
-    
-    // cout d'un craft :
+
+    // ajoute un ingredient a la recette
     public Recipe addCost(int id, int count) {
         costs.put(id, count);
         return this;
     }
-    
+
+    // est-ce que le joueur a tout ce qu'il faut ?
     public boolean canCraft(Player player) {
         for (Integer id : costs.keySet()) {
             if (!player.has(id, costs.get(id))) {
@@ -30,6 +31,7 @@ public class Recipe {
         return true;
     }
 
+    // fait le craft si on peut : on retire les ingredients et on donne le resultat
     public void Craft(Player player) {
         if (canCraft(player)) {
             for (Integer id : costs.keySet()) {
@@ -39,7 +41,7 @@ public class Recipe {
             System.out.println("Craft réussi : " + this.name);
         }
     }
-    
+
     public String getName()      { return name; }
     public int getResultId()     { return resultId; }
     public int getResultCount()  { return resultCount; }

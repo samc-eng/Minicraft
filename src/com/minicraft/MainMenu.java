@@ -32,14 +32,16 @@ public class MainMenu {
                     "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 5, 0, 0, 4);";
 
     public void show(Stage window) {
-        // ... (Musique et Fond identiques)
-        try {
-            Media hit = new Media(new java.io.File("resources/menu_music.mp3").toURI().toString());
-            this.mediaPlayer = new MediaPlayer(hit);
-            this.mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
-            this.mediaPlayer.setVolume(0.5);
-            this.mediaPlayer.play();
-        } catch (Exception e) { }
+        // on lance la musique une seule fois pour pas qu'elle se double quand on revient au menu
+        if (this.mediaPlayer == null) {
+            try {
+                Media hit = new Media(new java.io.File("resources/menu_music.mp3").toURI().toString());
+                this.mediaPlayer = new MediaPlayer(hit);
+                this.mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+                this.mediaPlayer.setVolume(0.5);
+                this.mediaPlayer.play();
+            } catch (Exception e) { }
+        }
 
         StackPane root = new StackPane();
 
@@ -71,19 +73,16 @@ public class MainMenu {
         VBox menuBox = new VBox(40);
         menuBox.setAlignment(Pos.CENTER);
 
-        // Création des boutons avec ton style
         Button btnNewGame = createStyledButton("Créer un nouveau monde");
         btnNewGame.setOnAction(e -> startNewGame(window));
 
         Button btnLoadGame = createStyledButton("Continuer la partie");
         btnLoadGame.setOnAction(e -> loadExistingGame(window));
 
-        Button btnInfos = createStyledButton("Informations");
-
         Button btnQuitter = createStyledButton("Quitter");
         btnQuitter.setOnAction(e -> window.close());
 
-        menuBox.getChildren().addAll(title, btnNewGame, btnLoadGame, btnInfos, btnQuitter);
+        menuBox.getChildren().addAll(title, btnNewGame, btnLoadGame, btnQuitter);
         root.getChildren().add(menuBox);
 
         Scene menuScene = new Scene(root, 1000, 700);
@@ -102,7 +101,7 @@ public class MainMenu {
         // C'est cette ligne qui empêche le contour bleu de focus
         btn.setFocusTraversable(false);
 
-        // On remet tes réglages : neutre au départ, style au survol
+        // On remet les réglages : neutre au départ, style au survol
         btn.setStyle(null);
         btn.setOnMouseEntered(e -> btn.setStyle(styleBouton + "-fx-scale-x: 1.1; -fx-scale-y: 1.1;"));
         btn.setOnMouseExited(e -> btn.setStyle(null));
@@ -119,37 +118,37 @@ public class MainMenu {
         Scanner sc = SaveManager.getSaveScanner();
         if (sc == null) return;
         try {
-            // 1. Position du joueur
+            // position du joueur
             String[] pData = sc.nextLine().split(",");
 
-            // 2. Créer le moteur et la scène (le moteur génère une surface temporaire)
+            // on cree la scene (le moteur genere une surface temporaire, on la remplacera)
             GameScene gameScene = new GameScene(window, this);
 
-            // 3. État global : profondeur + portail d'entrée
+            // profondeur et coordonnees du portail d'entree de la grotte
             String[] stateData = sc.nextLine().split(",");
             int savedDepth = Integer.parseInt(stateData[0]);
             int lpx = Integer.parseInt(stateData[1]);
             int lpy = Integer.parseInt(stateData[2]);
             int[] lastPortal = (lpx >= 0 && lpy >= 0) ? new int[]{lpx, lpy} : null;
 
-            // 4. Charger la surface (toujours)
+            // on lit la surface
             Level surface = readLevel(sc);
 
-            // 5. Charger la grotte si présente
+            // et la grotte si elle existe
             Level cave = null;
             String cavePresent = sc.nextLine().trim();
             if (cavePresent.equals("1")) {
                 cave = readLevel(sc);
             }
 
-            // 6. Appliquer l'état au moteur
+            // on remplace l'etat du moteur par ce qu'on a charge
             gameScene.getGameEngine().loadGameState(surface, cave, savedDepth, lastPortal);
 
             Player p = gameScene.getGameEngine().getPlayer();
             p.setX(Double.parseDouble(pData[0]));
             p.setY(Double.parseDouble(pData[1]));
 
-            // 7. Inventaire complet
+            // on lit toutes les piles de l'inventaire
             String line = "";
             while (sc.hasNextLine()) { line = sc.nextLine().trim(); if (!line.isEmpty()) break; }
             if (!line.isEmpty()) {
@@ -163,7 +162,7 @@ public class MainMenu {
                 }
             }
 
-            // 8. Hotbar
+            // et la hotbar
             line = "";
             while (sc.hasNextLine()) { line = sc.nextLine().trim(); if (!line.isEmpty()) break; }
             if (!line.isEmpty()) {
@@ -186,7 +185,7 @@ public class MainMenu {
         } catch (Exception e) { e.printStackTrace(); } finally { sc.close(); }
     }
 
-    // Lit un niveau complet (dims, floor, blocks, items, bots) et le reconstruit.
+    // on reconstruit un niveau a partir du fichier de save
     private Level readLevel(Scanner sc) {
         String[] dims = sc.nextLine().split(",");
         int w     = Integer.parseInt(dims[0]);
@@ -204,7 +203,8 @@ public class MainMenu {
         idx = 0;
         for (int i = 0; i < w; i++) for (int j = 0; j < h; j++) blocks[i][j] = Integer.parseInt(blocksData[idx++]);
 
-        // Régénère le niveau (pour retrouver les portails) puis écrase ses tableaux
+        // on recree le niveau (ca remet les portails au bon endroit grace au seed)
+        // et apres on remplace le sol et les blocs par ce qu'il y avait dans la save
         Level lvl = new Level(w, h, depth, seed);
         lvl.setFloorArray(floor);
         lvl.setBlocksArray(blocks);

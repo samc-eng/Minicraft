@@ -9,19 +9,19 @@ public class SaveManager {
 
     public static void saveGame(Player p, Main engine) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(SAVE_FILE))) {
-            // 1. Joueur (position)
+            // position du joueur
             writer.println(p.getX() + "," + p.getY());
 
-            // 2. État global : profondeur + portail d'entrée de la grotte
+            // a quelle profondeur on est et par quel portail on est descendu
             int[] lp = engine.getLastSurfacePortal();
             int lpx = (lp != null) ? lp[0] : -1;
             int lpy = (lp != null) ? lp[1] : -1;
             writer.println(engine.getCurrentDepth() + "," + lpx + "," + lpy);
 
-            // 3. Surface (toujours sauvegardée)
+            // la surface : on la sauve tout le temps meme si on est dans une grotte
             writeLevel(writer, engine.getSurfaceLevel());
 
-            // 4. Grotte courante (slot 0 uniquement supporté actuellement)
+            // la grotte si elle a deja ete visitee (sinon on met 0)
             Level cave = engine.getUndergroundLevels()[0];
             if (cave == null) {
                 writer.println(0);
@@ -30,14 +30,14 @@ public class SaveManager {
                 writeLevel(writer, cave);
             }
 
-            // 5. Inventaire complet (id, quantité, durabilité)
+            // toutes les piles dans l'inventaire (id, quantite, durabilite)
             List<ItemStack> invStacks = p.getInventory().getAll();
             writer.println(invStacks.size());
             for (ItemStack s : invStacks) {
                 writer.println(s.getItemId() + "," + s.getAmount() + "," + s.getCurrentDurability());
             }
 
-            // 6. Hotbar (9 slots, "-" si vide)
+            // les 9 cases de la hotbar (un "-" si la case est vide)
             ItemStack[] hotbar = p.getHotbar();
             StringBuilder hb = new StringBuilder();
             for (int i = 0; i < hotbar.length; i++) {
@@ -53,14 +53,14 @@ public class SaveManager {
             writer.println(hb);
 
             writer.flush();
-            System.out.println("✅ Sauvegarde réussie dans " + SAVE_FILE);
+            System.out.println("Sauvegarde OK -> " + SAVE_FILE);
 
         } catch (IOException e) {
-            System.err.println("❌ Erreur critique de sauvegarde : " + e.getMessage());
+            System.err.println("Erreur de sauvegarde : " + e.getMessage());
         }
     }
 
-    // Écrit un niveau complet : dimensions/depth/seed, floor, blocks, items, bots
+    // ecrit un niveau dans le fichier : taille + seed, sol, blocs, items, bots
     private static void writeLevel(PrintWriter writer, Level lvl) {
         int w = lvl.getWidth();
         int h = lvl.getHeight();
@@ -102,7 +102,7 @@ public class SaveManager {
     public static Scanner getSaveScanner() {
         File file = new File(SAVE_FILE);
         if (!file.exists()) {
-            System.out.println("⚠️ Aucun fichier de sauvegarde trouvé.");
+            System.out.println("Pas de sauvegarde trouvee.");
             return null;
         }
         try {

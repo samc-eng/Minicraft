@@ -6,20 +6,19 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import java.util.List;
 
-// Vue unifiée de l'inventaire :
-//   - Ligne du haut (9 cases) = hotbar (bordure jaune)
-//   - Lignes du dessous       = stockage (bordure grise)
-// Cliquer sur une case de hotbar  -> envoie l'item au stockage
-// Cliquer sur une case stockage   -> envoie l'item dans la 1re case vide de la hotbar
+// fenetre d'inventaire (touche E)
+// ligne du haut = hotbar, en dessous = stockage
+// on clique sur une case pour faire passer l'item de l'un a l'autre
 public class InventoryUI {
+    // tailles de la grille
     private static final int COLS_HOTBAR  = 9;
     private static final int COLS_STORAGE = 9;
     private static final int ROWS_STORAGE = 2;
     private static final int SLOT_SIZE    = 64;
     private static final int SPACING      = 6;
     private static final int PADDING      = 28;
-    private static final int TITLE_BAR    = 140; // titre + sous-titre + label HOTBAR
-    private static final int LABEL_GAP    = 64;  // entre slots hotbar et slots stockage
+    private static final int TITLE_BAR    = 140;
+    private static final int LABEL_GAP    = 64;
 
     private static final Font FONT_TITLE = Font.font("Arial Rounded MT Bold", FontWeight.BOLD, 32);
     private static final Font FONT_HINT  = Font.font("Arial", 16);
@@ -61,40 +60,40 @@ public class InventoryUI {
     private void renderInternal(GraphicsContext gc, Player player) {
         computeBounds(gc);
 
-        // Voile assombrissant le jeu derrière
+        // on noircit le fond derriere
         gc.setFill(Color.rgb(0, 0, 0, 0.6));
         gc.fillRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
 
-        // Panneau
+        // la boite
         gc.setFill(Color.rgb(40, 30, 20, 0.96));
         gc.fillRoundRect(panelX, panelY, panelW, panelH, 16, 16);
         gc.setStroke(Color.GOLD);
         gc.setLineWidth(3);
         gc.strokeRoundRect(panelX, panelY, panelW, panelH, 16, 16);
 
-        // Bandeau de titre (séparé visuellement)
+        // titre INVENTAIRE
         gc.setFont(FONT_TITLE);
         gc.setFill(Color.GOLD);
         gc.fillText("INVENTAIRE", panelX + PADDING, panelY + 48);
 
-        // Ligne séparatrice sous le titre
+        // petite ligne dorée sous le titre
         gc.setStroke(Color.rgb(255, 215, 0, 0.4));
         gc.setLineWidth(1);
         gc.strokeLine(panelX + PADDING, panelY + 62,
                       panelX + panelW - PADDING, panelY + 62);
 
-        // Sous-titre / indication
+        // texte d'aide
         gc.setFont(FONT_HINT);
         gc.setFill(Color.rgb(220, 220, 220));
         gc.fillText("Clic sur la HOTBAR = ranger    |    Clic sur le STOCKAGE = mettre en hotbar",
                     panelX + PADDING, panelY + 86);
 
-        // Label HOTBAR (bien au-dessus des slots, pas collé au sous-titre)
+        // label de la hotbar
         gc.setFont(FONT_LABEL);
         gc.setFill(Color.GOLD);
         gc.fillText("HOTBAR", hotbarX, hotbarY - 12);
 
-        // Hotbar (ligne du haut, bordure jaune)
+        // les 9 cases de la hotbar avec bordure jaune
         ItemStack[] hotbar = player.getHotbar();
         for (int col = 0; col < COLS_HOTBAR; col++) {
             double sx = hotbarX + col * (SLOT_SIZE + SPACING);
@@ -102,12 +101,12 @@ public class InventoryUI {
             drawSlot(gc, sx, sy, hotbar[col], Color.GOLD);
         }
 
-        // Label STOCKAGE
+        // label du stockage
         gc.setFont(FONT_LABEL);
         gc.setFill(Color.WHITE);
         gc.fillText("STOCKAGE", storageX, storageY - 12);
 
-        // Stockage (grille du bas, bordure grise)
+        // les cases du stockage avec bordure grise
         List<ItemStack> stacks = player.getInventory().getAll();
         for (int row = 0; row < ROWS_STORAGE; row++) {
             for (int col = 0; col < COLS_STORAGE; col++) {
@@ -139,16 +138,16 @@ public class InventoryUI {
         }
     }
 
-    // Gère le clic à la position (mx, my). Renvoie true si une action a été faite.
+    // appelle quand on clique pour savoir quelle case a ete touchee
     public boolean handleClick(Player player, double mx, double my) {
-        // Test hotbar (ligne du haut)
+        // clic dans la hotbar ?
         if (my >= hotbarY && my <= hotbarY + SLOT_SIZE) {
             int col = slotColumnAt(mx, hotbarX);
             if (col >= 0 && col < COLS_HOTBAR) {
                 return clickHotbar(player, col);
             }
         }
-        // Test stockage
+        // clic dans le stockage ?
         if (my >= storageY) {
             int rowSpan = SLOT_SIZE + SPACING;
             int row = (int) ((my - storageY) / rowSpan);
@@ -172,7 +171,7 @@ public class InventoryUI {
         return col;
     }
 
-    // Hotbar -> stockage : retire de la hotbar, ajoute à l'inventaire.
+    // on prend l'item de la hotbar et on le met dans le stockage
     private boolean clickHotbar(Player player, int col) {
         ItemStack[] hotbar = player.getHotbar();
         ItemStack s = hotbar[col];
@@ -182,7 +181,7 @@ public class InventoryUI {
         return true;
     }
 
-    // Stockage -> hotbar : retire de l'inventaire, met dans la 1re case vide de la hotbar.
+    // on prend un item du stockage et on le met dans la premiere case vide de la hotbar
     private boolean clickStorage(Player player, int idx) {
         List<ItemStack> stacks = player.getInventory().getAll();
         if (idx < 0 || idx >= stacks.size()) return false;
@@ -195,6 +194,6 @@ public class InventoryUI {
                 return true;
             }
         }
-        return false; // hotbar pleine
+        return false; // pas de place
     }
 }
