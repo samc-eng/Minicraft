@@ -21,30 +21,27 @@ public class Recipe {
         return this;
     }
     
-    public boolean canCraft(Inventory inventaire) {
+    public boolean canCraft(Player player) {
         for (Integer id : costs.keySet()) {
-            if (!inventaire.has(id, costs.get(id))) {
+            if (!player.has(id, costs.get(id))) {
                 return false;
             }
         }
         return true;
     }
-    
+
     public void Craft(Player player) {
-        Inventory inventaire = player.getInventory();
-        
-        if (canCraft(inventaire)) {
-            // 1. On consomme les ressources dans l'inventaire caché
+        if (canCraft(player)) {
             for (Integer id : costs.keySet()) {
-                inventaire.remove(id, costs.get(id));
+                player.consume(id, costs.get(id));
             }
-            
-            // L'objet créé passe par le Player, ce qui va l'ajouter à la fois à l'inventaire ET à la Hotbar !
             player.pickUpItem(new ItemStack(resultId, resultCount));
-            
             System.out.println("Craft réussi : " + this.name);
         }
     }
     
-    public String getName() { return name;}
+    public String getName()      { return name; }
+    public int getResultId()     { return resultId; }
+    public int getResultCount()  { return resultCount; }
+    public Map<Integer,Integer> getCosts() { return costs; }
 }
