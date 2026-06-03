@@ -27,7 +27,6 @@ public class Main extends Application {
     private MiniMap miniMap;
     private boolean miniMapVisible = true;
     private boolean fullMapOpen    = false;
-    private List<Bot> bots = new ArrayList<>();
 
     // Gestion multi-niveaux
     private Level   surfaceLevel;
@@ -100,6 +99,60 @@ public class Main extends Application {
         return false;
     }
 
+    public void clearEnemiesForCurrentLevel() {
+        if (level != null) {
+            level.clearEnemies();
+        }
+    }
+
+    public void spawnEnemiesForCurrentLevel() {
+        if (level == null || player == null || currentDepth != 0) {
+            return;
+        }
+
+        level.clearEnemies();
+        List<double[]> reservedPositions = new ArrayList<>();
+
+        for (int i = 0; i < Config.MELEE_BOT_COUNT; i++) {
+            double[] spawn = level.findEnemySpawnAround(player.getCenterX(), player.getCenterY(), reservedPositions);
+            if (spawn != null) {
+                level.addBot(spawn[0], spawn[1]);
+                reservedPositions.add(spawn);
+            }
+        }
+
+        for (int i = 0; i < Config.ARCHER_BOT_COUNT; i++) {
+            double[] spawn = level.findEnemySpawnAround(player.getCenterX(), player.getCenterY(), reservedPositions);
+            if (spawn != null) {
+                level.addArcherBot(spawn[0], spawn[1]);
+                reservedPositions.add(spawn);
+            }
+        }
+    }
+
+    public void spawnMissingArchersForCurrentLevel() {
+        if (level == null || player == null || currentDepth != 0) {
+            return;
+        }
+
+        List<double[]> reservedPositions = new ArrayList<>();
+        for (Bot bot : level.getBots()) {
+            reservedPositions.add(new double[]{bot.getX(), bot.getY()});
+        }
+        for (ArcherBot archer : level.getArcherBots()) {
+            reservedPositions.add(new double[]{archer.getX(), archer.getY()});
+        }
+
+        int missingArchers = Config.ARCHER_BOT_COUNT - level.getArcherBots().size();
+        for (int i = 0; i < missingArchers; i++) {
+            double[] spawn = level.findEnemySpawnAround(player.getCenterX(), player.getCenterY(), reservedPositions);
+            if (spawn != null) {
+                level.addArcherBot(spawn[0], spawn[1]);
+                reservedPositions.add(spawn);
+            }
+        }
+    }
+
     public void launchGame(Stage primaryStage, Scene scene) {
         Canvas canva = new Canvas(Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT);
         this.pinceau = canva.getGraphicsContext2D();
@@ -126,10 +179,7 @@ public class Main extends Application {
 
         double[] spawn = level.getSafeSpawn();
         this.player = new Player(spawn[0], spawn[1]);
-
-        for (int i = 0; i < 10; i++) {
-            this.bots.add(new Bot(spawn[0] + i * 40, spawn[1]));
-        }
+        spawnEnemiesForCurrentLevel();
 
         this.gameRoot = new Pane();
         this.gameRoot.getChildren().add(canva);
@@ -306,18 +356,11 @@ public class Main extends Application {
 
                 level.render(pinceau, camX, camY, largeurVue, hauteurVue);
 
-                if (currentDepth == 0) {
-                    for (Bot bot : bots) bot.render(pinceau);
-                }
-
                 // --- Tick ---
                 if (inventaireOuvert || craftingOpen || workbenchOpen) {
                     // On ne bouge pas le joueur quand un menu est ouvert
                 } else {
                     player.tick(level, input);
-                    if (currentDepth == 0) {
-                        for (Bot bot : bots) bot.tick(level, player);
-                    }
                     level.updateEntities(player);
                 }
 

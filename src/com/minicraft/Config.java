@@ -1,25 +1,33 @@
 package com.minicraft;
 
 public class Config {
-    public static final int blockSize = 16;//taile d'un block
-    public static final int SCALE = 4; //échelle de zoom
-    public static final int itemSize = 6; //taile d'un item
-    
-    //taile de la fenêtre au lancement
+    public static final int blockSize = 16; // taille d'un block
+    public static final int SCALE = 4;      // echelle de zoom
+    public static final int itemSize = 6;   // taille d'un item
+
     public static final int SCREEN_WIDTH = 1280;
     public static final int SCREEN_HEIGHT = 720;
 
-    // Paramètres de l'IA des ennemis
-    public static final int ENEMY_PATH_RECALC_TICKS = 30; // Le bot recalcule son chemin toutes les 30 frames
-    public static final int ENEMY_PATH_RADIUS = 15;       // Le bot peut voir à 15 blocs de distance maximum
+    public static final int PLAYER_MAX_HEALTH = 10;
+    public static final int PLAYER_INVULNERABILITY_TICKS = 90;
+    public static final int PLAYER_DAMAGE_BLINK_TICKS = 8;
 
-    // Paramètres des projectiles (Flèches)
-    public static final double ARROW_SPEED = 4.0;  // Vitesse de vol de la flèche
-    public static final double ARROW_RADIUS = 2.0; // Taille de la hitbox de la flèche
-    public static final int ARROW_DAMAGE = 2;      // Nombre de cœurs perdus par le joueur
+    public static final int ENEMY_PATH_RECALC_TICKS = 30;
+    public static final int ENEMY_PATH_RADIUS = 15;
+    public static final int MELEE_BOT_COUNT = 10;
+    public static final int ARCHER_BOT_COUNT = 4;
+    public static final int ENEMY_SPAWN_ATTEMPTS = 500;
+    public static final double ENEMY_MIN_PLAYER_SPAWN_DISTANCE = blockSize * 10.0;
+    public static final double ENEMY_MAX_PLAYER_SPAWN_DISTANCE = blockSize * 45.0;
+    public static final double ENEMY_MIN_BOT_SPAWN_DISTANCE = blockSize * 5.0;
 
-    // Paramètres de l'ArcherBot
-    public static final double ENEMY_BOT_SPEED = 1.2;            // Vitesse de déplacement du bot
-    public static final int ARCHER_SHOOT_COOLDOWN_TICKS = 90;    // Temps d'attente entre deux flèches (ex: 90 frames = 1.5 seconde)
-    public static final double ARCHER_SHOOT_RANGE = 200.0;       // Portée de vision et de tir (en pixels)
+    public static final double ARROW_SPEED = 1.8;
+    public static final double ARROW_RADIUS = 2.0;
+    public static final int ARROW_DAMAGE = 2;
+    public static final double ARROW_MAX_DISTANCE = 260.0;
+
+    public static final double ENEMY_BOT_SPEED = 0.16;
+    public static final int ARCHER_SHOOT_COOLDOWN_TICKS = 100;
+    public static final double ARCHER_SHOOT_RANGE = 220.0;
+    public static final double ARCHER_KEEP_DISTANCE = blockSize * 6.0;
 }

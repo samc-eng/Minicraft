@@ -158,6 +158,12 @@ public class MainMenu {
             p.setX(Double.parseDouble(pData[0])); p.setY(Double.parseDouble(pData[1]));
             p.getInventory().add(new ItemStack(1, Integer.parseInt(pData[2])));
             p.getInventory().add(new ItemStack(2, Integer.parseInt(pData[3])));
+            if (pData.length > 4) {
+                p.setHealth(Integer.parseInt(pData[4]));
+            }
+            gameScene.getGameEngine().clearEnemiesForCurrentLevel();
+            int loadedEnemyCount = 0;
+            boolean loadedArcherSection = false;
             String line = "";
             while (sc.hasNextLine()) { line = sc.nextLine().trim(); if (!line.isEmpty()) break; }
             if (!line.isEmpty()) {
@@ -175,6 +181,23 @@ public class MainMenu {
                     String[] bt = sc.nextLine().split(",");
                     lvl.addBot(Double.parseDouble(bt[0]), Double.parseDouble(bt[1]));
                 }
+                loadedEnemyCount += nBts;
+            }
+            line = "";
+            while (sc.hasNextLine()) { line = sc.nextLine().trim(); if (!line.isEmpty()) break; }
+            if (!line.isEmpty()) {
+                loadedArcherSection = true;
+                int nArchers = Integer.parseInt(line);
+                for (int i = 0; i < nArchers; i++) {
+                    String[] archer = sc.nextLine().split(",");
+                    lvl.addArcherBot(Double.parseDouble(archer[0]), Double.parseDouble(archer[1]));
+                }
+                loadedEnemyCount += nArchers;
+            }
+            if (loadedEnemyCount == 0) {
+                gameScene.getGameEngine().spawnEnemiesForCurrentLevel();
+            } else if (!loadedArcherSection) {
+                gameScene.getGameEngine().spawnMissingArchersForCurrentLevel();
             }
             gameScene.show();
         } catch (Exception e) { e.printStackTrace(); } finally { sc.close(); }

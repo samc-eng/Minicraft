@@ -19,9 +19,9 @@ public class ArcherBot extends EnemyBot {
             shootCooldown--;
         }
 
-        moveTowardPlayer(level, player, Config.ENEMY_BOT_SPEED, Config.blockSize * 2.0);
+        moveTowardPlayer(level, player, Config.ENEMY_BOT_SPEED, Config.ARCHER_KEEP_DISTANCE);
 
-        if (canShoot(player)) {
+        if (canShoot(level, player)) {
             shootCooldown = Config.ARCHER_SHOOT_COOLDOWN_TICKS;
             return new Arrow(getCenterX(), getCenterY(), player.getCenterX(), player.getCenterY());
         }
@@ -29,12 +29,33 @@ public class ArcherBot extends EnemyBot {
         return null;
     }
 
-    private boolean canShoot(Player player) {
+    private boolean canShoot(Level level, Player player) {
         if (shootCooldown > 0) return false;
 
         double dx = player.getCenterX() - getCenterX();
         double dy = player.getCenterY() - getCenterY();
-        return Math.sqrt(dx * dx + dy * dy) <= Config.ARCHER_SHOOT_RANGE;
+        double distance = Math.sqrt(dx * dx + dy * dy);
+        return distance <= Config.ARCHER_SHOOT_RANGE && hasLineOfSight(level, player);
+    }
+
+    private boolean hasLineOfSight(Level level, Player player) {
+        double startX = getCenterX();
+        double startY = getCenterY();
+        double dx = player.getCenterX() - startX;
+        double dy = player.getCenterY() - startY;
+        double distance = Math.sqrt(dx * dx + dy * dy);
+        int steps = Math.max(1, (int) (distance / 4.0));
+
+        for (int i = 1; i < steps; i++) {
+            double t = i / (double) steps;
+            double px = startX + dx * t;
+            double py = startY + dy * t;
+            if (level.isSolid(px, py)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public void render(GraphicsContext gc) {
@@ -48,5 +69,4 @@ public class ArcherBot extends EnemyBot {
         gc.strokeLine(x + 12, y + 3, x + 12, y + 13);
         gc.strokeLine(x + 9, y + 8, x + 14, y + 8);
     }
-
 }
