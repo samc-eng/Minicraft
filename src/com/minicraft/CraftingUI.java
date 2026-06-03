@@ -49,7 +49,6 @@ public class CraftingUI {
 	}
 
     public void tick(InputHandler input, Player player) { // <-- Changement ici
-        Inventory inventaire = player.getInventory();
         if (listeCraft.isEmpty()) return;
 
         if (input.isClicked(KeyCode.T) || input.isClicked(KeyCode.DOWN)) {
