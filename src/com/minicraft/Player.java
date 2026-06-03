@@ -18,7 +18,6 @@ public class Player {
 	private int health = 10;
 	private int energy = 10;
 	private int invulnerabilityTimer = 3;
-    private int selectedItemId = 1; // l'item actuellement en main (ID)
 	private int selectedSlot = 0;
 	private ItemStack[] slot = new ItemStack[9];
 
@@ -30,8 +29,8 @@ public class Player {
 	public Player(double startX, double startY) {
 		this.x=startX;
 		this.y=startY;
-		this.vitesse=0.25;
-		
+		this.vitesse=0.5;
+
 		try {
 			this.skin=new Image("file:resources/skins.png");
 		} catch (Exception e){
@@ -51,15 +50,15 @@ public class Player {
 		if (input.isPressed(KeyCode.Q)) {futurX-=vitesse;dir=2;isMoved=true;}
 
 		// --- SÉLECTION DE LA HOTBAR ---
-		if (input.isClicked(KeyCode.F1)) { setSelectedSlot(0); }
-		if (input.isClicked(KeyCode.F2)) { setSelectedSlot(1); }
-		if (input.isClicked(KeyCode.F3)) { setSelectedSlot(2); }
-		if (input.isClicked(KeyCode.F4)) { setSelectedSlot(3); }
-		if (input.isClicked(KeyCode.F5)) { setSelectedSlot(4); }
-		if (input.isClicked(KeyCode.F6)) { setSelectedSlot(5); }
-		if (input.isClicked(KeyCode.F7)) { setSelectedSlot(6); }
-		if (input.isClicked(KeyCode.F8)) { setSelectedSlot(7); }
-		if (input.isClicked(KeyCode.F9)) { setSelectedSlot(8); }
+		if (input.isClicked(KeyCode.DIGIT1) || input.isClicked(KeyCode.F1)) { setSelectedSlot(0); }
+		if (input.isClicked(KeyCode.DIGIT2) || input.isClicked(KeyCode.F2)) { setSelectedSlot(1); }
+		if (input.isClicked(KeyCode.DIGIT3) || input.isClicked(KeyCode.F3)) { setSelectedSlot(2); }
+		if (input.isClicked(KeyCode.DIGIT4) || input.isClicked(KeyCode.F4)) { setSelectedSlot(3); }
+		if (input.isClicked(KeyCode.DIGIT5) || input.isClicked(KeyCode.F5)) { setSelectedSlot(4); }
+		if (input.isClicked(KeyCode.DIGIT6) || input.isClicked(KeyCode.F6)) { setSelectedSlot(5); }
+		if (input.isClicked(KeyCode.DIGIT7) || input.isClicked(KeyCode.F7)) { setSelectedSlot(6); }
+		if (input.isClicked(KeyCode.DIGIT8) || input.isClicked(KeyCode.F8)) { setSelectedSlot(7); }
+		if (input.isClicked(KeyCode.DIGIT9) || input.isClicked(KeyCode.F9)) { setSelectedSlot(8); }
 
 
 		
@@ -95,10 +94,14 @@ public class Player {
 			this.interact(level,true);
 		}
 
+		if (input.isClicked(KeyCode.H)) {
+			this.dropSelectedItem(level);
+		}
+
 		if (input.isPressed(KeyCode.SHIFT) && energy>3) {
-			this.vitesse=0.5;
+			this.vitesse=1.0;
 		} else {
-			this.vitesse=0.25;
+			this.vitesse=0.5;
 		}
 		
 		for (Item item : level.getItems()) {
@@ -187,6 +190,29 @@ public class Player {
 	}
 	
 	
+	public void dropSelectedItem(Level level) {
+		ItemStack stack = slot[selectedSlot];
+		if (stack == null) return;
+
+		int xBlock = (int)((x + Config.blockSize/2) / Config.blockSize);
+		int yBlock = (int)((y + Config.blockSize/2) / Config.blockSize);
+		int cibleX = xBlock;
+		int cibleY = yBlock;
+		if (dir == 0) cibleY++;
+		if (dir == 1) cibleY--;
+		if (dir == 3) cibleX++;
+		if (dir == 2) cibleX--;
+
+		double dropX = cibleX * Config.blockSize + Config.blockSize / 2.0;
+		double dropY = cibleY * Config.blockSize + Config.blockSize / 2.0;
+
+		int id = stack.getItemId();
+		level.dropItem(dropX, dropY, new ItemStack(id, 1));
+
+		consumeSelectedItem();
+		System.out.println("Item [" + id + "] jeté au sol.");
+	}
+
 	public void interact(Level level, boolean placeMode) {
 		this.attackTimer=10;
 		
@@ -210,37 +236,29 @@ public class Player {
         } else {
             // MODE CONSTRUCTION
 			ItemStack stackInHand = getSelectedItem();
-			
-			// Si la main n'est pas vide
-			if (stackInHand != null) {
-				ItemDefinition def = stackInHand.getDefinition();
-				
-				// Si l'objet est posable
-				if (def != null && def.placeable) {
-					
-					// Hitbox du futur mur (tu avais très bien codé ça !)
-					double bLeft = cibleX * Config.blockSize;
-					double bRight = bLeft + Config.blockSize;
-					double bTop = cibleY * Config.blockSize;
-					double bBottom = bTop + Config.blockSize;
-					
-					boolean seTouchent = !(x+8 <= bRight || x + Config.blockSize-8 >= bLeft ||
-										y+8 <= bBottom || y + Config.blockSize-8 >= bTop);
-					
-					// S'il n'y a pas de collision avec le joueur
-					if (!seTouchent) {
-						// 1. On pose le bloc sur la carte
-						level.setBlocks(cibleX*Config.blockSize, cibleY*Config.blockSize, def.id);
-						
-						// 2. On utilise notre nouvelle méthode pour diminuer la quantité !
-						consumeSelectedItem(); 
-						
-						System.out.println("Bloc [" + def.name + "] posé !");
-					}
-				} else {
-					System.out.println("Cet objet n'est pas un bloc posable.");
-				}
+
+			if (stackInHand == null) {
+				System.out.println("Aucun item sélectionné dans la hotbar.");
+				return;
 			}
+
+			ItemDefinition def = stackInHand.getDefinition();
+			if (def == null || !def.placeable) {
+				System.out.println("Cet objet n'est pas un bloc posable.");
+				return;
+			}
+
+			// Vérifie qu'il n'y a pas déjà un bloc dans la case cible
+			int existing = level.getBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize);
+			if (existing != 0) {
+				System.out.println("Impossible de poser : la case est déjà occupée (bloc " + existing + ").");
+				return;
+			}
+
+			// On pose le bloc et on consomme l'item
+			level.setBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize, def.id);
+			consumeSelectedItem();
+			System.out.println("Bloc [" + def.name + "] posé !");
 		}
 	}
 	
@@ -259,43 +277,66 @@ public class Player {
 		this.y = newY;
 	}
 
-	public void takeDamage(int amount) {
-		if (invulnerabilityTimer > 0) return;
-				int reduction = armorSlots.getArmorReduction();
-				int degatsReels = Math.max(1, amount - reduction); // minimum 1 degat toujours
-				health -= degatsReels;
-		invulnerabilityTimer = 30;
-		if (health <= 0) {
-			health = 10;
-			x = 50;
-			y = 50;
-		}
-	}
+	// Fait perdre de la vie au joueur
+    public void takeDamage(int damage) {
+        this.health -= damage;
+        if (this.health < 0) {
+            this.health = 0;
+        }
+        System.out.println("Aïe ! Le joueur a pris " + damage + " dégâts. Vie restante : " + this.health);
+        // Bonus : On rajoutera plus tard un petit effet de recul (knockback) !
+    }
 
-	// Méthode unifiée pour ajouter un objet à la fois dans l'inventaire et la Hotbar
+    // Ajoute un item à la possession du joueur : hotbar d'abord (empilage puis case vide),
+    // puis inventaire si la hotbar est pleine. Aucune duplication.
     public void pickUpItem(ItemStack stack) {
-        // 1. On l'ajoute à l'inventaire de Rayan (pour que les recettes de craft le détectent)
-        this.inventory.add(stack);
-        
-        // 2. On l'ajoute à notre Hotbar (pour l'affichage du HUD et la pose)
-        int id = stack.getItemId();
+        int id     = stack.getItemId();
         int amount = stack.getAmount();
 
-        // A. On regarde si cet item est déjà dans la Hotbar pour s'empiler
         for (int i = 0; i < 9; i++) {
             if (slot[i] != null && slot[i].getItemId() == id && !slot[i].isFull()) {
                 slot[i].add(amount);
                 return;
             }
         }
-
-        // B. Sinon, on cherche la première case vide (null)
         for (int i = 0; i < 9; i++) {
             if (slot[i] == null) {
                 slot[i] = new ItemStack(id, amount);
                 return;
             }
         }
+        this.inventory.add(stack);
+    }
+
+    // Total disponible (hotbar + inventaire) pour un item donné.
+    public int amountOf(int id) {
+        int total = this.inventory.getAmount(id);
+        for (ItemStack s : slot) {
+            if (s != null && s.getItemId() == id) total += s.getAmount();
+        }
+        return total;
+    }
+
+    public boolean has(int id, int count) {
+        return amountOf(id) >= count;
+    }
+
+    // Consomme `count` unités de `id` (hotbar d'abord, puis inventaire). Retourne false si insuffisant.
+    public boolean consume(int id, int count) {
+        if (!has(id, count)) return false;
+        int remaining = count;
+        for (int i = 0; i < 9 && remaining > 0; i++) {
+            if (slot[i] != null && slot[i].getItemId() == id) {
+                int take = Math.min(remaining, slot[i].getAmount());
+                slot[i].remove(take);
+                remaining -= take;
+                if (slot[i].getAmount() <= 0) slot[i] = null;
+            }
+        }
+        if (remaining > 0) {
+            this.inventory.remove(id, remaining);
+        }
+        return true;
     }
 
 	public void loseEnergy(int amount) {
@@ -338,4 +379,13 @@ public class Player {
 	public int getSelectedSlot() { 
 		return this.selectedSlot; 
 	}
+
+	// Retourne les coordonnées du joueur en cases (Tiles) pour l'IA des monstres
+    public int getTileX() {
+        return (int) (getCenterX() / Config.blockSize);
+    }
+
+    public int getTileY() {
+        return (int) (getCenterY() / Config.blockSize);
+    }
 }

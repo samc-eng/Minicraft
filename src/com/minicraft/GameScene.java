@@ -47,7 +47,7 @@ public class GameScene {
     }
 
     private void returnToMenu() {
-        SaveManager.saveGame(gameEngine.getPlayer(), gameEngine.getLevel());
+        SaveManager.saveGame(gameEngine.getPlayer(), gameEngine);
         mainMenu.show(stage);
     }
 

@@ -111,7 +111,6 @@ public class MainMenu {
     }
 
     private void startNewGame(Stage window) {
-        if (mediaPlayer != null) mediaPlayer.stop();
         GameScene gameScene = new GameScene(window, this);
         gameScene.show();
     }
@@ -120,63 +119,109 @@ public class MainMenu {
         Scanner sc = SaveManager.getSaveScanner();
         if (sc == null) return;
         try {
-            if (mediaPlayer != null) mediaPlayer.stop();
-            // 1. Lire les données du joueur
+            // 1. Position du joueur
             String[] pData = sc.nextLine().split(",");
 
-            // 2. Créer le moteur et la scène
+            // 2. Créer le moteur et la scène (le moteur génère une surface temporaire)
             GameScene gameScene = new GameScene(window, this);
-            Level lvl = gameScene.getGameEngine().getLevel();
 
-            // 3. Lire les dimensions et les maps
-            String[] dimensions = sc.nextLine().split(",");
-            int w = Integer.parseInt(dimensions[0]);
-            int h = Integer.parseInt(dimensions[1]);
+            // 3. État global : profondeur + portail d'entrée
+            String[] stateData = sc.nextLine().split(",");
+            int savedDepth = Integer.parseInt(stateData[0]);
+            int lpx = Integer.parseInt(stateData[1]);
+            int lpy = Integer.parseInt(stateData[2]);
+            int[] lastPortal = (lpx >= 0 && lpy >= 0) ? new int[]{lpx, lpy} : null;
 
-            // Charger le sol
-            String[] floorData = sc.nextLine().split(",");
-            int[][] newFloor = new int[w][h];
-            int idx = 0;
-            for(int i=0; i<w; i++) for(int j=0; j<h; j++) newFloor[i][j] = Integer.parseInt(floorData[idx++]);
+            // 4. Charger la surface (toujours)
+            Level surface = readLevel(sc);
 
-            // Charger les blocs (Arbres/Roches)
-            String[] blocksData = sc.nextLine().split(",");
-            int[][] newBlocks = new int[w][h];
-            idx = 0;
-            for(int i=0; i<w; i++) for(int j=0; j<h; j++) newBlocks[i][j] = Integer.parseInt(blocksData[idx++]);
+            // 5. Charger la grotte si présente
+            Level cave = null;
+            String cavePresent = sc.nextLine().trim();
+            if (cavePresent.equals("1")) {
+                cave = readLevel(sc);
+            }
 
-            // 4. Appliquer tout au jeu
-            lvl.setFloorArray(newFloor);
-            lvl.setBlocksArray(newBlocks);
-
-            // 5. Régénérer la minimap avec les données chargées
-            gameScene.getGameEngine().getMiniMap().generate(newFloor, newBlocks, w, h,
-                    gameScene.getGameEngine().getLevel().getPortals());
+            // 6. Appliquer l'état au moteur
+            gameScene.getGameEngine().loadGameState(surface, cave, savedDepth, lastPortal);
 
             Player p = gameScene.getGameEngine().getPlayer();
+            p.setX(Double.parseDouble(pData[0]));
+            p.setY(Double.parseDouble(pData[1]));
 
-            p.setX(Double.parseDouble(pData[0])); p.setY(Double.parseDouble(pData[1]));
-            p.getInventory().add(new ItemStack(1, Integer.parseInt(pData[2])));
-            p.getInventory().add(new ItemStack(2, Integer.parseInt(pData[3])));
+            // 7. Inventaire complet
             String line = "";
             while (sc.hasNextLine()) { line = sc.nextLine().trim(); if (!line.isEmpty()) break; }
             if (!line.isEmpty()) {
-                int nI = Integer.parseInt(line);
-                for (int i = 0; i < nI; i++) {
-                    String[] it = sc.nextLine().split(",");
-                    lvl.dropItem(Double.parseDouble(it[0]), Double.parseDouble(it[1]), new ItemStack(Integer.parseInt(it[2]), 1));
+                int nInv = Integer.parseInt(line);
+                for (int i = 0; i < nInv; i++) {
+                    String[] st = sc.nextLine().split(",");
+                    int id  = Integer.parseInt(st[0]);
+                    int qty = Integer.parseInt(st[1]);
+                    int dur = Integer.parseInt(st[2]);
+                    p.getInventory().add(new ItemStack(id, qty, dur));
                 }
             }
+
+            // 8. Hotbar
             line = "";
             while (sc.hasNextLine()) { line = sc.nextLine().trim(); if (!line.isEmpty()) break; }
             if (!line.isEmpty()) {
-                int nBts = Integer.parseInt(line);
-                for (int i = 0; i < nBts; i++) {
-                    String[] bt = sc.nextLine().split(",");
-                    lvl.addBot(Double.parseDouble(bt[0]), Double.parseDouble(bt[1]));
+                String[] slots = line.split(";", -1);
+                ItemStack[] hb = p.getHotbar();
+                for (int i = 0; i < slots.length && i < hb.length; i++) {
+                    String s = slots[i];
+                    if (s.equals("-") || s.isEmpty()) {
+                        hb[i] = null;
+                    } else {
+                        String[] parts = s.split(",");
+                        hb[i] = new ItemStack(Integer.parseInt(parts[0]),
+                                              Integer.parseInt(parts[1]),
+                                              Integer.parseInt(parts[2]));
+                    }
                 }
             }
+
             gameScene.show();
         } catch (Exception e) { e.printStackTrace(); } finally { sc.close(); }
+    }
+
+    // Lit un niveau complet (dims, floor, blocks, items, bots) et le reconstruit.
+    private Level readLevel(Scanner sc) {
+        String[] dims = sc.nextLine().split(",");
+        int w     = Integer.parseInt(dims[0]);
+        int h     = Integer.parseInt(dims[1]);
+        int depth = Integer.parseInt(dims[2]);
+        long seed = Long.parseLong(dims[3]);
+
+        String[] floorData = sc.nextLine().split(",");
+        int[][] floor = new int[w][h];
+        int idx = 0;
+        for (int i = 0; i < w; i++) for (int j = 0; j < h; j++) floor[i][j] = Integer.parseInt(floorData[idx++]);
+
+        String[] blocksData = sc.nextLine().split(",");
+        int[][] blocks = new int[w][h];
+        idx = 0;
+        for (int i = 0; i < w; i++) for (int j = 0; j < h; j++) blocks[i][j] = Integer.parseInt(blocksData[idx++]);
+
+        // Régénère le niveau (pour retrouver les portails) puis écrase ses tableaux
+        Level lvl = new Level(w, h, depth, seed);
+        lvl.setFloorArray(floor);
+        lvl.setBlocksArray(blocks);
+
+        int nItems = Integer.parseInt(sc.nextLine().trim());
+        for (int i = 0; i < nItems; i++) {
+            String[] it = sc.nextLine().split(",");
+            lvl.dropItem(Double.parseDouble(it[0]), Double.parseDouble(it[1]),
+                         new ItemStack(Integer.parseInt(it[2]), 1));
+        }
+
+        int nBots = Integer.parseInt(sc.nextLine().trim());
+        for (int i = 0; i < nBots; i++) {
+            String[] bt = sc.nextLine().split(",");
+            lvl.addBot(Double.parseDouble(bt[0]), Double.parseDouble(bt[1]));
+        }
+
+        return lvl;
     }
 }

@@ -245,6 +245,33 @@ public class Level {
 		return b >= 1 && b != MapGenerator.BLOCK_CAVE_ENTRANCE;
 	}
 
+	// Vérifie si une case (Tile) précise est vide (praticable par le bot)
+    public boolean isWalkableTile(int tx, int ty) {
+        // Sécurité pour ne pas sortir de la carte
+        if (tx < 0 || tx >= width || ty < 0 || ty >= height) return false;
+        
+        // On vérifie le centre de la case avec ta méthode isSolid existante
+        double centerX = tx * Config.blockSize + (Config.blockSize / 2.0);
+        double centerY = ty * Config.blockSize + (Config.blockSize / 2.0);
+        return !isSolid(centerX, centerY);
+    }
+
+    // Vérifie si la hitbox entière du bot rentre en collision avec le décor
+    public boolean isAreaBlocked(double x, double y, double w, double h) {
+        // On vérifie les 4 coins de la zone (hitbox)
+        return isSolid(x, y) || 
+               isSolid(x + w, y) || 
+               isSolid(x, y + h) || 
+               isSolid(x + w, y + h);
+    }
+
+	// Vérifie si les coordonnées (en pixels) sont bien à l'intérieur de la carte
+    public boolean isInsideMap(double px, double py) {
+        double mapWidthPixels = width * Config.blockSize;
+        double mapHeightPixels = height * Config.blockSize;
+        return px >= 0 && px < mapWidthPixels && py >= 0 && py < mapHeightPixels;
+    }
+
 	// Getters et Setters pour la sauvegarde
 	public int[][] getFloorArray() { return this.floor; }
 	public int[][] getBlocksArray() { return this.blocks; }
