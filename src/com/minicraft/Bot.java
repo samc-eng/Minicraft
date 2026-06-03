@@ -1,7 +1,6 @@
 package com.minicraft;
 
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 import javafx.scene.image.Image;
 
 
@@ -11,8 +10,8 @@ public class Bot {
     private double vitesse = 0.18;
     private int attackCooldown = 0;
     private static final Image BOT_SPRITE = new Image(
-    	    Bot.class.getResourceAsStream("/bot.png")
-    	);
+        new java.io.File("resources/bot.png").toURI().toString()
+    );
 
     public Bot(double x, double y) {
         this.x = x;
@@ -88,4 +87,8 @@ public class Bot {
     public double getCenterY() {
         return y + Config.blockSize / 2.0;
     }
+
+    public double getX() { return x; }
+    public double getY() { return y; }
+
 }

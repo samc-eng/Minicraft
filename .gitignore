@@ -1,12 +1,4 @@
-**/*.class
-**/bin/
-**/target/
-**/tmp/*
-**/.project
-**/.classpath
-**/workspace
-**/.metadata
-**/.settings
-**/.checkstyle
-**/*.iml
-**/*.idea
+.DS_Store
+*/.DS_Store
+out/
+save.txt
