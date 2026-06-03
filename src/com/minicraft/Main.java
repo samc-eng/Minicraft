@@ -18,11 +18,11 @@ public class Main extends Application {
     private InputHandler input;
     private double widthScreen;
     private double heightScreen;
-    private InventoryUI inventaireUI;
-    private boolean inventaireOuvert = false;
     private CraftingUI craftingUI;
     private boolean craftingOpen  = false;
     private boolean workbenchOpen = false;
+    private InventoryUI inventaireUI;
+    private boolean inventaireOuvert = false;
     private HUD hud;
     private MiniMap miniMap;
     private boolean miniMapVisible = true;
@@ -67,6 +67,32 @@ public class Main extends Application {
     public Player getPlayer()   { return this.player; }
     public Level getLevel()     { return this.level; }
     public MiniMap getMiniMap() { return this.miniMap; }
+
+    public Level   getSurfaceLevel()         { return this.surfaceLevel; }
+    public Level[] getUndergroundLevels()    { return this.undergroundLevels; }
+    public int     getCurrentDepth()         { return this.currentDepth; }
+    public int[]   getLastSurfacePortal()    { return this.lastSurfacePortal; }
+
+    // Restaure l'état complet du jeu depuis une sauvegarde.
+    // - surface : niveau de surface (toujours présent)
+    // - cave    : grotte visitée (null si jamais entré)
+    // - depth   : où le joueur se trouve (0 surface, >=1 grotte)
+    // - lastPortal : portail par lequel le joueur est descendu (null sinon)
+    public void loadGameState(Level surface, Level cave, int depth, int[] lastPortal) {
+        this.surfaceLevel = surface;
+        if (cave != null) {
+            int idx = cave.getDepth() - 1;
+            if (idx >= 0 && idx < this.undergroundLevels.length) {
+                this.undergroundLevels[idx] = cave;
+            }
+        }
+        this.currentDepth = depth;
+        this.lastSurfacePortal = lastPortal;
+        this.level = (depth == 0 || cave == null) ? surface : cave;
+        this.miniMap.generate(this.level.getFloorArray(), this.level.getBlocksArray(),
+                              this.level.getWidth(), this.level.getHeight(),
+                              this.level.getPortals());
+    }
 
     private void spawnNearPortal(Level targetLevel) {
         if (targetLevel.getPortals().isEmpty()) {
@@ -145,6 +171,11 @@ public class Main extends Application {
         craftingUI   = new CraftingUI();
         hud          = new HUD();
         inventaireUI = new InventoryUI();
+
+        scene.setOnMouseClicked(event -> {
+            if (!inventaireOuvert) return;
+            inventaireUI.handleClick(player, event.getX(), event.getY());
+        });
 
         // =============================================
         // RECETTES DE BASE (touche C)
@@ -311,7 +342,7 @@ public class Main extends Application {
                 }
 
                 // --- Tick ---
-                if (inventaireOuvert || craftingOpen || workbenchOpen) {
+                if (craftingOpen || workbenchOpen || inventaireOuvert) {
                     // On ne bouge pas le joueur quand un menu est ouvert
                 } else {
                     player.tick(level, input);
@@ -327,11 +358,11 @@ public class Main extends Application {
                 // --- HUD & UI ---
                 hud.render(pinceau, player);
 
-                if (inventaireOuvert) {
-                    inventaireUI.render(pinceau, player);
-                } else if (craftingOpen || workbenchOpen) {
+                if (craftingOpen || workbenchOpen) {
                     craftingUI.tick(input, player);
                     craftingUI.render(pinceau, player);
+                } else if (inventaireOuvert) {
+                    inventaireUI.render(pinceau, player);
                 }
 
                 // --- Minimap ---

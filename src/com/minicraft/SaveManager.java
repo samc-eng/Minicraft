@@ -7,59 +7,95 @@ import java.util.List;
 public class SaveManager {
     private static final String SAVE_FILE = "save.txt";
 
-    public static void saveGame(Player p, Level lvl) {
+    public static void saveGame(Player p, Main engine) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(SAVE_FILE))) {
-            // 1. Joueur
-            writer.println(p.getX() + "," + p.getY() + "," +
-                    p.getInventory().getAmount(1) + "," +
-                    p.getInventory().getAmount(2));
+            // 1. Joueur (position)
+            writer.println(p.getX() + "," + p.getY());
 
-            // 2. Dimensions
-            int w = lvl.getWidth();
-            int h = lvl.getHeight();
-            writer.println(w + "," + h);
+            // 2. État global : profondeur + portail d'entrée de la grotte
+            int[] lp = engine.getLastSurfacePortal();
+            int lpx = (lp != null) ? lp[0] : -1;
+            int lpy = (lp != null) ? lp[1] : -1;
+            writer.println(engine.getCurrentDepth() + "," + lpx + "," + lpy);
 
-            // 3. Sol
-            int[][] floor = lvl.getFloorArray();
-            for (int i = 0; i < w; i++) {
-                for (int j = 0; j < h; j++) {
-                    writer.print(floor[i][j] + (i == w - 1 && j == h - 1 ? "" : ","));
+            // 3. Surface (toujours sauvegardée)
+            writeLevel(writer, engine.getSurfaceLevel());
+
+            // 4. Grotte courante (slot 0 uniquement supporté actuellement)
+            Level cave = engine.getUndergroundLevels()[0];
+            if (cave == null) {
+                writer.println(0);
+            } else {
+                writer.println(1);
+                writeLevel(writer, cave);
+            }
+
+            // 5. Inventaire complet (id, quantité, durabilité)
+            List<ItemStack> invStacks = p.getInventory().getAll();
+            writer.println(invStacks.size());
+            for (ItemStack s : invStacks) {
+                writer.println(s.getItemId() + "," + s.getAmount() + "," + s.getCurrentDurability());
+            }
+
+            // 6. Hotbar (9 slots, "-" si vide)
+            ItemStack[] hotbar = p.getHotbar();
+            StringBuilder hb = new StringBuilder();
+            for (int i = 0; i < hotbar.length; i++) {
+                if (i > 0) hb.append(";");
+                if (hotbar[i] == null) {
+                    hb.append("-");
+                } else {
+                    hb.append(hotbar[i].getItemId())
+                      .append(",").append(hotbar[i].getAmount())
+                      .append(",").append(hotbar[i].getCurrentDurability());
                 }
             }
-            writer.println();
+            writer.println(hb);
 
-            // 4. Blocs
-            int[][] blocks = lvl.getBlocksArray();
-            for (int i = 0; i < w; i++) {
-                for (int j = 0; j < h; j++) {
-                    writer.print(blocks[i][j] + (i == w - 1 && j == h - 1 ? "" : ","));
-                }
-            }
-            writer.println();
-
-            // 5. Items au sol
-            List<Item> itemsAuSol = lvl.getItems();
-            writer.println(itemsAuSol.size());
-            for (Item it : itemsAuSol) {
-                writer.println(it.getX() + "," + it.getY() + "," + it.getItemId());
-            }
-
-            // --- 6. Sauvegarde des Bots (Vérifiée) ---
-            List<Bot> bots = lvl.getBots();
-            System.out.println("DEBUG SAVE: Tentative de sauvegarde de " + bots.size() + " bots.");
-
-            writer.println(bots.size());
-            for (Bot bot : bots) {
-                // On s'assure d'écrire des coordonnées valides
-                writer.println(bot.getX() + "," + bot.getY());
-            }
-
-            // Forcer l'écriture sur le disque
             writer.flush();
             System.out.println("✅ Sauvegarde réussie dans " + SAVE_FILE);
 
         } catch (IOException e) {
             System.err.println("❌ Erreur critique de sauvegarde : " + e.getMessage());
+        }
+    }
+
+    // Écrit un niveau complet : dimensions/depth/seed, floor, blocks, items, bots
+    private static void writeLevel(PrintWriter writer, Level lvl) {
+        int w = lvl.getWidth();
+        int h = lvl.getHeight();
+        writer.println(w + "," + h + "," + lvl.getDepth() + "," + lvl.getSeed());
+
+        int[][] floor = lvl.getFloorArray();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < w; i++) {
+            for (int j = 0; j < h; j++) {
+                if (sb.length() > 0) sb.append(",");
+                sb.append(floor[i][j]);
+            }
+        }
+        writer.println(sb);
+
+        int[][] blocks = lvl.getBlocksArray();
+        sb = new StringBuilder();
+        for (int i = 0; i < w; i++) {
+            for (int j = 0; j < h; j++) {
+                if (sb.length() > 0) sb.append(",");
+                sb.append(blocks[i][j]);
+            }
+        }
+        writer.println(sb);
+
+        List<Item> items = lvl.getItems();
+        writer.println(items.size());
+        for (Item it : items) {
+            writer.println(it.getX() + "," + it.getY() + "," + it.getItemId());
+        }
+
+        List<Bot> bots = lvl.getBots();
+        writer.println(bots.size());
+        for (Bot bot : bots) {
+            writer.println(bot.getX() + "," + bot.getY());
         }
     }
 
