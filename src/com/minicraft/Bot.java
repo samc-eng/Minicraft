@@ -56,10 +56,7 @@ public class Bot {
     }
 
     private boolean isBlocked(Level level, double futurX, double futurY) {
-        return level.getBlocks(futurX, futurY) >= 1
-                || level.getBlocks(futurX + Config.blockSize, futurY) >= 1
-                || level.getBlocks(futurX, futurY + Config.blockSize) >= 1
-                || level.getBlocks(futurX + Config.blockSize, futurY + Config.blockSize) >= 1;
+        return level.isAreaBlocked(futurX, futurY, Config.blockSize, Config.blockSize);
     }
 
     private boolean isTouching(Player player) {

@@ -1,16 +1,21 @@
 package com.minicraft;
 
-import java.io.*;
-import java.util.Scanner;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
+import java.util.Scanner;
 
 public class SaveManager {
     private static final String SAVE_FILE = "save.txt";
 
     public static void saveGame(Player p, Main engine) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(SAVE_FILE))) {
-            // 1. Joueur (position)
-            writer.println(p.getX() + "," + p.getY());
+            // 1. Joueur (position + santé ajoutée par Yazid)
+            // On ajoute ",0,0," pour simuler les anciens slots d'inventaire et placer la santé à l'index 4
+            writer.println(p.getX() + "," + p.getY() + ",0,0," + p.getHealth());
 
             // 2. État global : profondeur + portail d'entrée de la grotte
             int[] lp = engine.getLastSurfacePortal();
@@ -52,15 +57,26 @@ public class SaveManager {
             }
             writer.println(hb);
 
+            // 7. Archers (Ajout de Yazid, synchronisé avec la fin du MainMenu)
+            Level currentLevel = (engine.getCurrentDepth() == 1 && cave != null) ? cave : engine.getSurfaceLevel();
+            List<ArcherBot> archers = currentLevel.getArcherBots();
+            if (archers != null) {
+                writer.println(archers.size());
+                for (ArcherBot archer : archers) {
+                    writer.println(archer.getX() + "," + archer.getY());
+                }
+            } else {
+                writer.println(0);
+            }
+
             writer.flush();
             System.out.println("✅ Sauvegarde réussie dans " + SAVE_FILE);
-
         } catch (IOException e) {
-            System.err.println("❌ Erreur critique de sauvegarde : " + e.getMessage());
+            System.err.println("Erreur critique de sauvegarde : " + e.getMessage());
         }
     }
 
-    // Écrit un niveau complet : dimensions/depth/seed, floor, blocks, items, bots
+    // Écrit un niveau complet : dimensions/depth/seed, floor, blocks, items, bots classiques
     private static void writeLevel(PrintWriter writer, Level lvl) {
         int w = lvl.getWidth();
         int h = lvl.getHeight();
@@ -102,7 +118,7 @@ public class SaveManager {
     public static Scanner getSaveScanner() {
         File file = new File(SAVE_FILE);
         if (!file.exists()) {
-            System.out.println("⚠️ Aucun fichier de sauvegarde trouvé.");
+            System.out.println("Aucun fichier de sauvegarde trouvé.");
             return null;
         }
         try {

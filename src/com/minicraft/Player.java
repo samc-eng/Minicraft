@@ -15,9 +15,10 @@ public class Player {
 	private boolean isMoved=false;
 	private int attackTimer;
 	private Inventory inventory = new Inventory();
-	private int health = 10;
+	private int maxHealth = Config.PLAYER_MAX_HEALTH;
+	private int health = maxHealth;
 	private int energy = 10;
-	private int invulnerabilityTimer = 3;
+	private int invulnerabilityTimer = 0;
 	private int selectedSlot = 0;
 	private ItemStack[] slot = new ItemStack[9];
 
@@ -172,6 +173,12 @@ public class Player {
                 );
         }
 
+        if (isInvulnerable()
+                && (invulnerabilityTimer / Config.PLAYER_DAMAGE_BLINK_TICKS) % 2 == 0) {
+            gc.setFill(Color.rgb(255, 40, 40, 0.55));
+            gc.fillRect(x, y, Config.blockSize, Config.blockSize);
+        }
+
 
 		//on dessine un carré de sélection 
 		gc.setStroke(Color.YELLOW);
@@ -278,13 +285,29 @@ public class Player {
 	}
 
 	// Fait perdre de la vie au joueur
-    public void takeDamage(int damage) {
-        this.health -= damage;
-        if (this.health < 0) {
-            this.health = 0;
+    public boolean takeDamage(int damage) {
+        if (damage <= 0 || isInvulnerable() || this.health <= 0) {
+            return false;
         }
-        System.out.println("Aïe ! Le joueur a pris " + damage + " dégâts. Vie restante : " + this.health);
-        // Bonus : On rajoutera plus tard un petit effet de recul (knockback) !
+
+        setHealth(this.health - damage);
+        this.invulnerabilityTimer = Config.PLAYER_INVULNERABILITY_TICKS;
+        System.out.println("Aie ! Le joueur a pris " + damage + " degats. Vie restante : " + this.health);
+        return true;
+    }
+
+    public void heal(int amount) {
+        if (amount > 0) {
+            setHealth(this.health + amount);
+        }
+    }
+
+    public void setHealth(int health) {
+        this.health = Math.max(0, Math.min(health, this.maxHealth));
+    }
+
+    public boolean isInvulnerable() {
+        return this.invulnerabilityTimer > 0;
     }
 
     // Ajoute un item à la possession du joueur : hotbar d'abord (empilage puis case vide),
@@ -345,6 +368,7 @@ public class Player {
 	}
 
 	public int getHealth() { return health; }
+	public int getMaxHealth() { return maxHealth; }
 	public int getEnergy() { return energy; }
 
 	public void setSelectedSlot(int selectedSlot) {

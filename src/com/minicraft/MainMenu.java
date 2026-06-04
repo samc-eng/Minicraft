@@ -149,7 +149,14 @@ public class MainMenu {
             p.setX(Double.parseDouble(pData[0]));
             p.setY(Double.parseDouble(pData[1]));
 
-            // 7. Inventaire complet
+            if (pData.length > 4) {
+                p.setHealth(Integer.parseInt(pData[4]));
+            }
+            gameScene.getGameEngine().clearEnemiesForCurrentLevel();
+            int loadedEnemyCount = 0;
+            boolean loadedArcherSection = false;
+
+            // 7. Inventaire complet (Ton code)
             String line = "";
             while (sc.hasNextLine()) { line = sc.nextLine().trim(); if (!line.isEmpty()) break; }
             if (!line.isEmpty()) {
@@ -162,6 +169,7 @@ public class MainMenu {
                     p.getInventory().add(new ItemStack(id, qty, dur));
                 }
             }
+            
 
             // 8. Hotbar
             line = "";
@@ -180,6 +188,30 @@ public class MainMenu {
                                               Integer.parseInt(parts[2]));
                     }
                 }
+            }
+
+
+            // 9. Archers (Ajout de Yazid)
+            // On détermine dans quel niveau le joueur se trouve pour y placer les archers
+            Level currentLevel = (savedDepth == 1 && cave != null) ? cave : surface;
+            
+            line = "";
+            while (sc.hasNextLine()) { line = sc.nextLine().trim(); if (!line.isEmpty()) break; }
+            if (!line.isEmpty()) {
+                loadedArcherSection = true;
+                int nArchers = Integer.parseInt(line);
+                for (int i = 0; i < nArchers; i++) {
+                    String[] archer = sc.nextLine().split(",");
+                    if (currentLevel != null) {
+                        currentLevel.addArcherBot(Double.parseDouble(archer[0]), Double.parseDouble(archer[1]));
+                    }
+                }
+                loadedEnemyCount += nArchers;
+            }
+
+            //10. Gestion du spwan de secours
+            if (loadedEnemyCount == 0) {
+                gameScene.getGameEngine().spawnEnemiesForCurrentLevel();
             }
 
             gameScene.show();

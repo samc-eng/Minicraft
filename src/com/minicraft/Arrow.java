@@ -8,6 +8,7 @@ public class Arrow {
     private double y;
     private final double vx;
     private final double vy;
+    private double distanceTravelled = 0.0;
     private boolean removed = false;
 
     public Arrow(double startX, double startY, double targetX, double targetY) {
@@ -28,20 +29,34 @@ public class Arrow {
     public void tick(Level level, Player player) {
         if (removed) return;
 
-        x += vx;
-        y += vy;
+        int steps = Math.max(1, (int) Math.ceil(Config.ARROW_SPEED / Math.max(1.0, Config.ARROW_RADIUS)));
+        double stepX = vx / steps;
+        double stepY = vy / steps;
+        double stepDistance = Math.sqrt(stepX * stepX + stepY * stepY);
 
+        for (int i = 0; i < steps; i++) {
+            x += stepX;
+            y += stepY;
+            distanceTravelled += stepDistance;
+
+            if (hasExpired(level)) {
+                removed = true;
+                return;
+            }
+
+            if (touchesPlayer(player)) {
+                player.takeDamage(Config.ARROW_DAMAGE);
+                removed = true;
+                return;
+            }
+        }
+    }
+
+    private boolean hasExpired(Level level) {
         double radius = Config.ARROW_RADIUS;
-        if (!level.isInsideMap(x, y)
-                || level.isAreaBlocked(x - radius, y - radius, radius * 2, radius * 2)) {
-            removed = true;
-            return;
-        }
-
-        if (touchesPlayer(player)) {
-            player.takeDamage(Config.ARROW_DAMAGE);
-            removed = true;
-        }
+        return distanceTravelled >= Config.ARROW_MAX_DISTANCE
+                || !level.isInsideMap(x, y)
+                || level.isAreaBlocked(x - radius, y - radius, radius * 2, radius * 2);
     }
 
     private boolean touchesPlayer(Player player) {
