@@ -2,3 +2,5 @@
 */.DS_Store
 out/
 save.txt
+.vscode
+bin/
