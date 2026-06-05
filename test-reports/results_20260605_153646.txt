@@ -1,0 +1,116 @@
+WARNING: Final field allParameters in class org.junit.platform.console.options.MainCommand has been mutated reflectively by class org.junit.platform.console.shadow.picocli.CommandLine$Model$FieldBinding in unnamed module @3f3afe78 (file:/Users/kies/Minicraft/lib/junit/junit-platform-console-standalone-1.11.3.jar)
+WARNING: Use --enable-final-field-mutation=ALL-UNNAMED to avoid a warning
+WARNING: Mutating final fields will be blocked in a future release unless final field mutation is enabled
+
+Thanks for using JUnit! Support its development at https://junit.org/sponsoring
+
+[TextureManager] ERREUR chargement : file:resources/textures/tools/leather_helmet.png
+[TextureManager] ERREUR chargement : file:resources/textures/tools/leather_chestplate.png
+[TextureManager] ERREUR chargement : file:resources/textures/tools/leather_leggings.png
+[TextureManager] ERREUR chargement : file:resources/textures/tools/leather_boots.png
+[TextureManager] ERREUR chargement : file:resources/textures/tools/iron_helmet.png
+[TextureManager] ERREUR chargement : file:resources/textures/tools/iron_chestplate.png
+[TextureManager] ERREUR chargement : file:resources/textures/tools/iron_leggings.png
+[TextureManager] ERREUR chargement : file:resources/textures/tools/iron_boots.png
+[TextureManager] ERREUR chargement : file:resources/textures/tools/gold_helmet.png
+[TextureManager] ERREUR chargement : file:resources/textures/tools/gold_chestplate.png
+[TextureManager] ERREUR chargement : file:resources/textures/tools/gold_leggings.png
+[TextureManager] ERREUR chargement : file:resources/textures/tools/gold_boots.png
+[TextureManager] ERREUR chargement : file:resources/textures/tools/gem_helmet.png
+[TextureManager] ERREUR chargement : file:resources/textures/tools/gem_chestplate.png
+[TextureManager] ERREUR chargement : file:resources/textures/tools/gem_leggings.png
+[TextureManager] ERREUR chargement : file:resources/textures/tools/gem_boots.png
+Sauvegarde OK -> test_save_tmp.txt
+Sauvegarde OK -> test_save_tmp.txt
+Sauvegarde OK -> test_save_tmp.txt
+Sauvegarde OK -> test_save_tmp.txt
+Pas de sauvegarde trouvee : fichier_inexistant_12345.txt
+Sauvegarde OK -> test_save_tmp.txt
+Sauvegarde OK -> test_save_tmp.txt
+Sauvegarde OK -> test_integration_save.txt
+Sauvegarde OK -> test_integration_save.txt
+Sauvegarde OK -> test_integration_save.txt
+Craft réussi : Etabli
+Craft réussi : Etabli
+Craft réussi : Torche x4
+╷
+├─ JUnit Platform Suite ✔
+├─ JUnit Jupiter ✔
+│  ├─ InventoryTest ✔
+│  │  ├─ has est vrai quand on a assez ✔
+│  │  ├─ remove diminue la quantité ✔
+│  │  ├─ remove qui couvre plusieurs piles consomme correctement ✔
+│  │  ├─ has est faux pour un item absent ✔
+│  │  ├─ add de plusieurs items différents : chaque pile est conservée ✔
+│  │  ├─ add de deux outils (non empilables) : deux entrées distinctes ✔
+│  │  ├─ add de deux piles du même item empilable : elles fusionnent ✔
+│  │  ├─ remove qui vide complètement supprime la pile ✔
+│  │  ├─ getAll renvoie la liste réelle des piles ✔
+│  │  ├─ has est faux quand il en manque ✔
+│  │  ├─ Inventaire vide : getAmount renvoie 0 ✔
+│  │  └─ add d'un item : getAmount renvoie la quantité ✔
+│  ├─ ItemStackTest ✔
+│  │  ├─ isFull est faux quand il reste de la place ✔
+│  │  ├─ canStackWith est vrai pour deux items identiques empilables ✔
+│  │  ├─ remove diminue la quantité ✔
+│  │  ├─ Constructeur simple : durabilité initialisée au max pour un outil ✔
+│  │  ├─ canStackWith est faux pour un outil (maxStack = 1) ✔
+│  │  ├─ getDefinition renvoie la bonne ItemDefinition ✔
+│  │  ├─ isFull est vrai quand amount atteint maxStack ✔
+│  │  ├─ Constructeur avec durabilité : valeur exacte restaurée ✔
+│  │  ├─ add augmente la quantité ✔
+│  │  ├─ damage diminue la durabilité ✔
+│  │  ├─ isBroken est vrai quand la durabilité tombe à 0 ✔
+│  │  ├─ Constructeur simple : durabilité = 0 pour un item sans durabilité ✔
+│  │  ├─ isBroken est faux pour un item sans durabilité ✔
+│  │  ├─ Constructeur simple : amount et id corrects ✔
+│  │  └─ canStackWith est faux pour deux ids différents ✔
+│  ├─ SaveManagerTest ✔
+│  │  ├─ La 2e ligne contient currentDepth et le portail ✔
+│  │  ├─ Le portail est sauvegardé quand on en a un ✔
+│  │  ├─ L'inventaire est sauvegardé avec id, quantité, durabilité ✔
+│  │  ├─ La première ligne contient la position du joueur ✔
+│  │  ├─ getSaveScannerForFile renvoie null si le fichier n'existe pas ✔
+│  │  ├─ saveGameToFile crée un fichier non vide ✔
+│  │  └─ La hotbar est sauvegardée sur une ligne, '-' pour les cases vides ✔
+│  ├─ IntegrationTest ✔
+│  │  ├─ Round-trip sans grotte : la save contient le flag 0 et pas de bloc grotte ✔
+│  │  ├─ Round-trip avec une grotte : la grotte est preservee ✔
+│  │  └─ Round-trip complet : on sauvegarde, on recharge, l'etat est identique ✔
+│  ├─ PlayerTest ✔
+│  │  ├─ pickUpItem : un item va dans la 1ere case vide de la hotbar ✔
+│  │  ├─ consume qui vide une case la met à null ✔
+│  │  ├─ Player neuf : hotbar vide, amountOf = 0 partout ✔
+│  │  ├─ pickUpItem : deux pickups du même item empilent dans la même case ✔
+│  │  ├─ consume bascule sur l'inventaire si la hotbar ne suffit pas ✔
+│  │  ├─ has est vrai si le total hotbar+inventaire suffit ✔
+│  │  ├─ consume retire d'abord depuis la hotbar ✔
+│  │  ├─ setSelectedSlot accepte 0..8 et rejette les autres ✔
+│  │  ├─ pickUpItem : quand la hotbar est pleine, l'item part dans l'inventaire ✔
+│  │  ├─ consume renvoie false et ne touche à rien si insuffisant ✔
+│  │  └─ amountOf compte la hotbar et l'inventaire ✔
+│  └─ RecipeTest ✔
+│     ├─ canCraft vérifie plusieurs ingrédients à la fois ✔
+│     ├─ Craft consomme correctement à travers hotbar + inventaire ✔
+│     ├─ Craft consomme les ingrédients et donne le résultat ✔
+│     ├─ Craft d'une recette x4 produit bien 4 unités ✔
+│     ├─ canCraft est vrai quand le joueur a tous les ingrédients ✔
+│     ├─ canCraft regarde aussi dans l'inventaire (pas que la hotbar) ✔
+│     ├─ Craft ne fait rien si les ingrédients ne sont pas là ✔
+│     └─ canCraft est faux quand il manque un ingrédient ✔
+└─ JUnit Vintage ✔
+
+Test run finished after 617 ms
+[         9 containers found      ]
+[         0 containers skipped    ]
+[         9 containers started    ]
+[         0 containers aborted    ]
+[         9 containers successful ]
+[         0 containers failed     ]
+[        56 tests found           ]
+[         0 tests skipped         ]
+[        56 tests started         ]
+[         0 tests aborted         ]
+[        56 tests successful      ]
+[         0 tests failed          ]
+

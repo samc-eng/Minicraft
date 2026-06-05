@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="JUnit Vintage" tests="0" skipped="0" failures="0" errors="0" time="0" hostname="MacBook-Air-de-Djilali.local" timestamp="2026-06-05T15:39:51">
+<properties>
+<property name="apple.awt.application.name" value="ConsoleLauncher"/>
+<property name="file.encoding" value="UTF-8"/>
+<property name="file.separator" value="/"/>
+<property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+<property name="http.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+<property name="java.class.path" value="lib/junit/junit-platform-console-standalone-1.11.3.jar"/>
+<property name="java.class.version" value="70.0"/>
+<property name="java.home" value="/Users/kies/Library/Java/JavaVirtualMachines/openjdk-26.0.1/Contents/Home"/>
+<property name="java.io.tmpdir" value="/var/folders/jm/mh1grcyj58xgcw6zjl2hvcww0000gn/T/"/>
+<property name="java.library.path" value="/Users/kies/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/>
+<property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+<property name="java.runtime.version" value="26.0.1+8-34"/>
+<property name="java.specification.name" value="Java Platform API Specification"/>
+<property name="java.specification.vendor" value="Oracle Corporation"/>
+<property name="java.specification.version" value="26"/>
+<property name="java.vendor" value="Oracle Corporation"/>
+<property name="java.vendor.url" value="https://java.oracle.com/"/>
+<property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
+<property name="java.version" value="26.0.1"/>
+<property name="java.version.date" value="2026-04-21"/>
+<property name="java.vm.compressedOopsMode" value="Zero based"/>
+<property name="java.vm.info" value="mixed mode, sharing"/>
+<property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+<property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+<property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+<property name="java.vm.specification.version" value="26"/>
+<property name="java.vm.vendor" value="Oracle Corporation"/>
+<property name="java.vm.version" value="26.0.1+8-34"/>
+<property name="javafx.runtime.version" value="26.0.1+4"/>
+<property name="javafx.version" value="26.0.1"/>
+<property name="jdk.debug" value="release"/>
+<property name="jdk.module.path" value="/Users/kies/Downloads/javafx-sdk-26.0.1-arm64/lib"/>
+<property name="junit.docs.version" value="1.11.3"/>
+<property name="line.separator" value="
+"/>
+<property name="native.encoding" value="UTF-8"/>
+<property name="os.arch" value="aarch64"/>
+<property name="os.name" value="Mac OS X"/>
+<property name="os.version" value="15.7.3"/>
+<property name="path.separator" value=":"/>
+<property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+<property name="stderr.encoding" value="UTF-8"/>
+<property name="stdin.encoding" value="UTF-8"/>
+<property name="stdout.encoding" value="UTF-8"/>
+<property name="sun.arch.data.model" value="64"/>
+<property name="sun.boot.library.path" value="/Users/kies/Library/Java/JavaVirtualMachines/openjdk-26.0.1/Contents/Home/lib"/>
+<property name="sun.cpu.endian" value="little"/>
+<property name="sun.io.unicode.encoding" value="UnicodeBig"/>
+<property name="sun.java.command" value="lib/junit/junit-platform-console-standalone-1.11.3.jar execute --class-path /tmp/minicraft-build --scan-class-path --reports-dir test-reports --disable-ansi-colors --details=tree"/>
+<property name="sun.java.launcher" value="SUN_STANDARD"/>
+<property name="sun.jnu.encoding" value="UTF-8"/>
+<property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+<property name="user.country" value="FR"/>
+<property name="user.dir" value="/Users/kies/Minicraft"/>
+<property name="user.home" value="/Users/kies"/>
+<property name="user.language" value="fr"/>
+<property name="user.name" value="kies"/>
+<property name="user.timezone" value="Europe/Paris"/>
+</properties>
+<system-out><![CDATA[
+unique-id: [engine:junit-vintage]
+display-name: JUnit Vintage
+]]></system-out>
+</testsuite>
