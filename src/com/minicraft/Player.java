@@ -30,7 +30,7 @@ public class Player {
 	public Player(double startX, double startY) {
 		this.x=startX;
 		this.y=startY;
-		this.vitesse=0.5;
+		this.vitesse=0.25;
 
 		try {
 			this.skin=new Image("file:resources/skins.png");
@@ -100,9 +100,9 @@ public class Player {
 		}
 
 		if (input.isPressed(KeyCode.SHIFT) && energy>3) {
-			this.vitesse=1.0;
-		} else {
 			this.vitesse=0.5;
+		} else {
+			this.vitesse=0.25;
 		}
 		
 		for (Item item : level.getItems()) {

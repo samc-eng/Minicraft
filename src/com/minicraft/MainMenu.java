@@ -154,7 +154,6 @@ public class MainMenu {
             }
             gameScene.getGameEngine().clearEnemiesForCurrentLevel();
             int loadedEnemyCount = 0;
-            boolean loadedArcherSection = false;
 
             // 7. Inventaire complet (Ton code)
             String line = "";
@@ -198,7 +197,6 @@ public class MainMenu {
             line = "";
             while (sc.hasNextLine()) { line = sc.nextLine().trim(); if (!line.isEmpty()) break; }
             if (!line.isEmpty()) {
-                loadedArcherSection = true;
                 int nArchers = Integer.parseInt(line);
                 for (int i = 0; i < nArchers; i++) {
                     String[] archer = sc.nextLine().split(",");

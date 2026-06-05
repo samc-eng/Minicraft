@@ -43,12 +43,6 @@ public class Main extends Application {
         launch(args);
     }
 
-    private boolean hasInHotbar(int itemId) {
-        for (ItemStack s : player.getHotbar()) {
-            if (s != null && s.getItemId() == itemId) return true;
-        }
-        return false;
-    }
 
     @Override
     public void start(Stage primaryStage) {
