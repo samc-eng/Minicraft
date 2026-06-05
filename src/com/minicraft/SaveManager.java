@@ -8,7 +8,12 @@ public class SaveManager {
     private static final String SAVE_FILE = "save.txt";
 
     public static void saveGame(Player p, Main engine) {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(SAVE_FILE))) {
+        saveGameToFile(p, engine, SAVE_FILE);
+    }
+
+    // surcharge avec un nom de fichier custom (pratique pour les tests)
+    public static void saveGameToFile(Player p, Main engine, String filename) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
             // position du joueur
             writer.println(p.getX() + "," + p.getY());
 
@@ -53,7 +58,7 @@ public class SaveManager {
             writer.println(hb);
 
             writer.flush();
-            System.out.println("Sauvegarde OK -> " + SAVE_FILE);
+            System.out.println("Sauvegarde OK -> " + filename);
 
         } catch (IOException e) {
             System.err.println("Erreur de sauvegarde : " + e.getMessage());
@@ -99,10 +104,54 @@ public class SaveManager {
         }
     }
 
+    // reconstruit un niveau (surface ou grotte) depuis le scanner positionne au debut du bloc niveau
+    public static Level readLevel(Scanner sc) {
+        String[] dims = sc.nextLine().split(",");
+        int w     = Integer.parseInt(dims[0]);
+        int h     = Integer.parseInt(dims[1]);
+        int depth = Integer.parseInt(dims[2]);
+        long seed = Long.parseLong(dims[3]);
+
+        String[] floorData = sc.nextLine().split(",");
+        int[][] floor = new int[w][h];
+        int idx = 0;
+        for (int i = 0; i < w; i++) for (int j = 0; j < h; j++) floor[i][j] = Integer.parseInt(floorData[idx++]);
+
+        String[] blocksData = sc.nextLine().split(",");
+        int[][] blocks = new int[w][h];
+        idx = 0;
+        for (int i = 0; i < w; i++) for (int j = 0; j < h; j++) blocks[i][j] = Integer.parseInt(blocksData[idx++]);
+
+        // on regenere le niveau avec le seed (ca remet les portails au bon endroit)
+        // puis on remplace le sol et les blocs par ce qu'il y avait dans la save
+        Level lvl = new Level(w, h, depth, seed);
+        lvl.setFloorArray(floor);
+        lvl.setBlocksArray(blocks);
+
+        int nItems = Integer.parseInt(sc.nextLine().trim());
+        for (int i = 0; i < nItems; i++) {
+            String[] it = sc.nextLine().split(",");
+            lvl.dropItem(Double.parseDouble(it[0]), Double.parseDouble(it[1]),
+                         new ItemStack(Integer.parseInt(it[2]), 1));
+        }
+
+        int nBots = Integer.parseInt(sc.nextLine().trim());
+        for (int i = 0; i < nBots; i++) {
+            String[] bt = sc.nextLine().split(",");
+            lvl.addBot(Double.parseDouble(bt[0]), Double.parseDouble(bt[1]));
+        }
+
+        return lvl;
+    }
+
     public static Scanner getSaveScanner() {
-        File file = new File(SAVE_FILE);
+        return getSaveScannerForFile(SAVE_FILE);
+    }
+
+    public static Scanner getSaveScannerForFile(String filename) {
+        File file = new File(filename);
         if (!file.exists()) {
-            System.out.println("Pas de sauvegarde trouvee.");
+            System.out.println("Pas de sauvegarde trouvee : " + filename);
             return null;
         }
         try {

@@ -185,43 +185,8 @@ public class MainMenu {
         } catch (Exception e) { e.printStackTrace(); } finally { sc.close(); }
     }
 
-    // on reconstruit un niveau a partir du fichier de save
+    // on reconstruit un niveau a partir du fichier de save (delegue a SaveManager)
     private Level readLevel(Scanner sc) {
-        String[] dims = sc.nextLine().split(",");
-        int w     = Integer.parseInt(dims[0]);
-        int h     = Integer.parseInt(dims[1]);
-        int depth = Integer.parseInt(dims[2]);
-        long seed = Long.parseLong(dims[3]);
-
-        String[] floorData = sc.nextLine().split(",");
-        int[][] floor = new int[w][h];
-        int idx = 0;
-        for (int i = 0; i < w; i++) for (int j = 0; j < h; j++) floor[i][j] = Integer.parseInt(floorData[idx++]);
-
-        String[] blocksData = sc.nextLine().split(",");
-        int[][] blocks = new int[w][h];
-        idx = 0;
-        for (int i = 0; i < w; i++) for (int j = 0; j < h; j++) blocks[i][j] = Integer.parseInt(blocksData[idx++]);
-
-        // on recree le niveau (ca remet les portails au bon endroit grace au seed)
-        // et apres on remplace le sol et les blocs par ce qu'il y avait dans la save
-        Level lvl = new Level(w, h, depth, seed);
-        lvl.setFloorArray(floor);
-        lvl.setBlocksArray(blocks);
-
-        int nItems = Integer.parseInt(sc.nextLine().trim());
-        for (int i = 0; i < nItems; i++) {
-            String[] it = sc.nextLine().split(",");
-            lvl.dropItem(Double.parseDouble(it[0]), Double.parseDouble(it[1]),
-                         new ItemStack(Integer.parseInt(it[2]), 1));
-        }
-
-        int nBots = Integer.parseInt(sc.nextLine().trim());
-        for (int i = 0; i < nBots; i++) {
-            String[] bt = sc.nextLine().split(",");
-            lvl.addBot(Double.parseDouble(bt[0]), Double.parseDouble(bt[1]));
-        }
-
-        return lvl;
+        return SaveManager.readLevel(sc);
     }
 }
