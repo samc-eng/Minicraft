@@ -21,12 +21,12 @@ public class Config {
     public static final double ENEMY_MAX_PLAYER_SPAWN_DISTANCE = blockSize * 45.0;
     public static final double ENEMY_MIN_BOT_SPAWN_DISTANCE = blockSize * 5.0;
 
-    public static final double ARROW_SPEED = 0.8;
+    public static final double ARROW_SPEED = 2;
     public static final double ARROW_RADIUS = 2.0;
     public static final int ARROW_DAMAGE = 2;
     public static final double ARROW_MAX_DISTANCE = 260.0;
 
-    public static final double ENEMY_BOT_SPEED = 0.16;
+    public static final double ENEMY_BOT_SPEED = 1;
     public static final int ARCHER_SHOOT_COOLDOWN_TICKS = 600;
     public static final double ARCHER_SHOOT_RANGE = 220.0;
     public static final double ARCHER_KEEP_DISTANCE = blockSize * 6.0;

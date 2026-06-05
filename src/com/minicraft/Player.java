@@ -22,6 +22,7 @@ public class Player {
 	private int selectedSlot = 0;
 	private ItemStack[] slot = new ItemStack[9];
 	private boolean isSwimming = false;
+    private int damageFlashTimer =0;
 
 	public boolean up;
 	public boolean down;
@@ -32,6 +33,7 @@ public class Player {
 		this.x=startX;
 		this.y=startY;
 		this.vitesse=0.25;
+        this.invulnerabilityTimer=300;
 
 		try {
 			this.skin=new Image("file:resources/skins.png");
@@ -81,6 +83,7 @@ public class Player {
 		
 		if (attackTimer>0) {attackTimer--;}
 		if (invulnerabilityTimer > 0) invulnerabilityTimer--;
+        if (damageFlashTimer > 0) damageFlashTimer--;
 		
 		if (isMoved) { 
 			this.anim++;
@@ -197,10 +200,18 @@ public class Player {
             }
         }
 
-        if (isInvulnerable()
-                && (invulnerabilityTimer / Config.PLAYER_DAMAGE_BLINK_TICKS) % 2 == 0) {
+        // --- GESTION DES EFFETS VISUELS ---
+        // 1. Flash rouge UNIQUEMENT quand on perd un coeur
+        if (damageFlashTimer > 0) {
             gc.setFill(Color.rgb(255, 40, 40, 0.55));
             gc.fillRect(x, y, Config.blockSize, Config.blockSize);
+        }
+
+        // 2. Bouclier de spawn (Contour blanc clignotant doucement)
+        if (isInvulnerable() && (invulnerabilityTimer / 15) % 2 == 0) {
+            gc.setStroke(Color.rgb(255, 255, 255, 0.7)); 
+            gc.setLineWidth(2); 
+            gc.strokeRect(x, y, Config.blockSize, Config.blockSize); 
         }
 
 
@@ -220,7 +231,6 @@ public class Player {
 		
 	}
 	
-	// Dans Player.java
     public boolean isInWater(Level level) {
         int idEau = 29;     
 
@@ -333,7 +343,7 @@ public class Player {
         }
 
         setHealth(this.health - damage);
-        this.invulnerabilityTimer = Config.PLAYER_INVULNERABILITY_TICKS;
+        this.damageFlashTimer=15;
         System.out.println("Aie ! Le joueur a pris " + damage + " degats. Vie restante : " + this.health);
         return true;
     }
