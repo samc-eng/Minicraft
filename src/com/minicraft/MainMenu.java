@@ -17,7 +17,7 @@ import javafx.scene.media.*;
 import java.util.*;
 
 public class MainMenu {
-    private static MediaPlayer mediaPlayer;
+    private MediaPlayer mediaPlayer;
     int largeurBouton = 200; // Retour à ta taille originale
 
     String styleBouton =

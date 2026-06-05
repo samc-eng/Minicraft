@@ -74,12 +74,14 @@ public abstract class EnemyBot {
         double nextX = x + stepX;
         double nextY = y + stepY;
 
-        if (!level.isAreaBlocked(nextX, y, Config.blockSize, Config.blockSize)) {
+        // On vérifie les blocs solides ET l'eau sur l'axe X
+        if (!level.isAreaBlocked(nextX, y, Config.blockSize, Config.blockSize) && !isTargetingWater(level, nextX, y)) {
             x = nextX;
             moved = true;
         }
 
-        if (!level.isAreaBlocked(x, nextY, Config.blockSize, Config.blockSize)) {
+        // On vérifie les blocs solides ET l'eau sur l'axe Y
+        if (!level.isAreaBlocked(x, nextY, Config.blockSize, Config.blockSize) && !isTargetingWater(level, x, nextY)) {
             y = nextY;
             moved = true;
         }
@@ -88,6 +90,21 @@ public abstract class EnemyBot {
             path.clear();
             pathCooldown = 0;
         }
+    }
+
+    private boolean isTargetingWater(Level level, double futurX, double futurY) {
+        int idEau = 29;
+        
+        // On calcule la case de la grille où le monstre s'apprête à poser le pied (en regardant son centre)
+        int gridX = (int) ((futurX + Config.blockSize / 2) / Config.blockSize);
+        int gridY = (int) ((futurY + Config.blockSize / 2) / Config.blockSize);
+
+        // On vérifie que c'est bien dans les limites de la carte
+        if (gridX >= 0 && gridX < level.getWidth() && gridY >= 0 && gridY < level.getHeight()) {
+            int[][] floor = level.getFloorArray();
+            return floor[gridX][gridY] == idEau;
+        }
+        return false;
     }
 
     private List<int[]> findPath(Level level, int startTx, int startTy, int targetTx, int targetTy) {
@@ -142,7 +159,12 @@ public abstract class EnemyBot {
                 if (nx < minX || ny < minY || nx > maxX || ny > maxY) continue;
                 int lx = nx - minX;
                 int ly = ny - minY;
+                
+                // On vérifie si la case a déjà été visitée ou si c'est un mur
                 if (visited[lx][ly] || !level.isWalkableTile(nx, ny)) continue;
+                
+                // l'eau est interdite
+                if (level.getFloorArray()[nx][ny] == 29) continue;
 
                 visited[lx][ly] = true;
                 parentX[lx][ly] = current[0];
