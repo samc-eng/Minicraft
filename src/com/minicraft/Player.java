@@ -231,7 +231,6 @@ public class Player {
 		
 	}
 	
-<<<<<<< HEAD
     public boolean isInWater(Level level) {
         int idEau = 29;     
 
@@ -247,10 +246,6 @@ public class Player {
         return false;
     }
 
-=======
-	
-	// jette un item de la case selectionnee de la hotbar par terre devant le joueur (touche H)
->>>>>>> Alithelast
 	public void dropSelectedItem(Level level) {
 		ItemStack stack = slot[selectedSlot];
 		if (stack == null) return;

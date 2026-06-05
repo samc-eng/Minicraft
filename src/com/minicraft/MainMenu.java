@@ -32,27 +32,18 @@ public class MainMenu {
                     "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 5, 0, 0, 4);";
 
     public void show(Stage window) {
-<<<<<<< HEAD
-        // ... (Musique et Fond identiques)
-        try {
-            if (mediaPlayer == null ) {
-=======
         // on lance la musique une seule fois pour pas qu'elle se double quand on revient au menu
         if (this.mediaPlayer == null) {
             try {
->>>>>>> Alithelast
                 Media hit = new Media(new java.io.File("resources/menu_music.mp3").toURI().toString());
                 this.mediaPlayer = new MediaPlayer(hit);
                 this.mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
                 this.mediaPlayer.setVolume(0.5);
                 this.mediaPlayer.play();
-<<<<<<< HEAD
+            } catch (Exception e) { 
+                
             }
-        } catch (Exception e) { }
-=======
-            } catch (Exception e) { }
         }
->>>>>>> Alithelast
 
         StackPane root = new StackPane();
 
@@ -159,7 +150,6 @@ public class MainMenu {
             p.setX(Double.parseDouble(pData[0]));
             p.setY(Double.parseDouble(pData[1]));
 
-<<<<<<< HEAD
             if (pData.length > 4) {
                 p.setHealth(Integer.parseInt(pData[4]));
             }
@@ -167,9 +157,6 @@ public class MainMenu {
             int loadedEnemyCount = 0;
 
             // 7. Inventaire complet (Ton code)
-=======
-            // on lit toutes les piles de l'inventaire
->>>>>>> Alithelast
             String line = "";
             while (sc.hasNextLine()) { line = sc.nextLine().trim(); if (!line.isEmpty()) break; }
             if (!line.isEmpty()) {
