@@ -14,7 +14,7 @@ public class ItemStack {
         this.currentDurability = (def != null && def.hasDurability) ? def.maxDurability : 0;
     }
 
-    // Variante utilisée par le chargement de sauvegarde : restaure la durabilité exacte
+    // autre constructeur utilise au chargement pour remettre la durabilite exacte
     public ItemStack(int itemId, int amount, int durability) {
         this.itemId = itemId;
         this.amount = amount;
