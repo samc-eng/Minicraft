@@ -295,7 +295,105 @@ public class Main extends Application {
         craftingUI.addWorkbenchRecipe(new Recipe("Bottes en gem",    333, 1).addCost(107, 4));
 
         AnimationTimer timer = new AnimationTimer() {
+            private long lastTime = 0;
+            // 1 seconde divisée par 60 = le temps exact d'un Tick
+            private final double nsPerTick = 1_000_000_000.0 / 60.0; 
+            private double delta = 0;
+
             public void handle(long now) {
+                if (lastTime == 0) {
+                    lastTime = now;
+                    return;
+                }
+
+                // On calcule combien de "Ticks" on doit rattraper
+                delta += (now - lastTime) / nsPerTick;
+                lastTime = now;
+
+                // =======================================================
+                // 1. LE CERVEAU (La Logique - Verrouillé à 60 calculs/s)
+                // =======================================================
+                while (delta >= 1) {
+                    
+                    // --- Transitions entre niveaux ---
+                    if (transitionCooldown > 0) {
+                        transitionCooldown--;
+                    } else {
+                        int ptx = (int)(player.getX() / Config.blockSize);
+                        int pty = (int)(player.getY() / Config.blockSize);
+                        for (int[] portal : level.getPortals()) {
+                            if (Math.abs(ptx - portal[0]) <= 1 && Math.abs(pty - portal[1]) <= 1) {
+                                if (currentDepth == 0) {
+                                    lastSurfacePortal = portal;
+                                    currentDepth = 1;
+                                    if (undergroundLevels[0] == null) {
+                                        undergroundLevels[0] = new Level(1000, 1000, 1, surfaceLevel.getSeed());
+                                    }
+                                    level = undergroundLevels[0];
+                                    spawnNearPortal(level);
+                                } else {
+                                    currentDepth = 0;
+                                    level = surfaceLevel;
+                                    if (lastSurfacePortal != null) {
+                                        player.setX(lastSurfacePortal[0] * Config.blockSize + Config.blockSize);
+                                        player.setY(lastSurfacePortal[1] * Config.blockSize + Config.blockSize);
+                                    } else {
+                                        double[] s = level.getSafeSpawn();
+                                        player.setX(s[0]); player.setY(s[1]);
+                                    }
+                                }
+                                miniMap.generate(level.getFloorArray(), level.getBlocksArray(),
+                                                 level.getWidth(), level.getHeight(), level.getPortals());
+                                transitionCooldown = 90;
+                                break;
+                            }
+                        }
+                    }
+
+                    // --- Touches UI ---
+                    if (input.isClicked(KeyCode.M))   miniMapVisible = !miniMapVisible;
+                    if (input.isClicked(KeyCode.TAB)) fullMapOpen    = !fullMapOpen;
+
+                    if (input.isClicked(KeyCode.E)) {
+                        inventaireOuvert = !inventaireOuvert;
+                        craftingOpen  = false;
+                        workbenchOpen = false;
+                    }
+
+                    if (input.isClicked(KeyCode.C)) {
+                        craftingOpen     = !craftingOpen;
+                        workbenchOpen    = false;
+                        inventaireOuvert = false;
+                        craftingUI.setModeEtabli(false);
+                    }
+
+                    if (input.isClicked(KeyCode.B)) {
+                        if (isNearWorkbench()) {
+                            workbenchOpen    = !workbenchOpen;
+                            craftingOpen     = false;
+                            inventaireOuvert = false;
+                            craftingUI.setModeEtabli(workbenchOpen);
+                        } else {
+                            System.out.println("Vous devez être près d'un établi !");
+                        }
+                    }
+
+                    // --- Logique du jeu ---
+                    if (!craftingOpen && !workbenchOpen && !inventaireOuvert) {
+                        player.tick(level, input);
+                        level.updateEntities(player);
+                        level.removeDeadBots();
+                    } else if (craftingOpen || workbenchOpen) {
+                        craftingUI.tick(input, player);
+                    }
+
+                    input.update(); // Les inputs se mettent à jour à 60Hz
+                    delta--; // On a fini 1 Tick, on le retire du compteur
+                }
+
+                // =======================================================
+                // 2. LES YEUX (Le Dessin - Aussi rapide que ton écran 144Hz)
+                // =======================================================
                 widthScreen = canva.getWidth();
                 heightScreen = canva.getHeight();
 
@@ -310,93 +408,19 @@ public class Main extends Application {
                 if (camX > (level.getWidth()  * Config.blockSize) - largeurVue) camX = (level.getWidth()  * Config.blockSize) - largeurVue;
                 if (camY > (level.getHeight() * Config.blockSize) - hauteurVue) camY = (level.getHeight() * Config.blockSize) - hauteurVue;
 
-                // --- Transitions entre niveaux ---
-                if (transitionCooldown > 0) {
-                    transitionCooldown--;
-                } else {
-                    int ptx = (int)(player.getX() / Config.blockSize);
-                    int pty = (int)(player.getY() / Config.blockSize);
-                    for (int[] portal : level.getPortals()) {
-                        if (Math.abs(ptx - portal[0]) <= 1 && Math.abs(pty - portal[1]) <= 1) {
-                            if (currentDepth == 0) {
-                                lastSurfacePortal = portal;
-                                currentDepth = 1;
-                                if (undergroundLevels[0] == null) {
-                                    undergroundLevels[0] = new Level(1000, 1000, 1, surfaceLevel.getSeed());
-                                }
-                                level = undergroundLevels[0];
-                                spawnNearPortal(level);
-                            } else {
-                                currentDepth = 0;
-                                level = surfaceLevel;
-                                if (lastSurfacePortal != null) {
-                                    player.setX(lastSurfacePortal[0] * Config.blockSize + Config.blockSize);
-                                    player.setY(lastSurfacePortal[1] * Config.blockSize + Config.blockSize);
-                                } else {
-                                    double[] s = level.getSafeSpawn();
-                                    player.setX(s[0]); player.setY(s[1]);
-                                }
-                            }
-                            miniMap.generate(level.getFloorArray(), level.getBlocksArray(),
-                                             level.getWidth(), level.getHeight(), level.getPortals());
-                            transitionCooldown = 90;
-                            break;
-                        }
-                    }
-                }
-
-                // --- Touches UI ---
-                if (input.isClicked(KeyCode.M))   miniMapVisible = !miniMapVisible;
-                if (input.isClicked(KeyCode.TAB)) fullMapOpen    = !fullMapOpen;
-
-                if (input.isClicked(KeyCode.E)) {
-                    inventaireOuvert = !inventaireOuvert;
-                    craftingOpen  = false;
-                    workbenchOpen = false;
-                }
-
-                if (input.isClicked(KeyCode.C)) {
-                    craftingOpen     = !craftingOpen;
-                    workbenchOpen    = false;
-                    inventaireOuvert = false;
-                    craftingUI.setModeEtabli(false);
-                }
-
-                if (input.isClicked(KeyCode.B)) {
-                    if (isNearWorkbench()) {
-                        workbenchOpen    = !workbenchOpen;
-                        craftingOpen     = false;
-                        inventaireOuvert = false;
-                        craftingUI.setModeEtabli(workbenchOpen);
-                    } else {
-                        System.out.println("Vous devez être près d'un établi !");
-                    }
-                }
-
-                // --- Rendu ---
                 pinceau.clearRect(0, 0, widthScreen, heightScreen);
                 pinceau.save();
                 pinceau.scale(Config.SCALE, Config.SCALE);
                 pinceau.translate(-camX, -camY);
 
                 level.render(pinceau, camX, camY, largeurVue, hauteurVue);
-
-                // --- Tick ---
-                if (craftingOpen || workbenchOpen || inventaireOuvert) {
-                    // On ne bouge pas le joueur quand un menu est ouvert
-                } else {
-                    player.tick(level, input);
-                    level.updateEntities(player);
-                }
-
                 player.render(pinceau);
                 pinceau.restore();
 
-                // --- HUD & UI ---
+                // --- UI ---
                 hud.render(pinceau, player);
 
                 if (craftingOpen || workbenchOpen) {
-                    craftingUI.tick(input, player);
                     craftingUI.render(pinceau, player);
                 } else if (inventaireOuvert) {
                     inventaireUI.render(pinceau, player);
@@ -414,11 +438,10 @@ public class Main extends Application {
                         camX, camY, largeurVue, hauteurVue,
                         widthScreen, heightScreen);
                 }
-
-                input.update();
             }
         };
 
         timer.start();
+            
     }
 }

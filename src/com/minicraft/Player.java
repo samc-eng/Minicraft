@@ -21,6 +21,8 @@ public class Player {
 	private int invulnerabilityTimer = 0;
 	private int selectedSlot = 0;
 	private ItemStack[] slot = new ItemStack[9];
+	private boolean isSwimming = false;
+    private int damageFlashTimer =0;
 
 	public boolean up;
 	public boolean down;
@@ -31,6 +33,7 @@ public class Player {
 		this.x=startX;
 		this.y=startY;
 		this.vitesse=0.25;
+        this.invulnerabilityTimer=300;
 
 		try {
 			this.skin=new Image("file:resources/skins.png");
@@ -80,6 +83,7 @@ public class Player {
 		
 		if (attackTimer>0) {attackTimer--;}
 		if (invulnerabilityTimer > 0) invulnerabilityTimer--;
+        if (damageFlashTimer > 0) damageFlashTimer--;
 		
 		if (isMoved) { 
 			this.anim++;
@@ -99,10 +103,16 @@ public class Player {
 			this.dropSelectedItem(level);
 		}
 
-		if (input.isPressed(KeyCode.SHIFT) && energy>3) {
-			this.vitesse=0.5;
+		this.isSwimming=this.isInWater(level);
+		
+		if (this.isSwimming && input.isPressed(KeyCode.SHIFT) && energy>3){
+			this.vitesse=1.2;
+		} else if (this.isSwimming){
+			this.vitesse=0.7;
+		} else if (input.isPressed(KeyCode.SHIFT) && energy>3) {
+			this.vitesse=1.5;
 		} else {
-			this.vitesse=0.25;
+			this.vitesse=1;
 		}
 		
 		for (Item item : level.getItems()) {
@@ -160,23 +170,48 @@ public class Player {
         int sourceY = skinRow * 8; 
         
         
-        //on dessine l'animation
-        if (flip) {
-            gc.drawImage(this.skin, 
-                    sourceX, sourceY, 16, 16,  
-                    x+Config.blockSize, y, -Config.blockSize, Config.blockSize               
-                );
+        // on dessine l'animation
+        if (this.isSwimming) {
+            // --- DANS L'EAU : On ne prend que 8 pixels de haut (la moitié du skin) ---
+            // On décale aussi le dessin vers le bas (+ Config.blockSize / 2) pour l'enfoncer
+            if (flip) {
+                gc.drawImage(this.skin, 
+                        sourceX, sourceY, 16, 8,  
+                        x + Config.blockSize, y + (Config.blockSize / 2.0), -Config.blockSize, Config.blockSize / 2.0               
+                    );
+            } else {
+                gc.drawImage(this.skin, 
+                        sourceX, sourceY, 16, 8,  
+                        x, y + (Config.blockSize / 2.0), Config.blockSize, Config.blockSize / 2.0               
+                    );
+            }
         } else {
-            gc.drawImage(this.skin, 
-                    sourceX, sourceY, 16, 16,  
-                    x, y, Config.blockSize, Config.blockSize               
-                );
+            // --- SUR TERRE : Dessin normal entier (16 pixels) ---
+            if (flip) {
+                gc.drawImage(this.skin, 
+                        sourceX, sourceY, 16, 16,  
+                        x + Config.blockSize, y, -Config.blockSize, Config.blockSize               
+                    );
+            } else {
+                gc.drawImage(this.skin, 
+                        sourceX, sourceY, 16, 16,  
+                        x, y, Config.blockSize, Config.blockSize               
+                    );
+            }
         }
 
-        if (isInvulnerable()
-                && (invulnerabilityTimer / Config.PLAYER_DAMAGE_BLINK_TICKS) % 2 == 0) {
+        // --- GESTION DES EFFETS VISUELS ---
+        // 1. Flash rouge UNIQUEMENT quand on perd un coeur
+        if (damageFlashTimer > 0) {
             gc.setFill(Color.rgb(255, 40, 40, 0.55));
             gc.fillRect(x, y, Config.blockSize, Config.blockSize);
+        }
+
+        // 2. Bouclier de spawn (Contour blanc clignotant doucement)
+        if (isInvulnerable() && (invulnerabilityTimer / 15) % 2 == 0) {
+            gc.setStroke(Color.rgb(255, 255, 255, 0.7)); 
+            gc.setLineWidth(2); 
+            gc.strokeRect(x, y, Config.blockSize, Config.blockSize); 
         }
 
 
@@ -196,7 +231,21 @@ public class Player {
 		
 	}
 	
-	
+    public boolean isInWater(Level level) {
+        int idEau = 29;     
+
+        // On calcule sur quelle case de la grille se trouve le joueur
+        int gridX = (int) (this.getX() / Config.blockSize);
+        int gridY = (int) (this.getY() / Config.blockSize);
+
+        // On vérifie qu'on ne cherche pas en dehors de la carte
+        if (gridX >= 0 && gridX < level.getWidth() && gridY >= 0 && gridY < level.getHeight()) {
+            int[][] floor = level.getFloorArray();
+            return floor[gridX][gridY] == idEau;
+        }
+        return false;
+    }
+
 	public void dropSelectedItem(Level level) {
 		ItemStack stack = slot[selectedSlot];
 		if (stack == null) return;
@@ -234,12 +283,15 @@ public class Player {
 		if (dir==2) {cibleX--;}
 		
 		if (!placeMode) {
-            // MODE DESTRUCTION
+            // MODE DESTRUCTION (Blocs)
             int cibleBlock = level.getBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize);
             if (cibleBlock != 0) {
                 level.setBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize, 0);
-				this.loseEnergy(3);
+                this.loseEnergy(3);
             }
+            
+            // --- NOUVEAU : MODE COMBAT (Monstres) ---
+            attackEnemies(level, cibleX * Config.blockSize, cibleY * Config.blockSize);
         } else {
             // MODE CONSTRUCTION
 			ItemStack stackInHand = getSelectedItem();
@@ -291,7 +343,7 @@ public class Player {
         }
 
         setHealth(this.health - damage);
-        this.invulnerabilityTimer = Config.PLAYER_INVULNERABILITY_TICKS;
+        this.damageFlashTimer=15;
         System.out.println("Aie ! Le joueur a pris " + damage + " degats. Vie restante : " + this.health);
         return true;
     }
@@ -360,6 +412,50 @@ public class Player {
             this.inventory.remove(id, remaining);
         }
         return true;
+    }
+
+
+	// Détecte les monstres dans la zone ciblée et leur inflige des dégâts
+    private void attackEnemies(Level level, double targetX, double targetY) {
+        // Dégâts de base (Poings nus)
+        int damage = 1;
+        
+        // Bonus de dégâts si tu as une épée en main
+        ItemStack weapon = getSelectedItem();
+        if (weapon != null) {
+            int id = weapon.getItemId();
+            if (id == 200) damage = 2; // Épée en bois
+			if (id == 210) damage = 3; // Épée en pierre
+            if (id == 220) damage = 4; // Épée en fer
+            if (id == 230) damage = 5; // Épée en or
+            if (id == 240) damage = 6; // Épée en gem
+        }
+
+        // Frapper les zombies (Bots)
+        for (Bot bot : level.getBots()) {
+            if (isHit(bot.getX(), bot.getY(), targetX, targetY)) {
+                bot.takeDamage(damage);
+            }
+        }
+
+        // Frapper les archers
+        if (level.getArcherBots() != null) {
+            for (ArcherBot archer : level.getArcherBots()) {
+                if (isHit(archer.getX(), archer.getY(), targetX, targetY)) {
+                    archer.takeDamage(damage);
+                }
+            }
+        }
+    }
+
+    // Vérifie si le monstre est assez proche de la case attaquée
+    private boolean isHit(double botX, double botY, double targetX, double targetY) {
+        double dx = (botX + Config.blockSize / 2.0) - (targetX + Config.blockSize / 2.0);
+        double dy = (botY + Config.blockSize / 2.0) - (targetY + Config.blockSize / 2.0);
+        double distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // Si le centre du monstre est proche du centre de la case attaquée
+        return distance < Config.blockSize * 1.5; 
     }
 
 	public void loseEnergy(int amount) {
