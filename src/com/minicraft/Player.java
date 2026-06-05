@@ -21,6 +21,7 @@ public class Player {
 	private int invulnerabilityTimer = 0;
 	private int selectedSlot = 0;
 	private ItemStack[] slot = new ItemStack[9];
+	private boolean isSwimming = false;
 
 	public boolean up;
 	public boolean down;
@@ -99,8 +100,14 @@ public class Player {
 			this.dropSelectedItem(level);
 		}
 
-		if (input.isPressed(KeyCode.SHIFT) && energy>3) {
-			this.vitesse=0.5;
+		this.isSwimming=this.isInWater(level);
+		
+		if (this.isSwimming && input.isPressed(KeyCode.SHIFT) && energy>3){
+			this.vitesse=0.2;
+		} else if (this.isSwimming){
+			this.vitesse=0.1;
+		} else if (input.isPressed(KeyCode.SHIFT) && energy>3) {
+			this.vitesse=0.4;
 		} else {
 			this.vitesse=0.25;
 		}
@@ -160,17 +167,34 @@ public class Player {
         int sourceY = skinRow * 8; 
         
         
-        //on dessine l'animation
-        if (flip) {
-            gc.drawImage(this.skin, 
-                    sourceX, sourceY, 16, 16,  
-                    x+Config.blockSize, y, -Config.blockSize, Config.blockSize               
-                );
+        // on dessine l'animation
+        if (this.isSwimming) {
+            // --- DANS L'EAU : On ne prend que 8 pixels de haut (la moitié du skin) ---
+            // On décale aussi le dessin vers le bas (+ Config.blockSize / 2) pour l'enfoncer
+            if (flip) {
+                gc.drawImage(this.skin, 
+                        sourceX, sourceY, 16, 8,  
+                        x + Config.blockSize, y + (Config.blockSize / 2.0), -Config.blockSize, Config.blockSize / 2.0               
+                    );
+            } else {
+                gc.drawImage(this.skin, 
+                        sourceX, sourceY, 16, 8,  
+                        x, y + (Config.blockSize / 2.0), Config.blockSize, Config.blockSize / 2.0               
+                    );
+            }
         } else {
-            gc.drawImage(this.skin, 
-                    sourceX, sourceY, 16, 16,  
-                    x, y, Config.blockSize, Config.blockSize               
-                );
+            // --- SUR TERRE : Dessin normal entier (16 pixels) ---
+            if (flip) {
+                gc.drawImage(this.skin, 
+                        sourceX, sourceY, 16, 16,  
+                        x + Config.blockSize, y, -Config.blockSize, Config.blockSize               
+                    );
+            } else {
+                gc.drawImage(this.skin, 
+                        sourceX, sourceY, 16, 16,  
+                        x, y, Config.blockSize, Config.blockSize               
+                    );
+            }
         }
 
         if (isInvulnerable()
@@ -196,7 +220,22 @@ public class Player {
 		
 	}
 	
-	
+	// Dans Player.java
+    public boolean isInWater(Level level) {
+        int idEau = 29;     
+
+        // On calcule sur quelle case de la grille se trouve le joueur
+        int gridX = (int) (this.getX() / Config.blockSize);
+        int gridY = (int) (this.getY() / Config.blockSize);
+
+        // On vérifie qu'on ne cherche pas en dehors de la carte
+        if (gridX >= 0 && gridX < level.getWidth() && gridY >= 0 && gridY < level.getHeight()) {
+            int[][] floor = level.getFloorArray();
+            return floor[gridX][gridY] == idEau;
+        }
+        return false;
+    }
+
 	public void dropSelectedItem(Level level) {
 		ItemStack stack = slot[selectedSlot];
 		if (stack == null) return;
