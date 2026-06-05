@@ -13,6 +13,8 @@ public abstract class EnemyBot {
 
     protected double x;
     protected double y;
+    protected int maxHealth = 10;
+    protected int health = maxHealth;
 
     private int pathCooldown = 0;
     private List<int[]> path = new ArrayList<>();
@@ -208,6 +210,17 @@ public abstract class EnemyBot {
                 && Math.abs(getCenterY() - targetY) < 2.0;
     }
 
+
+    // --- MÉTHODES DE COMBAT ---
+    public void takeDamage(int damage) {
+        this.health -= damage;
+        System.out.println("BAM ! Monstre touché. Dégâts : " + damage + " | Vie restante : " + this.health);
+    }
+
+    public boolean isDead() {
+        return this.health <= 0;
+    }
+    
     protected boolean isTouchingPlayer(Player player) {
         double leftA = x;
         double rightA = x + Config.blockSize;

@@ -295,7 +295,16 @@ public class Main extends Application {
         craftingUI.addWorkbenchRecipe(new Recipe("Bottes en gem",    333, 1).addCost(107, 4));
 
         AnimationTimer timer = new AnimationTimer() {
+            // Le chronomètre pour bloquer le jeu à 60 FPS
+            private long lastUpdate = 0;
+            private final long frameInterval = 1_000_000_000 / 60;
+
             public void handle(long now) {
+                if (now - lastUpdate < frameInterval) {
+                    return; 
+                }
+                lastUpdate = now;
+
                 widthScreen = canva.getWidth();
                 heightScreen = canva.getHeight();
 
@@ -387,6 +396,7 @@ public class Main extends Application {
                 } else {
                     player.tick(level, input);
                     level.updateEntities(player);
+                    level.removeDeadBots();
                 }
 
                 player.render(pinceau);

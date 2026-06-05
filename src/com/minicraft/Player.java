@@ -103,13 +103,13 @@ public class Player {
 		this.isSwimming=this.isInWater(level);
 		
 		if (this.isSwimming && input.isPressed(KeyCode.SHIFT) && energy>3){
-			this.vitesse=0.2;
+			this.vitesse=1.2;
 		} else if (this.isSwimming){
-			this.vitesse=0.1;
+			this.vitesse=0.7;
 		} else if (input.isPressed(KeyCode.SHIFT) && energy>3) {
-			this.vitesse=0.4;
+			this.vitesse=1.5;
 		} else {
-			this.vitesse=0.25;
+			this.vitesse=1;
 		}
 		
 		for (Item item : level.getItems()) {
@@ -273,12 +273,15 @@ public class Player {
 		if (dir==2) {cibleX--;}
 		
 		if (!placeMode) {
-            // MODE DESTRUCTION
+            // MODE DESTRUCTION (Blocs)
             int cibleBlock = level.getBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize);
             if (cibleBlock != 0) {
                 level.setBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize, 0);
-				this.loseEnergy(3);
+                this.loseEnergy(3);
             }
+            
+            // --- NOUVEAU : MODE COMBAT (Monstres) ---
+            attackEnemies(level, cibleX * Config.blockSize, cibleY * Config.blockSize);
         } else {
             // MODE CONSTRUCTION
 			ItemStack stackInHand = getSelectedItem();
@@ -399,6 +402,50 @@ public class Player {
             this.inventory.remove(id, remaining);
         }
         return true;
+    }
+
+
+	// Détecte les monstres dans la zone ciblée et leur inflige des dégâts
+    private void attackEnemies(Level level, double targetX, double targetY) {
+        // Dégâts de base (Poings nus)
+        int damage = 1;
+        
+        // Bonus de dégâts si tu as une épée en main
+        ItemStack weapon = getSelectedItem();
+        if (weapon != null) {
+            int id = weapon.getItemId();
+            if (id == 200) damage = 2; // Épée en bois
+			if (id == 210) damage = 3; // Épée en pierre
+            if (id == 220) damage = 4; // Épée en fer
+            if (id == 230) damage = 5; // Épée en or
+            if (id == 240) damage = 6; // Épée en gem
+        }
+
+        // Frapper les zombies (Bots)
+        for (Bot bot : level.getBots()) {
+            if (isHit(bot.getX(), bot.getY(), targetX, targetY)) {
+                bot.takeDamage(damage);
+            }
+        }
+
+        // Frapper les archers
+        if (level.getArcherBots() != null) {
+            for (ArcherBot archer : level.getArcherBots()) {
+                if (isHit(archer.getX(), archer.getY(), targetX, targetY)) {
+                    archer.takeDamage(damage);
+                }
+            }
+        }
+    }
+
+    // Vérifie si le monstre est assez proche de la case attaquée
+    private boolean isHit(double botX, double botY, double targetX, double targetY) {
+        double dx = (botX + Config.blockSize / 2.0) - (targetX + Config.blockSize / 2.0);
+        double dy = (botY + Config.blockSize / 2.0) - (targetY + Config.blockSize / 2.0);
+        double distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // Si le centre du monstre est proche du centre de la case attaquée
+        return distance < Config.blockSize * 1.5; 
     }
 
 	public void loseEnergy(int amount) {
