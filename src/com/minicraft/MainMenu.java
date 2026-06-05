@@ -17,7 +17,7 @@ import javafx.scene.media.*;
 import java.util.*;
 
 public class MainMenu {
-    private MediaPlayer mediaPlayer;
+    private static MediaPlayer mediaPlayer;
     int largeurBouton = 200; // Retour à ta taille originale
 
     String styleBouton =
@@ -34,11 +34,13 @@ public class MainMenu {
     public void show(Stage window) {
         // ... (Musique et Fond identiques)
         try {
-            Media hit = new Media(new java.io.File("resources/menu_music.mp3").toURI().toString());
-            this.mediaPlayer = new MediaPlayer(hit);
-            this.mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
-            this.mediaPlayer.setVolume(0.5);
-            this.mediaPlayer.play();
+            if (mediaPlayer == null ) {
+                Media hit = new Media(new java.io.File("resources/menu_music.mp3").toURI().toString());
+                this.mediaPlayer = new MediaPlayer(hit);
+                this.mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+                this.mediaPlayer.setVolume(0.5);
+                this.mediaPlayer.play();
+            }
         } catch (Exception e) { }
 
         StackPane root = new StackPane();
