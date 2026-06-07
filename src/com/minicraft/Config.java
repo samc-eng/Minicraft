@@ -30,4 +30,15 @@ public class Config {
     public static final int ARCHER_SHOOT_COOLDOWN_TICKS = 600;
     public static final double ARCHER_SHOOT_RANGE = 220.0;
     public static final double ARCHER_KEEP_DISTANCE = blockSize * 6.0;
+
+    public static final int SHEEP_COUNT = 40;
+    public static final int SHEEP_NEAR_PLAYER_COUNT = 6;
+    public static final double SHEEP_SPEED = 0.07;
+    public static final int SHEEP_MIN_DIRECTION_TICKS = 60;
+    public static final int SHEEP_MAX_DIRECTION_TICKS = 180;
+    public static final double SHEEP_IDLE_CHANCE = 0.30;
+    public static final int SHEEP_SPAWN_ATTEMPTS = 700;
+    public static final double SHEEP_MIN_PLAYER_SPAWN_DISTANCE = blockSize * 5.0;
+    public static final double SHEEP_NEAR_PLAYER_MAX_DISTANCE = blockSize * 55.0;
+    public static final double SHEEP_MIN_ENTITY_SPAWN_DISTANCE = blockSize * 4.0;
 }
