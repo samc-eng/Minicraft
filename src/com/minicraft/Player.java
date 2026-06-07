@@ -21,6 +21,8 @@ public class Player {
 	private int invulnerabilityTimer = 0;
 	private int selectedSlot = 0;
 	private ItemStack[] slot = new ItemStack[9];
+	private boolean isSwimming = false;
+    private int damageFlashTimer =0;
 
 	public boolean up;
 	public boolean down;
@@ -31,7 +33,8 @@ public class Player {
 		this.x=startX;
 		this.y=startY;
 		this.vitesse=Config.PLAYER_WALK_SPEED;
-		
+        this.invulnerabilityTimer=300;
+
 		try {
 			this.skin=new Image("file:resources/skins.png");
 		} catch (Exception e){
@@ -45,10 +48,11 @@ public class Player {
 		double futurX=x;
 		double futurY=y;
 
+		this.isSwimming=this.isInWater(level);
 		if (input.isPressed(KeyCode.SHIFT) && energy>3) {
-			this.vitesse=Config.PLAYER_SPRINT_SPEED;
+			this.vitesse=this.isSwimming ? Config.PLAYER_SPRINT_SPEED * 0.75 : Config.PLAYER_SPRINT_SPEED;
 		} else {
-			this.vitesse=Config.PLAYER_WALK_SPEED;
+			this.vitesse=this.isSwimming ? Config.PLAYER_WALK_SPEED * 0.70 : Config.PLAYER_WALK_SPEED;
 		}
 		
 		if (input.isPressed(KeyCode.Z)) {futurY-=vitesse;dir=1;isMoved=true;}
@@ -56,16 +60,16 @@ public class Player {
 		if (input.isPressed(KeyCode.D)) {futurX+=vitesse;dir=3;isMoved=true;}
 		if (input.isPressed(KeyCode.Q)) {futurX-=vitesse;dir=2;isMoved=true;}
 
-		// --- SÉLECTION DE LA HOTBAR ---
-		if (input.isClicked(KeyCode.F1)) { setSelectedSlot(0); }
-		if (input.isClicked(KeyCode.F2)) { setSelectedSlot(1); }
-		if (input.isClicked(KeyCode.F3)) { setSelectedSlot(2); }
-		if (input.isClicked(KeyCode.F4)) { setSelectedSlot(3); }
-		if (input.isClicked(KeyCode.F5)) { setSelectedSlot(4); }
-		if (input.isClicked(KeyCode.F6)) { setSelectedSlot(5); }
-		if (input.isClicked(KeyCode.F7)) { setSelectedSlot(6); }
-		if (input.isClicked(KeyCode.F8)) { setSelectedSlot(7); }
-		if (input.isClicked(KeyCode.F9)) { setSelectedSlot(8); }
+		// touches pour choisir la case selectionnee dans la hotbar (1 a 9, ou F1 a F9)
+		if (input.isClicked(KeyCode.DIGIT1) || input.isClicked(KeyCode.F1)) { setSelectedSlot(0); }
+		if (input.isClicked(KeyCode.DIGIT2) || input.isClicked(KeyCode.F2)) { setSelectedSlot(1); }
+		if (input.isClicked(KeyCode.DIGIT3) || input.isClicked(KeyCode.F3)) { setSelectedSlot(2); }
+		if (input.isClicked(KeyCode.DIGIT4) || input.isClicked(KeyCode.F4)) { setSelectedSlot(3); }
+		if (input.isClicked(KeyCode.DIGIT5) || input.isClicked(KeyCode.F5)) { setSelectedSlot(4); }
+		if (input.isClicked(KeyCode.DIGIT6) || input.isClicked(KeyCode.F6)) { setSelectedSlot(5); }
+		if (input.isClicked(KeyCode.DIGIT7) || input.isClicked(KeyCode.F7)) { setSelectedSlot(6); }
+		if (input.isClicked(KeyCode.DIGIT8) || input.isClicked(KeyCode.F8)) { setSelectedSlot(7); }
+		if (input.isClicked(KeyCode.DIGIT9) || input.isClicked(KeyCode.F9)) { setSelectedSlot(8); }
 
 
 		
@@ -86,6 +90,7 @@ public class Player {
 		
 		if (attackTimer>0) {attackTimer--;}
 		if (invulnerabilityTimer > 0) invulnerabilityTimer--;
+        if (damageFlashTimer > 0) damageFlashTimer--;
 		
 		if (isMoved) { 
 			this.anim++;
@@ -101,6 +106,10 @@ public class Player {
 			this.interact(level,true);
 		}
 
+		if (input.isClicked(KeyCode.H)) {
+			this.dropSelectedItem(level);
+		}
+		
 		for (Item item : level.getItems()) {
             double dx = (x + 6) - (item.getX() + 8);
             double dy = (y + 6) - (item.getY() + 8);
@@ -156,23 +165,48 @@ public class Player {
         int sourceY = skinRow * 8; 
         
         
-        //on dessine l'animation
-        if (flip) {
-            gc.drawImage(this.skin, 
-                    sourceX, sourceY, 16, 16,  
-                    x+Config.blockSize, y, -Config.blockSize, Config.blockSize               
-                );
+        // on dessine l'animation
+        if (this.isSwimming) {
+            // --- DANS L'EAU : On ne prend que 8 pixels de haut (la moitié du skin) ---
+            // On décale aussi le dessin vers le bas (+ Config.blockSize / 2) pour l'enfoncer
+            if (flip) {
+                gc.drawImage(this.skin, 
+                        sourceX, sourceY, 16, 8,  
+                        x + Config.blockSize, y + (Config.blockSize / 2.0), -Config.blockSize, Config.blockSize / 2.0               
+                    );
+            } else {
+                gc.drawImage(this.skin, 
+                        sourceX, sourceY, 16, 8,  
+                        x, y + (Config.blockSize / 2.0), Config.blockSize, Config.blockSize / 2.0               
+                    );
+            }
         } else {
-            gc.drawImage(this.skin, 
-                    sourceX, sourceY, 16, 16,  
-                    x, y, Config.blockSize, Config.blockSize               
-                );
+            // --- SUR TERRE : Dessin normal entier (16 pixels) ---
+            if (flip) {
+                gc.drawImage(this.skin, 
+                        sourceX, sourceY, 16, 16,  
+                        x + Config.blockSize, y, -Config.blockSize, Config.blockSize               
+                    );
+            } else {
+                gc.drawImage(this.skin, 
+                        sourceX, sourceY, 16, 16,  
+                        x, y, Config.blockSize, Config.blockSize               
+                    );
+            }
         }
 
-        if (isInvulnerable()
-                && (invulnerabilityTimer / Config.PLAYER_DAMAGE_BLINK_TICKS) % 2 == 0) {
+        // --- GESTION DES EFFETS VISUELS ---
+        // 1. Flash rouge UNIQUEMENT quand on perd un coeur
+        if (damageFlashTimer > 0) {
             gc.setFill(Color.rgb(255, 40, 40, 0.55));
             gc.fillRect(x, y, Config.blockSize, Config.blockSize);
+        }
+
+        // 2. Bouclier de spawn (Contour blanc clignotant doucement)
+        if (isInvulnerable() && (invulnerabilityTimer / 15) % 2 == 0) {
+            gc.setStroke(Color.rgb(255, 255, 255, 0.7)); 
+            gc.setLineWidth(2); 
+            gc.strokeRect(x, y, Config.blockSize, Config.blockSize); 
         }
 
 
@@ -192,7 +226,45 @@ public class Player {
 		
 	}
 	
-	
+    public boolean isInWater(Level level) {
+        int idEau = 29;     
+
+        // On calcule sur quelle case de la grille se trouve le joueur
+        int gridX = (int) (this.getX() / Config.blockSize);
+        int gridY = (int) (this.getY() / Config.blockSize);
+
+        // On vérifie qu'on ne cherche pas en dehors de la carte
+        if (gridX >= 0 && gridX < level.getWidth() && gridY >= 0 && gridY < level.getHeight()) {
+            int[][] floor = level.getFloorArray();
+            return floor[gridX][gridY] == idEau;
+        }
+        return false;
+    }
+
+	public void dropSelectedItem(Level level) {
+		ItemStack stack = slot[selectedSlot];
+		if (stack == null) return;
+
+		// on calcule la case devant le joueur
+		int xBlock = (int)((x + Config.blockSize/2) / Config.blockSize);
+		int yBlock = (int)((y + Config.blockSize/2) / Config.blockSize);
+		int cibleX = xBlock;
+		int cibleY = yBlock;
+		if (dir == 0) cibleY++;
+		if (dir == 1) cibleY--;
+		if (dir == 3) cibleX++;
+		if (dir == 2) cibleX--;
+
+		double dropX = cibleX * Config.blockSize + Config.blockSize / 2.0;
+		double dropY = cibleY * Config.blockSize + Config.blockSize / 2.0;
+
+		int id = stack.getItemId();
+		level.dropItem(dropX, dropY, new ItemStack(id, 1));
+
+		consumeSelectedItem();
+		System.out.println("Item [" + id + "] jeté au sol.");
+	}
+
 	public void interact(Level level, boolean placeMode) {
 		this.attackTimer=10;
 		
@@ -207,46 +279,41 @@ public class Player {
 		if (dir==2) {cibleX--;}
 		
 		if (!placeMode) {
-            // MODE DESTRUCTION
+            // MODE DESTRUCTION (Blocs)
             int cibleBlock = level.getBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize);
             if (cibleBlock != 0) {
                 level.setBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize, 0);
-				this.loseEnergy(3);
+                this.loseEnergy(3);
             }
+            
+            // --- NOUVEAU : MODE COMBAT (Monstres) ---
+            attackEnemies(level, cibleX * Config.blockSize, cibleY * Config.blockSize);
         } else {
             // MODE CONSTRUCTION
 			ItemStack stackInHand = getSelectedItem();
-			
-			// Si la main n'est pas vide
-			if (stackInHand != null) {
-				ItemDefinition def = stackInHand.getDefinition();
-				
-				// Si l'objet est posable
-				if (def != null && def.placeable) {
-					
-					// Hitbox du futur mur (tu avais très bien codé ça !)
-					double bLeft = cibleX * Config.blockSize;
-					double bRight = bLeft + Config.blockSize;
-					double bTop = cibleY * Config.blockSize;
-					double bBottom = bTop + Config.blockSize;
-					
-					boolean seTouchent = !(x+8 <= bRight || x + Config.blockSize-8 >= bLeft ||
-										y+8 <= bBottom || y + Config.blockSize-8 >= bTop);
-					
-					// S'il n'y a pas de collision avec le joueur
-					if (!seTouchent) {
-						// 1. On pose le bloc sur la carte
-						level.setBlocks(cibleX*Config.blockSize, cibleY*Config.blockSize, def.id);
-						
-						// 2. On utilise notre nouvelle méthode pour diminuer la quantité !
-						consumeSelectedItem(); 
-						
-						System.out.println("Bloc [" + def.name + "] posé !");
-					}
-				} else {
-					System.out.println("Cet objet n'est pas un bloc posable.");
-				}
+
+			if (stackInHand == null) {
+				System.out.println("Aucun item sélectionné dans la hotbar.");
+				return;
 			}
+
+			ItemDefinition def = stackInHand.getDefinition();
+			if (def == null || !def.placeable) {
+				System.out.println("Cet objet n'est pas un bloc posable.");
+				return;
+			}
+
+			// on regarde si il y a deja quelque chose devant
+			int existing = level.getBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize);
+			if (existing != 0) {
+				System.out.println("Impossible de poser : la case est déjà occupée (bloc " + existing + ").");
+				return;
+			}
+
+			// on pose le bloc et on retire 1 de la hotbar
+			level.setBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize, def.id);
+			consumeSelectedItem();
+			System.out.println("Bloc [" + def.name + "] posé !");
 		}
 	}
 	
@@ -272,7 +339,7 @@ public class Player {
         }
 
         setHealth(this.health - damage);
-        this.invulnerabilityTimer = Config.PLAYER_INVULNERABILITY_TICKS;
+        this.damageFlashTimer=15;
         System.out.println("Aie ! Le joueur a pris " + damage + " degats. Vie restante : " + this.health);
         return true;
     }
@@ -291,30 +358,103 @@ public class Player {
         return this.invulnerabilityTimer > 0;
     }
 
-	// Méthode unifiée pour ajouter un objet à la fois dans l'inventaire et la Hotbar
+    // appele quand le joueur recupere un item :
+    // on essaye d'abord d'empiler dans la hotbar, sinon une case vide, sinon ca part dans l'inventaire
     public void pickUpItem(ItemStack stack) {
-        // 1. On l'ajoute à l'inventaire de Rayan (pour que les recettes de craft le détectent)
-        this.inventory.add(stack);
-        
-        // 2. On l'ajoute à notre Hotbar (pour l'affichage du HUD et la pose)
-        int id = stack.getItemId();
+        int id     = stack.getItemId();
         int amount = stack.getAmount();
 
-        // A. On regarde si cet item est déjà dans la Hotbar pour s'empiler
+        // est-ce qu'on peut empiler avec une case existante ?
         for (int i = 0; i < 9; i++) {
             if (slot[i] != null && slot[i].getItemId() == id && !slot[i].isFull()) {
                 slot[i].add(amount);
                 return;
             }
         }
-
-        // B. Sinon, on cherche la première case vide (null)
+        // sinon premiere case vide
         for (int i = 0; i < 9; i++) {
             if (slot[i] == null) {
                 slot[i] = new ItemStack(id, amount);
                 return;
             }
         }
+        // hotbar pleine, ca va dans l'inventaire
+        this.inventory.add(stack);
+    }
+
+    // combien j'ai de cet item au total (hotbar + inventaire)
+    public int amountOf(int id) {
+        int total = this.inventory.getAmount(id);
+        for (ItemStack s : slot) {
+            if (s != null && s.getItemId() == id) total += s.getAmount();
+        }
+        return total;
+    }
+
+    public boolean has(int id, int count) {
+        return amountOf(id) >= count;
+    }
+
+    // retire `count` items, en commencant par la hotbar puis l'inventaire
+    public boolean consume(int id, int count) {
+        if (!has(id, count)) return false;
+        int remaining = count;
+        for (int i = 0; i < 9 && remaining > 0; i++) {
+            if (slot[i] != null && slot[i].getItemId() == id) {
+                int take = Math.min(remaining, slot[i].getAmount());
+                slot[i].remove(take);
+                remaining -= take;
+                if (slot[i].getAmount() <= 0) slot[i] = null;
+            }
+        }
+        if (remaining > 0) {
+            this.inventory.remove(id, remaining);
+        }
+        return true;
+    }
+
+
+	// Détecte les monstres dans la zone ciblée et leur inflige des dégâts
+    private void attackEnemies(Level level, double targetX, double targetY) {
+        // Dégâts de base (Poings nus)
+        int damage = 1;
+        
+        // Bonus de dégâts si tu as une épée en main
+        ItemStack weapon = getSelectedItem();
+        if (weapon != null) {
+            int id = weapon.getItemId();
+            if (id == 200) damage = 2; // Épée en bois
+			if (id == 210) damage = 3; // Épée en pierre
+            if (id == 220) damage = 4; // Épée en fer
+            if (id == 230) damage = 5; // Épée en or
+            if (id == 240) damage = 6; // Épée en gem
+        }
+
+        // Frapper les zombies (Bots)
+        for (Bot bot : level.getBots()) {
+            if (isHit(bot.getX(), bot.getY(), targetX, targetY)) {
+                bot.takeDamage(damage);
+            }
+        }
+
+        // Frapper les archers
+        if (level.getArcherBots() != null) {
+            for (ArcherBot archer : level.getArcherBots()) {
+                if (isHit(archer.getX(), archer.getY(), targetX, targetY)) {
+                    archer.takeDamage(damage);
+                }
+            }
+        }
+    }
+
+    // Vérifie si le monstre est assez proche de la case attaquée
+    private boolean isHit(double botX, double botY, double targetX, double targetY) {
+        double dx = (botX + Config.blockSize / 2.0) - (targetX + Config.blockSize / 2.0);
+        double dy = (botY + Config.blockSize / 2.0) - (targetY + Config.blockSize / 2.0);
+        double distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // Si le centre du monstre est proche du centre de la case attaquée
+        return distance < Config.blockSize * 1.5; 
     }
 
 	public void loseEnergy(int amount) {

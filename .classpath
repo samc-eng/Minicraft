@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
     <classpathentry kind="src" path="src"/>
+    <classpathentry kind="src" path="resources"/>
     <classpathentry kind="output" path="bin"/>
-    <classpathentry kind="lib" path="/home/sam/Téléchargements/openjfx-25.0.1_linux-x64_bin-sdk/javafx-sdk-25.0.1/lib/javafx.base.jar"/>
-    <classpathentry kind="lib" path="/home/sam/Téléchargements/openjfx-25.0.1_linux-x64_bin-sdk/javafx-sdk-25.0.1/lib/javafx.controls.jar"/>
-    <classpathentry kind="lib" path="/home/sam/Téléchargements/openjfx-25.0.1_linux-x64_bin-sdk/javafx-sdk-25.0.1/lib/javafx.graphics.jar"/>
-    <classpathentry kind="lib" path="/home/sam/Téléchargements/openjfx-25.0.1_linux-x64_bin-sdk/javafx-sdk-25.0.1/lib/javafx.fxml.jar"/>
-    <classpathentry kind="lib" path="/home/sam/Téléchargements/openjfx-25.0.1_linux-x64_bin-sdk/javafx-sdk-25.0.1/lib/javafx.media.jar"/>
+    <classpathentry kind="lib" path="C:/Users/yazid/javafx-sdk-17.0.18/lib/javafx.base.jar"/>
+    <classpathentry kind="lib" path="C:/Users/yazid/javafx-sdk-17.0.18/lib/javafx.controls.jar"/>
+    <classpathentry kind="lib" path="C:/Users/yazid/javafx-sdk-17.0.18/lib/javafx.graphics.jar"/>
+    <classpathentry kind="lib" path="C:/Users/yazid/javafx-sdk-17.0.18/lib/javafx.fxml.jar"/>
+    <classpathentry kind="lib" path="C:/Users/yazid/javafx-sdk-17.0.18/lib/javafx.media.jar"/>
 </classpath>

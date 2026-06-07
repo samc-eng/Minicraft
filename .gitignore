@@ -2,5 +2,9 @@
 */.DS_Store
 out/
 save.txt
-.vscode
+test-reports/
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
 bin/

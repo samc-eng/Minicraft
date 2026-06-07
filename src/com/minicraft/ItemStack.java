@@ -14,6 +14,13 @@ public class ItemStack {
         this.currentDurability = (def != null && def.hasDurability) ? def.maxDurability : 0;
     }
 
+    // autre constructeur utilise au chargement pour remettre la durabilite exacte
+    public ItemStack(int itemId, int amount, int durability) {
+        this.itemId = itemId;
+        this.amount = amount;
+        this.currentDurability = durability;
+    }
+
  
     public boolean canStackWith(ItemStack other) {
         ItemDefinition def = ItemRegistry.get(this.itemId);

@@ -32,14 +32,18 @@ public class MainMenu {
                     "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 5, 0, 0, 4);";
 
     public void show(Stage window) {
-        // ... (Musique et Fond identiques)
-        try {
-            Media hit = new Media(new java.io.File("resources/menu_music.mp3").toURI().toString());
-            this.mediaPlayer = new MediaPlayer(hit);
-            this.mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
-            this.mediaPlayer.setVolume(0.5);
-            this.mediaPlayer.play();
-        } catch (Exception e) { }
+        // on lance la musique une seule fois pour pas qu'elle se double quand on revient au menu
+        if (this.mediaPlayer == null) {
+            try {
+                Media hit = new Media(new java.io.File("resources/menu_music.mp3").toURI().toString());
+                this.mediaPlayer = new MediaPlayer(hit);
+                this.mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+                this.mediaPlayer.setVolume(0.5);
+                this.mediaPlayer.play();
+            } catch (Exception e) { 
+                
+            }
+        }
 
         StackPane root = new StackPane();
 
@@ -71,19 +75,16 @@ public class MainMenu {
         VBox menuBox = new VBox(40);
         menuBox.setAlignment(Pos.CENTER);
 
-        // Création des boutons avec ton style
         Button btnNewGame = createStyledButton("Créer un nouveau monde");
         btnNewGame.setOnAction(e -> startNewGame(window));
 
         Button btnLoadGame = createStyledButton("Continuer la partie");
         btnLoadGame.setOnAction(e -> loadExistingGame(window));
 
-        Button btnInfos = createStyledButton("Informations");
-
         Button btnQuitter = createStyledButton("Quitter");
         btnQuitter.setOnAction(e -> window.close());
 
-        menuBox.getChildren().addAll(title, btnNewGame, btnLoadGame, btnInfos, btnQuitter);
+        menuBox.getChildren().addAll(title, btnNewGame, btnLoadGame, btnQuitter);
         root.getChildren().add(menuBox);
 
         Scene menuScene = new Scene(root, 1000, 700);
@@ -102,7 +103,7 @@ public class MainMenu {
         // C'est cette ligne qui empêche le contour bleu de focus
         btn.setFocusTraversable(false);
 
-        // On remet tes réglages : neutre au départ, style au survol
+        // On remet les réglages : neutre au départ, style au survol
         btn.setStyle(null);
         btn.setOnMouseEntered(e -> btn.setStyle(styleBouton + "-fx-scale-x: 1.1; -fx-scale-y: 1.1;"));
         btn.setOnMouseExited(e -> btn.setStyle(null));
@@ -111,7 +112,6 @@ public class MainMenu {
     }
 
     private void startNewGame(Stage window) {
-        if (mediaPlayer != null) mediaPlayer.stop();
         GameScene gameScene = new GameScene(window, this);
         gameScene.show();
     }
@@ -120,87 +120,105 @@ public class MainMenu {
         Scanner sc = SaveManager.getSaveScanner();
         if (sc == null) return;
         try {
-            if (mediaPlayer != null) mediaPlayer.stop();
-            // 1. Lire les données du joueur
+            // position du joueur
             String[] pData = sc.nextLine().split(",");
 
-            // 2. Créer le moteur et la scène
+            // on cree la scene (le moteur genere une surface temporaire, on la remplacera)
             GameScene gameScene = new GameScene(window, this);
-            Level lvl = gameScene.getGameEngine().getLevel();
 
-            // 3. Lire les dimensions et les maps
-            String[] dimensions = sc.nextLine().split(",");
-            int w = Integer.parseInt(dimensions[0]);
-            int h = Integer.parseInt(dimensions[1]);
+            // profondeur et coordonnees du portail d'entree de la grotte
+            String[] stateData = sc.nextLine().split(",");
+            int savedDepth = Integer.parseInt(stateData[0]);
+            int lpx = Integer.parseInt(stateData[1]);
+            int lpy = Integer.parseInt(stateData[2]);
+            int[] lastPortal = (lpx >= 0 && lpy >= 0) ? new int[]{lpx, lpy} : null;
 
-            // Charger le sol
-            String[] floorData = sc.nextLine().split(",");
-            int[][] newFloor = new int[w][h];
-            int idx = 0;
-            for(int i=0; i<w; i++) for(int j=0; j<h; j++) newFloor[i][j] = Integer.parseInt(floorData[idx++]);
+            // on lit la surface
+            Level surface = readLevel(sc);
 
-            // Charger les blocs (Arbres/Roches)
-            String[] blocksData = sc.nextLine().split(",");
-            int[][] newBlocks = new int[w][h];
-            idx = 0;
-            for(int i=0; i<w; i++) for(int j=0; j<h; j++) newBlocks[i][j] = Integer.parseInt(blocksData[idx++]);
+            // et la grotte si elle existe
+            Level cave = null;
+            String cavePresent = sc.nextLine().trim();
+            if (cavePresent.equals("1")) {
+                cave = readLevel(sc);
+            }
 
-            // 4. Appliquer tout au jeu
-            lvl.setFloorArray(newFloor);
-            lvl.setBlocksArray(newBlocks);
-
-            // 5. Régénérer la minimap avec les données chargées
-            gameScene.getGameEngine().getMiniMap().generate(newFloor, newBlocks, w, h,
-                    gameScene.getGameEngine().getLevel().getPortals());
+            // on remplace l'etat du moteur par ce qu'on a charge
+            gameScene.getGameEngine().loadGameState(surface, cave, savedDepth, lastPortal);
 
             Player p = gameScene.getGameEngine().getPlayer();
+            p.setX(Double.parseDouble(pData[0]));
+            p.setY(Double.parseDouble(pData[1]));
 
-            p.setX(Double.parseDouble(pData[0])); p.setY(Double.parseDouble(pData[1]));
-            p.getInventory().add(new ItemStack(1, Integer.parseInt(pData[2])));
-            p.getInventory().add(new ItemStack(2, Integer.parseInt(pData[3])));
             if (pData.length > 4) {
                 p.setHealth(Integer.parseInt(pData[4]));
             }
             gameScene.getGameEngine().clearEnemiesForCurrentLevel();
             int loadedEnemyCount = 0;
-            boolean loadedArcherSection = false;
+
+            // 7. Inventaire complet (Ton code)
             String line = "";
             while (sc.hasNextLine()) { line = sc.nextLine().trim(); if (!line.isEmpty()) break; }
             if (!line.isEmpty()) {
-                int nI = Integer.parseInt(line);
-                for (int i = 0; i < nI; i++) {
-                    String[] it = sc.nextLine().split(",");
-                    lvl.dropItem(Double.parseDouble(it[0]), Double.parseDouble(it[1]), new ItemStack(Integer.parseInt(it[2]), 1));
+                int nInv = Integer.parseInt(line);
+                for (int i = 0; i < nInv; i++) {
+                    String[] st = sc.nextLine().split(",");
+                    int id  = Integer.parseInt(st[0]);
+                    int qty = Integer.parseInt(st[1]);
+                    int dur = Integer.parseInt(st[2]);
+                    p.getInventory().add(new ItemStack(id, qty, dur));
                 }
             }
+            
+
+            // et la hotbar
             line = "";
             while (sc.hasNextLine()) { line = sc.nextLine().trim(); if (!line.isEmpty()) break; }
             if (!line.isEmpty()) {
-                int nBts = Integer.parseInt(line);
-                for (int i = 0; i < nBts; i++) {
-                    String[] bt = sc.nextLine().split(",");
-                    lvl.addBot(Double.parseDouble(bt[0]), Double.parseDouble(bt[1]));
+                String[] slots = line.split(";", -1);
+                ItemStack[] hb = p.getHotbar();
+                for (int i = 0; i < slots.length && i < hb.length; i++) {
+                    String s = slots[i];
+                    if (s.equals("-") || s.isEmpty()) {
+                        hb[i] = null;
+                    } else {
+                        String[] parts = s.split(",");
+                        hb[i] = new ItemStack(Integer.parseInt(parts[0]),
+                                              Integer.parseInt(parts[1]),
+                                              Integer.parseInt(parts[2]));
+                    }
                 }
-                loadedEnemyCount += nBts;
             }
+
+
+            // 9. Archers (Ajout de Yazid)
+            // On détermine dans quel niveau le joueur se trouve pour y placer les archers
+            Level currentLevel = (savedDepth == 1 && cave != null) ? cave : surface;
+            
             line = "";
             while (sc.hasNextLine()) { line = sc.nextLine().trim(); if (!line.isEmpty()) break; }
             if (!line.isEmpty()) {
-                loadedArcherSection = true;
                 int nArchers = Integer.parseInt(line);
                 for (int i = 0; i < nArchers; i++) {
                     String[] archer = sc.nextLine().split(",");
-                    lvl.addArcherBot(Double.parseDouble(archer[0]), Double.parseDouble(archer[1]));
+                    if (currentLevel != null) {
+                        currentLevel.addArcherBot(Double.parseDouble(archer[0]), Double.parseDouble(archer[1]));
+                    }
                 }
                 loadedEnemyCount += nArchers;
             }
+
+            //10. Gestion du spwan de secours
             if (loadedEnemyCount == 0) {
                 gameScene.getGameEngine().spawnEnemiesForCurrentLevel();
-            } else if (!loadedArcherSection) {
-                gameScene.getGameEngine().spawnMissingArchersForCurrentLevel();
             }
             gameScene.getGameEngine().spawnSheepForCurrentLevel();
             gameScene.show();
         } catch (Exception e) { e.printStackTrace(); } finally { sc.close(); }
+    }
+
+    // on reconstruit un niveau a partir du fichier de save (delegue a SaveManager)
+    private Level readLevel(Scanner sc) {
+        return SaveManager.readLevel(sc);
     }
 }

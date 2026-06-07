@@ -383,6 +383,15 @@ public class Level {
 				Config.SHEEP_MIN_ENTITY_SPAWN_DISTANCE);
 	}
 
+	public void removeDeadBots() {
+        if (bots != null) {
+            bots.removeIf(bot -> bot.isDead());
+        }
+        if (archerBots != null) {
+            archerBots.removeIf(archer -> archer.isDead());
+        }
+    }
+
 	private boolean isFarEnoughFromReserved(double[] candidate, List<double[]> reservedPositions,
 			double minReservedDistance) {
 		if (reservedPositions == null) {

@@ -1,0 +1,22 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build Minicraft",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                "$ErrorActionPreference='Stop'; New-Item -ItemType Directory -Force -Path '${workspaceFolder}/bin' | Out-Null; $sources = Get-ChildItem -Path '${workspaceFolder}/src' -Recurse -Filter *.java | ForEach-Object { $_.FullName }; & 'C:/Users/yazid/AppData/Local/Programs/Eclipse Adoptium/jdk-17.0.18.8-hotspot/bin/javac.exe' --module-path 'C:/Users/yazid/javafx-sdk-17.0.18/lib' --add-modules javafx.controls,javafx.fxml,javafx.graphics,javafx.media -d '${workspaceFolder}/bin' $sources"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        }
+    ]
+}

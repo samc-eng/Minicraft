@@ -1,7 +1,6 @@
 package com.minicraft;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.File;
 import java.net.URL;
 
 import javafx.scene.image.Image;
@@ -13,17 +12,10 @@ public final class Resources {
     public static Image image(String path) {
         String resourcePath = normalize(path);
 
-        try (InputStream input = Resources.class.getClassLoader().getResourceAsStream(resourcePath)) {
-            if (input == null) {
-                throw new IllegalArgumentException("Resource not found: " + resourcePath);
-            }
-
-            Image image = new Image(input);
-            if (image.isError()) {
-                throw new IllegalStateException("Unable to load image resource: " + resourcePath, image.getException());
-            }
-            return image;
-        } catch (IOException e) {
+        try  {
+           File file = new File("resources/" + path);
+            return new Image(file.toURI().toString());
+        } catch (Exception e) {
             throw new IllegalStateException("Unable to close image resource: " + resourcePath, e);
         }
     }
