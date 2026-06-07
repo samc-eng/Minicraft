@@ -1,6 +1,15 @@
+# Fichiers système macOS
 .DS_Store
 */.DS_Store
+
+# Dossiers de compilation Java
 out/
-save.txt
-.vscode
 bin/
+*.class
+
+# Sauvegardes du jeu
+save.txt
+*.txt
+
+# Dossiers de tests
+test-reports/
