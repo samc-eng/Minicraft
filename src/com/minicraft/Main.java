@@ -112,6 +112,9 @@ public class Main extends Application {
 
         level.clearEnemies();
         List<double[]> reservedPositions = new ArrayList<>();
+        for (SheepBot sheep : level.getSheepBots()) {
+            reservedPositions.add(new double[]{sheep.getX(), sheep.getY()});
+        }
 
         for (int i = 0; i < Config.MELEE_BOT_COUNT; i++) {
             double[] spawn = level.findEnemySpawnAround(player.getCenterX(), player.getCenterY(), reservedPositions);
@@ -142,6 +145,9 @@ public class Main extends Application {
         for (ArcherBot archer : level.getArcherBots()) {
             reservedPositions.add(new double[]{archer.getX(), archer.getY()});
         }
+        for (SheepBot sheep : level.getSheepBots()) {
+            reservedPositions.add(new double[]{sheep.getX(), sheep.getY()});
+        }
 
         int missingArchers = Config.ARCHER_BOT_COUNT - level.getArcherBots().size();
         for (int i = 0; i < missingArchers; i++) {
@@ -150,6 +156,63 @@ public class Main extends Application {
                 level.addArcherBot(spawn[0], spawn[1]);
                 reservedPositions.add(spawn);
             }
+        }
+    }
+
+    public void spawnSheepForCurrentLevel() {
+        if (level == null || player == null || currentDepth != 0) {
+            return;
+        }
+
+        level.clearSheepBots();
+
+        List<double[]> reservedPositions = new ArrayList<>();
+        reservedPositions.add(new double[]{player.getX(), player.getY()});
+        for (Bot bot : level.getBots()) {
+            reservedPositions.add(new double[]{bot.getX(), bot.getY()});
+        }
+        for (ArcherBot archer : level.getArcherBots()) {
+            reservedPositions.add(new double[]{archer.getX(), archer.getY()});
+        }
+
+        int nearbyTarget = Math.min(Config.SHEEP_NEAR_PLAYER_COUNT, Config.SHEEP_COUNT);
+        for (int i = 0; i < nearbyTarget; i++) {
+            double[] spawn = level.findPassiveSpawnAround(player.getCenterX(), player.getCenterY(), reservedPositions);
+            if (spawn != null) {
+                level.addSheepBot(spawn[0], spawn[1]);
+                reservedPositions.add(spawn);
+            }
+        }
+
+        int remaining = Config.SHEEP_COUNT - level.getSheepBots().size();
+        int columns = Math.max(1, (int)Math.ceil(Math.sqrt(Math.max(1, remaining))));
+        int rows = Math.max(1, (int)Math.ceil(remaining / (double)columns));
+        int cellWidth = Math.max(1, level.getWidth() / columns);
+        int cellHeight = Math.max(1, level.getHeight() / rows);
+
+        for (int row = 0; row < rows && level.getSheepBots().size() < Config.SHEEP_COUNT; row++) {
+            for (int col = 0; col < columns && level.getSheepBots().size() < Config.SHEEP_COUNT; col++) {
+                int minTileX = col * cellWidth;
+                int minTileY = row * cellHeight;
+                int maxTileX = (col == columns - 1) ? level.getWidth() - 2 : (col + 1) * cellWidth - 1;
+                int maxTileY = (row == rows - 1) ? level.getHeight() - 2 : (row + 1) * cellHeight - 1;
+
+                double[] spawn = level.findPassiveSpawnInRegion(minTileX, minTileY, maxTileX, maxTileY,
+                        player.getCenterX(), player.getCenterY(), reservedPositions);
+                if (spawn != null) {
+                    level.addSheepBot(spawn[0], spawn[1]);
+                    reservedPositions.add(spawn);
+                }
+            }
+        }
+
+        while (level.getSheepBots().size() < Config.SHEEP_COUNT) {
+            double[] spawn = level.findPassiveSpawnAnywhere(player.getCenterX(), player.getCenterY(), reservedPositions);
+            if (spawn == null) {
+                break;
+            }
+            level.addSheepBot(spawn[0], spawn[1]);
+            reservedPositions.add(spawn);
         }
     }
 
@@ -180,6 +243,7 @@ public class Main extends Application {
         double[] spawn = level.getSafeSpawn();
         this.player = new Player(spawn[0], spawn[1]);
         spawnEnemiesForCurrentLevel();
+        spawnSheepForCurrentLevel();
 
         this.gameRoot = new Pane();
         this.gameRoot.getChildren().add(canva);

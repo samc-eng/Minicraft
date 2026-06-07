@@ -30,7 +30,7 @@ public class Player {
 	public Player(double startX, double startY) {
 		this.x=startX;
 		this.y=startY;
-		this.vitesse=0.25;
+		this.vitesse=Config.PLAYER_WALK_SPEED;
 		
 		try {
 			this.skin=new Image("file:resources/skins.png");
@@ -44,6 +44,12 @@ public class Player {
 		this.isMoved=false;
 		double futurX=x;
 		double futurY=y;
+
+		if (input.isPressed(KeyCode.SHIFT) && energy>3) {
+			this.vitesse=Config.PLAYER_SPRINT_SPEED;
+		} else {
+			this.vitesse=Config.PLAYER_WALK_SPEED;
+		}
 		
 		if (input.isPressed(KeyCode.Z)) {futurY-=vitesse;dir=1;isMoved=true;}
 		if (input.isPressed(KeyCode.S)) {futurY+=vitesse;dir=0;isMoved=true;}
@@ -95,12 +101,6 @@ public class Player {
 			this.interact(level,true);
 		}
 
-		if (input.isPressed(KeyCode.SHIFT) && energy>3) {
-			this.vitesse=0.5;
-		} else {
-			this.vitesse=0.25;
-		}
-		
 		for (Item item : level.getItems()) {
             double dx = (x + 6) - (item.getX() + 8);
             double dy = (y + 6) - (item.getY() + 8);

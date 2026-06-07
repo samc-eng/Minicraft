@@ -199,6 +199,7 @@ public class MainMenu {
             } else if (!loadedArcherSection) {
                 gameScene.getGameEngine().spawnMissingArchersForCurrentLevel();
             }
+            gameScene.getGameEngine().spawnSheepForCurrentLevel();
             gameScene.show();
         } catch (Exception e) { e.printStackTrace(); } finally { sc.close(); }
     }
