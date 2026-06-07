@@ -67,10 +67,7 @@ public class CraftingUI {
     }
 
     
-    public void render(GraphicsContext gc, Player player) {
-        // C'EST CETTE LIGNE QUI MANQUAIT AU TOUT DÉBUT :
-        Inventory inventaire = player.getInventory(); 
-        
+    public void render(GraphicsContext gc, Player player) {        
         // Fond du panneau
         gc.setFill(modeEtabli ? Color.SADDLEBROWN : Color.BROWN);
         gc.fillRoundRect(50, 50, 230, 280, 10, 10);

@@ -32,7 +32,7 @@ public class Player {
 	public Player(double startX, double startY) {
 		this.x=startX;
 		this.y=startY;
-		this.vitesse=0.25;
+        this.vitesse=Config.PLAYER_WALK_SPEED;
         this.invulnerabilityTimer=300;
 
 		try {
@@ -44,14 +44,28 @@ public class Player {
 	}
 	
 	public void tick(Level level, InputHandler input) {
-		this.isMoved=false;
-		double futurX=x;
-		double futurY=y;
-		
-		if (input.isPressed(KeyCode.Z)) {futurY-=vitesse;dir=1;isMoved=true;}
-		if (input.isPressed(KeyCode.S)) {futurY+=vitesse;dir=0;isMoved=true;}
-		if (input.isPressed(KeyCode.D)) {futurX+=vitesse;dir=3;isMoved=true;}
-		if (input.isPressed(KeyCode.Q)) {futurX-=vitesse;dir=2;isMoved=true;}
+        System.out.println("Vitesse actuelle : " + this.vitesse);
+		this.isMoved = false;
+    
+        // 1. On détermine d'abord l'état actuel du joueur
+        this.isSwimming = this.isInWater(level);
+        boolean isSprinting = input.isPressed(KeyCode.SHIFT) && energy > 3;
+
+        // 2. On calcule la vitesse APPLIQUÉE (La seule fois où on touche à 'vitesse')
+        if (this.isSwimming) {
+            this.vitesse = isSprinting ? 1.2 * Config.PLAYER_WALK_SPEED : 0.2 * Config.PLAYER_WALK_SPEED;
+        } else {
+            this.vitesse = isSprinting ? Config.PLAYER_SPRINT_SPEED : Config.PLAYER_WALK_SPEED;
+        }
+        
+        // 3. Maintenant on calcule le mouvement avec la bonne vitesse
+        double futurX = x;
+        double futurY = y;
+        
+        if (input.isPressed(KeyCode.Z)) { futurY -= vitesse; dir = 1; isMoved = true; }
+        if (input.isPressed(KeyCode.S)) { futurY += vitesse; dir = 0; isMoved = true; }
+        if (input.isPressed(KeyCode.D)) { futurX += vitesse; dir = 3; isMoved = true; }
+        if (input.isPressed(KeyCode.Q)) { futurX -= vitesse; dir = 2; isMoved = true; }
 
 		// touches pour choisir la case selectionnee dans la hotbar (1 a 9, ou F1 a F9)
 		if (input.isClicked(KeyCode.DIGIT1) || input.isClicked(KeyCode.F1)) { setSelectedSlot(0); }
@@ -103,17 +117,6 @@ public class Player {
 			this.dropSelectedItem(level);
 		}
 
-		this.isSwimming=this.isInWater(level);
-		
-		if (this.isSwimming && input.isPressed(KeyCode.SHIFT) && energy>3){
-			this.vitesse=1.2;
-		} else if (this.isSwimming){
-			this.vitesse=0.7;
-		} else if (input.isPressed(KeyCode.SHIFT) && energy>3) {
-			this.vitesse=1.5;
-		} else {
-			this.vitesse=1;
-		}
 		
 		for (Item item : level.getItems()) {
             double dx = (x + 6) - (item.getX() + 8);

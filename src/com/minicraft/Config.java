@@ -11,6 +11,8 @@ public class Config {
     public static final int PLAYER_MAX_HEALTH = 10;
     public static final int PLAYER_INVULNERABILITY_TICKS = 90;
     public static final int PLAYER_DAMAGE_BLINK_TICKS = 8;
+    public static final double PLAYER_WALK_SPEED = 1.25;
+    public static final double PLAYER_SPRINT_SPEED = 2.0;
 
     public static final int ENEMY_PATH_RECALC_TICKS = 30;
     public static final int ENEMY_PATH_RADIUS = 15;
