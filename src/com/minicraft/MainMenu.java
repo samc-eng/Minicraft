@@ -208,11 +208,14 @@ public class MainMenu {
                 loadedEnemyCount += nArchers;
             }
 
-            //10. Gestion du spwan de secours
+            // 10. Gestion du spawn de secours
             if (loadedEnemyCount == 0) {
                 gameScene.getGameEngine().spawnEnemiesForCurrentLevel();
             }
 
+            //11. gestion des moutons
+            gameScene.getGameEngine().spawnSheepForCurrentLevel();
+            
             gameScene.show();
         } catch (Exception e) { e.printStackTrace(); } finally { sc.close(); }
     }

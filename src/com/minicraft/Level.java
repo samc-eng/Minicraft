@@ -14,6 +14,7 @@ public class Level {
 	private List<Item> items = new ArrayList<>();
 	private List<Bot> bots = new ArrayList<>();
 	private List<ArcherBot> archerBots = new ArrayList<>();
+	private List<SheepBot> sheepBots = new ArrayList<>();
 	private List<Arrow> arrows = new ArrayList<>();
 	private int depth;
 	private long seed;
@@ -77,6 +78,7 @@ public class Level {
 		}
 
 		for (Item item : items) item.render(gc);
+		for (SheepBot sheep : sheepBots) sheep.render(gc);
 		for (Bot bot : bots) bot.render(gc);
 		for (ArcherBot archer : archerBots) archer.render(gc);
 		for (Arrow arrow : arrows) arrow.render(gc);
@@ -157,6 +159,10 @@ public class Level {
 		}
 		items.removeIf(item -> item.isRemoved());
 
+		for (SheepBot sheep : sheepBots) {
+			sheep.tick(this);
+		}
+
 		for (Bot bot : bots) {
 			bot.tick(this, player);
 		}
@@ -195,12 +201,20 @@ public class Level {
 		archerBots.add(new ArcherBot(x, y));
 	}
 
+	public void addSheepBot(double x, double y) {
+		sheepBots.add(new SheepBot(x, y));
+	}
+
 	public List<Bot> getBots() {
 		return bots;
 	}
 
 	public List<ArcherBot> getArcherBots() {
 		return archerBots;
+	}
+
+	public List<SheepBot> getSheepBots() {
+		return sheepBots;
 	}
 
 	public void clearBots() {
@@ -213,6 +227,10 @@ public class Level {
 
 	public void clearArrows() {
 		arrows.clear();
+	}
+
+	public void clearSheepBots() {
+		sheepBots.clear();
 	}
 
 	public void clearEnemies() {
@@ -274,6 +292,55 @@ public class Level {
 		return null;
 	}
 
+	public double[] findPassiveSpawnAround(double anchorCenterX, double anchorCenterY,
+			List<double[]> reservedPositions) {
+		for (int attempt = 0; attempt < Config.SHEEP_SPAWN_ATTEMPTS; attempt++) {
+			double angle = spawnRandom.nextDouble() * Math.PI * 2.0;
+			double distance = Config.SHEEP_MIN_PLAYER_SPAWN_DISTANCE
+					+ spawnRandom.nextDouble()
+					* (Config.SHEEP_NEAR_PLAYER_MAX_DISTANCE - Config.SHEEP_MIN_PLAYER_SPAWN_DISTANCE);
+			double candidateX = anchorCenterX + Math.cos(angle) * distance - Config.blockSize / 2.0;
+			double candidateY = anchorCenterY + Math.sin(angle) * distance - Config.blockSize / 2.0;
+
+			if (isValidPassiveSpawn(candidateX, candidateY, anchorCenterX, anchorCenterY,
+					Config.SHEEP_MIN_PLAYER_SPAWN_DISTANCE, reservedPositions)) {
+				return new double[]{candidateX, candidateY};
+			}
+		}
+		return null;
+	}
+
+	public double[] findPassiveSpawnInRegion(int minTileX, int minTileY, int maxTileX, int maxTileY,
+			double anchorCenterX, double anchorCenterY, List<double[]> reservedPositions) {
+		minTileX = Math.max(1, minTileX);
+		minTileY = Math.max(1, minTileY);
+		maxTileX = Math.min(width - 2, maxTileX);
+		maxTileY = Math.min(height - 2, maxTileY);
+
+		if (minTileX > maxTileX || minTileY > maxTileY) {
+			return null;
+		}
+
+		for (int attempt = 0; attempt < Config.SHEEP_SPAWN_ATTEMPTS; attempt++) {
+			int tx = minTileX + spawnRandom.nextInt(maxTileX - minTileX + 1);
+			int ty = minTileY + spawnRandom.nextInt(maxTileY - minTileY + 1);
+			double candidateX = tx * Config.blockSize;
+			double candidateY = ty * Config.blockSize;
+
+			if (isValidPassiveSpawn(candidateX, candidateY, anchorCenterX, anchorCenterY,
+					Config.SHEEP_MIN_PLAYER_SPAWN_DISTANCE, reservedPositions)) {
+				return new double[]{candidateX, candidateY};
+			}
+		}
+		return null;
+	}
+
+	public double[] findPassiveSpawnAnywhere(double anchorCenterX, double anchorCenterY,
+			List<double[]> reservedPositions) {
+		return findPassiveSpawnInRegion(1, 1, width - 2, height - 2,
+				anchorCenterX, anchorCenterY, reservedPositions);
+	}
+
 	private boolean isSafeSpawnTile(int tx, int ty) {
 		for (int i = tx - 1; i <= tx + 1; i++) {
 			for (int j = ty - 1; j <= ty + 1; j++) {
@@ -300,6 +367,7 @@ public class Level {
 		return isFarEnoughFromReserved(new double[]{x, y}, reservedPositions, minReservedDistance);
 	}
 
+
 	public void removeDeadBots() {
         if (bots != null) {
             bots.removeIf(bot -> bot.isDead());
@@ -307,7 +375,27 @@ public class Level {
         if (archerBots != null) {
             archerBots.removeIf(archer -> archer.isDead());
         }
+		if (sheepBots != null) { 
+            sheepBots.removeIf(sheep -> sheep.isDead()); 
+        }
     }
+
+	private boolean isValidPassiveSpawn(double x, double y, double anchorCenterX, double anchorCenterY,
+			double minAnchorDistance, List<double[]> reservedPositions) {
+		if (!isValidEntityPosition(x, y)) {
+			return false;
+		}
+
+		double centerX = x + Config.blockSize / 2.0;
+		double centerY = y + Config.blockSize / 2.0;
+		if (distance(centerX, centerY, anchorCenterX, anchorCenterY) < minAnchorDistance) {
+			return false;
+		}
+
+		return isFarEnoughFromReserved(new double[]{x, y}, reservedPositions,
+				Config.SHEEP_MIN_ENTITY_SPAWN_DISTANCE);
+	}
+
 
 	private boolean isFarEnoughFromReserved(double[] candidate, List<double[]> reservedPositions,
 			double minReservedDistance) {
@@ -344,6 +432,10 @@ public class Level {
 			return true;
 		}
 		return floor[tx][ty] == MapGenerator.FLOOR_WATER;
+	}
+
+	public boolean isEntityPositionValid(double x, double y) {
+		return isValidEntityPosition(x, y);
 	}
 
 	private double distance(double ax, double ay, double bx, double by) {

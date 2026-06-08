@@ -129,6 +129,9 @@ public class Main extends Application {
 
         level.clearEnemies();
         List<double[]> reservedPositions = new ArrayList<>();
+        for (SheepBot sheep : level.getSheepBots()) {
+            reservedPositions.add(new double[]{sheep.getX(), sheep.getY()});
+        }
 
         for (int i = 0; i < Config.MELEE_BOT_COUNT; i++) {
             double[] spawn = level.findEnemySpawnAround(player.getCenterX(), player.getCenterY(), reservedPositions);
@@ -159,6 +162,9 @@ public class Main extends Application {
         for (ArcherBot archer : level.getArcherBots()) {
             reservedPositions.add(new double[]{archer.getX(), archer.getY()});
         }
+        for (SheepBot sheep : level.getSheepBots()) {
+            reservedPositions.add(new double[]{sheep.getX(), sheep.getY()});
+        }
 
         int missingArchers = Config.ARCHER_BOT_COUNT - level.getArcherBots().size();
         for (int i = 0; i < missingArchers; i++) {
@@ -167,6 +173,63 @@ public class Main extends Application {
                 level.addArcherBot(spawn[0], spawn[1]);
                 reservedPositions.add(spawn);
             }
+        }
+    }
+
+    public void spawnSheepForCurrentLevel() {
+        if (level == null || player == null || currentDepth != 0) {
+            return;
+        }
+
+        level.clearSheepBots();
+
+        List<double[]> reservedPositions = new ArrayList<>();
+        reservedPositions.add(new double[]{player.getX(), player.getY()});
+        for (Bot bot : level.getBots()) {
+            reservedPositions.add(new double[]{bot.getX(), bot.getY()});
+        }
+        for (ArcherBot archer : level.getArcherBots()) {
+            reservedPositions.add(new double[]{archer.getX(), archer.getY()});
+        }
+
+        int nearbyTarget = Math.min(Config.SHEEP_NEAR_PLAYER_COUNT, Config.SHEEP_COUNT);
+        for (int i = 0; i < nearbyTarget; i++) {
+            double[] spawn = level.findPassiveSpawnAround(player.getCenterX(), player.getCenterY(), reservedPositions);
+            if (spawn != null) {
+                level.addSheepBot(spawn[0], spawn[1]);
+                reservedPositions.add(spawn);
+            }
+        }
+
+        int remaining = Config.SHEEP_COUNT - level.getSheepBots().size();
+        int columns = Math.max(1, (int)Math.ceil(Math.sqrt(Math.max(1, remaining))));
+        int rows = Math.max(1, (int)Math.ceil(remaining / (double)columns));
+        int cellWidth = Math.max(1, level.getWidth() / columns);
+        int cellHeight = Math.max(1, level.getHeight() / rows);
+
+        for (int row = 0; row < rows && level.getSheepBots().size() < Config.SHEEP_COUNT; row++) {
+            for (int col = 0; col < columns && level.getSheepBots().size() < Config.SHEEP_COUNT; col++) {
+                int minTileX = col * cellWidth;
+                int minTileY = row * cellHeight;
+                int maxTileX = (col == columns - 1) ? level.getWidth() - 2 : (col + 1) * cellWidth - 1;
+                int maxTileY = (row == rows - 1) ? level.getHeight() - 2 : (row + 1) * cellHeight - 1;
+
+                double[] spawn = level.findPassiveSpawnInRegion(minTileX, minTileY, maxTileX, maxTileY,
+                        player.getCenterX(), player.getCenterY(), reservedPositions);
+                if (spawn != null) {
+                    level.addSheepBot(spawn[0], spawn[1]);
+                    reservedPositions.add(spawn);
+                }
+            }
+        }
+
+        while (level.getSheepBots().size() < Config.SHEEP_COUNT) {
+            double[] spawn = level.findPassiveSpawnAnywhere(player.getCenterX(), player.getCenterY(), reservedPositions);
+            if (spawn == null) {
+                break;
+            }
+            level.addSheepBot(spawn[0], spawn[1]);
+            reservedPositions.add(spawn);
         }
     }
 
@@ -197,6 +260,7 @@ public class Main extends Application {
         double[] spawn = level.getSafeSpawn();
         this.player = new Player(spawn[0], spawn[1]);
         spawnEnemiesForCurrentLevel();
+        spawnSheepForCurrentLevel();
 
         this.gameRoot = new Pane();
         this.gameRoot.getChildren().add(canva);
@@ -230,6 +294,32 @@ public class Main extends Application {
         // =============================================
         // RECETTES D'ÉTABLI (touche B)
         // =============================================
+
+        // PORTES ET CLÔTURES
+        craftingUI.addWorkbenchRecipe(new Recipe("Porte en bois",     21, 1).addCost(100, 6));
+        craftingUI.addWorkbenchRecipe(new Recipe("Porte en pierre",   19, 1).addCost(101, 6));
+        craftingUI.addWorkbenchRecipe(new Recipe("Cloture en bois x3",17, 3).addCost(100, 4));
+        craftingUI.addWorkbenchRecipe(new Recipe("Cloture pierre x3", 16, 3).addCost(101, 4));
+        
+        // Le fameux lit (indispensable !)
+        craftingUI.addWorkbenchRecipe(new Recipe("Lit Noir", 130, 1).addCost(129, 3).addCost(100, 3));
+        
+        // Le Coffre pour ranger son loot
+        craftingUI.addWorkbenchRecipe(new Recipe("Coffre", 122, 1).addCost(100, 8));
+        
+        // Cuisson de la viande (Steak + Charbon)
+        craftingUI.addWorkbenchRecipe(new Recipe("Steak Cuit", 114, 1).addCost(113, 1).addCost(102, 1));
+        
+        // Véhicules et outils avancés
+        craftingUI.addWorkbenchRecipe(new Recipe("Bateau", 123, 1).addCost(100, 5));
+        craftingUI.addWorkbenchRecipe(new Recipe("Seau", 119, 1).addCost(105, 3));
+        
+        // Munitions
+        craftingUI.addWorkbenchRecipe(new Recipe("Fleches x4", 118, 4).addCost(100, 1).addCost(101, 1)); // Bois + Pierre
+        
+        // La Pomme en Or (Soin ultime)
+        craftingUI.addWorkbenchRecipe(new Recipe("Pomme en Or", 111, 1).addCost(110, 1).addCost(106, 8));
+
         // Épées
         craftingUI.addWorkbenchRecipe(new Recipe("Epee en bois",   200, 1).addCost(100, 2));
         craftingUI.addWorkbenchRecipe(new Recipe("Epee en pierre", 210, 1).addCost(101, 3).addCost(100, 1));
@@ -255,6 +345,8 @@ public class Main extends Application {
         craftingUI.addWorkbenchRecipe(new Recipe("Pelle en bois",   203, 1).addCost(100, 2));
         craftingUI.addWorkbenchRecipe(new Recipe("Pelle en pierre", 213, 1).addCost(101, 2).addCost(100, 2));
         craftingUI.addWorkbenchRecipe(new Recipe("Pelle en fer",    223, 1).addCost(105, 2).addCost(100, 2));
+        craftingUI.addWorkbenchRecipe(new Recipe("Pelle en or",  233, 1).addCost(106, 2).addCost(100, 2));
+        craftingUI.addWorkbenchRecipe(new Recipe("Pelle en gem", 243, 1).addCost(107, 2).addCost(100, 2));
 
         // Arcs
         craftingUI.addWorkbenchRecipe(new Recipe("Arc en bois",   205, 1).addCost(100, 3).addCost(118, 3));
@@ -268,29 +360,15 @@ public class Main extends Application {
         craftingUI.addWorkbenchRecipe(new Recipe("Lingot de fer",    105, 1).addCost(103, 2).addCost(102, 1));
         craftingUI.addWorkbenchRecipe(new Recipe("Lingot d'or",      106, 1).addCost(104, 2).addCost(102, 1));
 
-        // Armures en cuir
-        craftingUI.addWorkbenchRecipe(new Recipe("Casque en cuir",    300, 1).addCost(100, 5));
-        craftingUI.addWorkbenchRecipe(new Recipe("Plastron en cuir",  301, 1).addCost(100, 8));
-        craftingUI.addWorkbenchRecipe(new Recipe("Jambieres en cuir", 302, 1).addCost(100, 7));
-        craftingUI.addWorkbenchRecipe(new Recipe("Bottes en cuir",    303, 1).addCost(100, 4));
-
         // Armures en fer
-        craftingUI.addWorkbenchRecipe(new Recipe("Casque en fer",    310, 1).addCost(105, 5));
-        craftingUI.addWorkbenchRecipe(new Recipe("Plastron en fer",  311, 1).addCost(105, 8));
-        craftingUI.addWorkbenchRecipe(new Recipe("Jambieres en fer", 312, 1).addCost(105, 7));
-        craftingUI.addWorkbenchRecipe(new Recipe("Bottes en fer",    313, 1).addCost(105, 4));
+        craftingUI.addWorkbenchRecipe(new Recipe("Armure en fer",    300, 1).addCost(105, 5));
 
         // Armures en or
-        craftingUI.addWorkbenchRecipe(new Recipe("Casque en or",    320, 1).addCost(106, 5));
-        craftingUI.addWorkbenchRecipe(new Recipe("Plastron en or",  321, 1).addCost(106, 8));
-        craftingUI.addWorkbenchRecipe(new Recipe("Jambieres en or", 322, 1).addCost(106, 7));
-        craftingUI.addWorkbenchRecipe(new Recipe("Bottes en or",    323, 1).addCost(106, 4));
+        craftingUI.addWorkbenchRecipe(new Recipe("Armure en or",    310, 1).addCost(106, 5));
 
         // Armures en gem
-        craftingUI.addWorkbenchRecipe(new Recipe("Casque en gem",    330, 1).addCost(107, 5));
-        craftingUI.addWorkbenchRecipe(new Recipe("Plastron en gem",  331, 1).addCost(107, 8));
-        craftingUI.addWorkbenchRecipe(new Recipe("Jambieres en gem", 332, 1).addCost(107, 7));
-        craftingUI.addWorkbenchRecipe(new Recipe("Bottes en gem",    333, 1).addCost(107, 4));
+        craftingUI.addWorkbenchRecipe(new Recipe("Armure en gem",  320, 1).addCost(107, 8));
+
 
         AnimationTimer timer = new AnimationTimer() {
             private long lastTime = 0;
@@ -309,7 +387,7 @@ public class Main extends Application {
                 lastTime = now;
 
                 // =======================================================
-                // 1. LE CERVEAU (La Logique - Verrouillé à 60 calculs/s)
+                // 1. LE CERVEAU
                 // =======================================================
                 while (delta >= 1) {
                     
@@ -390,7 +468,7 @@ public class Main extends Application {
                 }
 
                 // =======================================================
-                // 2. LES YEUX (Le Dessin - Aussi rapide que ton écran 144Hz)
+                // 2. LES YEUX
                 // =======================================================
                 widthScreen = canva.getWidth();
                 heightScreen = canva.getHeight();

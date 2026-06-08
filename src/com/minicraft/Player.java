@@ -18,11 +18,17 @@ public class Player {
 	private int maxHealth = Config.PLAYER_MAX_HEALTH;
 	private int health = maxHealth;
 	private int energy = 10;
+    private int energyTimer = 0;
+    private int sprintTimer = 0;
+    private int regenTimer = 0;
 	private int invulnerabilityTimer = 0;
 	private int selectedSlot = 0;
 	private ItemStack[] slot = new ItemStack[9];
 	private boolean isSwimming = false;
     private int damageFlashTimer =0;
+    private double respawnX;
+    private double respawnY;
+    private boolean isShiftPressed = false;
 
 	public boolean up;
 	public boolean down;
@@ -32,8 +38,11 @@ public class Player {
 	public Player(double startX, double startY) {
 		this.x=startX;
 		this.y=startY;
-		this.vitesse=0.25;
+        this.vitesse=Config.PLAYER_WALK_SPEED;
         this.invulnerabilityTimer=300;
+
+        this.respawnX = this.x;
+        this.respawnY = this.y;
 
 		try {
 			this.skin=new Image("file:resources/skins.png");
@@ -44,14 +53,54 @@ public class Player {
 	}
 	
 	public void tick(Level level, InputHandler input) {
-		this.isMoved=false;
-		double futurX=x;
-		double futurY=y;
-		
-		if (input.isPressed(KeyCode.Z)) {futurY-=vitesse;dir=1;isMoved=true;}
-		if (input.isPressed(KeyCode.S)) {futurY+=vitesse;dir=0;isMoved=true;}
-		if (input.isPressed(KeyCode.D)) {futurX+=vitesse;dir=3;isMoved=true;}
-		if (input.isPressed(KeyCode.Q)) {futurX-=vitesse;dir=2;isMoved=true;}
+		this.isMoved = false;
+        this.isShiftPressed = input.isPressed(KeyCode.SHIFT);
+
+        if (this.damageFlashTimer > 0) {
+            this.damageFlashTimer--; 
+        }
+        if (this.invulnerabilityTimer > 0) {
+            this.invulnerabilityTimer--; 
+        }
+
+        // 1. On détermine d'abord l'état actuel du joueur et sa récuparétion ou non d'néergie
+        this.isSwimming = this.isInWater(level);
+        boolean isSprinting = input.isPressed(KeyCode.SHIFT) && energy > 3;
+
+        if (isSprinting) { 
+            sprintTimer++;
+            regenTimer = 0; // On arrête la régénération
+            if (sprintTimer >= 60) {
+                this.loseEnergy(1);
+                sprintTimer = 0;
+            }
+        } else {
+            sprintTimer = 0; // On arrête le sprint
+            if (this.energy < 10) {
+
+                regenTimer++;
+                if (regenTimer >= 60) {
+                    this.energy++;
+                    regenTimer = 0;
+                }
+            }
+        }
+
+        // 2. On calcule la vitesse APPLIQUÉE (La seule fois où on touche à 'vitesse')
+        if (this.isSwimming) {
+            this.vitesse = isSprinting ? 1.2 * Config.PLAYER_WALK_SPEED : 0.5 * Config.PLAYER_WALK_SPEED;
+        } else {
+            this.vitesse = isSprinting ? Config.PLAYER_SPRINT_SPEED : Config.PLAYER_WALK_SPEED;
+        }
+        
+        // 3. Maintenant on calcule le mouvement avec la bonne vitesse
+        double futurX = x;
+        double futurY = y;
+        
+        if (input.isPressed(KeyCode.Z)) { futurY -= vitesse; dir = 1; isMoved = true; }
+        if (input.isPressed(KeyCode.S)) { futurY += vitesse; dir = 0; isMoved = true; }
+        if (input.isPressed(KeyCode.D)) { futurX += vitesse; dir = 3; isMoved = true; }
+        if (input.isPressed(KeyCode.Q)) { futurX -= vitesse; dir = 2; isMoved = true; }
 
 		// touches pour choisir la case selectionnee dans la hotbar (1 a 9, ou F1 a F9)
 		if (input.isClicked(KeyCode.DIGIT1) || input.isClicked(KeyCode.F1)) { setSelectedSlot(0); }
@@ -64,7 +113,17 @@ public class Player {
 		if (input.isClicked(KeyCode.DIGIT8) || input.isClicked(KeyCode.F8)) { setSelectedSlot(7); }
 		if (input.isClicked(KeyCode.DIGIT9) || input.isClicked(KeyCode.F9)) { setSelectedSlot(8); }
 
-
+        // Régénération automatique
+        // Si le joueur ne sprint pas, il récupère 1 point d'énergie toutes les ~1 secondes (60 ticks)
+        if (this.energy < 10 && !isSprinting) { 
+            energyTimer++;
+            if (energyTimer >= 60) {
+                this.energy++;
+                energyTimer = 0; // On réinitialise le compteur
+            }
+        } else {
+            energyTimer = 0; // Si on est au max, on reset le timer
+        }
 		
 		boolean bloque= (level.isSolid(futurX+4, futurY+4) ||
 				level.isSolid(futurX+Config.blockSize-4, futurY+4) ||
@@ -103,17 +162,6 @@ public class Player {
 			this.dropSelectedItem(level);
 		}
 
-		this.isSwimming=this.isInWater(level);
-		
-		if (this.isSwimming && input.isPressed(KeyCode.SHIFT) && energy>3){
-			this.vitesse=1.2;
-		} else if (this.isSwimming){
-			this.vitesse=0.7;
-		} else if (input.isPressed(KeyCode.SHIFT) && energy>3) {
-			this.vitesse=1.5;
-		} else {
-			this.vitesse=1;
-		}
 		
 		for (Item item : level.getItems()) {
             double dx = (x + 6) - (item.getX() + 8);
@@ -284,15 +332,26 @@ public class Player {
 		if (dir==2) {cibleX--;}
 		
 		if (!placeMode) {
-            // MODE DESTRUCTION (Blocs)
-            int cibleBlock = level.getBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize);
-            if (cibleBlock != 0) {
-                level.setBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize, 0);
-                this.loseEnergy(3);
-            }
-            
-            // --- NOUVEAU : MODE COMBAT (Monstres) ---
-            attackEnemies(level, cibleX * Config.blockSize, cibleY * Config.blockSize);
+            if (this.energy >= 3) {
+                int cibleBlock = level.getBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize);
+                
+                // Interaction avec le lit
+                if (cibleBlock == 130 && !this.isShiftPressed) {
+                    // Si on clique sur le lit SANS maintenir SHIFT : on sauvegarde le spawn
+                    this.respawnX = this.x;
+                    this.respawnY = this.y;
+                    System.out.println("Zzz... Point de réapparition sauvegardé ! (Maintiens SHIFT + Clic pour casser le lit)");
+                } 
+                // --- DESTRUCTION CLASSIQUE (Si ce n'est pas un lit, ou si on maintient SHIFT) ---
+                else if (cibleBlock != 0) {
+                    level.setBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize, 0);
+                    this.loseEnergy(3);
+                }
+                
+                attackEnemies(level, cibleX * Config.blockSize, cibleY * Config.blockSize);
+            } else {
+                System.out.println("Épuisé ! Attends de récupérer de l'énergie.");
+            } 
         } else {
             // MODE CONSTRUCTION
 			ItemStack stackInHand = getSelectedItem();
@@ -301,6 +360,24 @@ public class Player {
 				System.out.println("Aucun item sélectionné dans la hotbar.");
 				return;
 			}
+
+            if (stackInHand.getItemId() == 113) { 
+                // Empêcher de manger si on est déjà au max partout
+                if (this.health >= this.maxHealth && this.energy >= 10) {
+                    System.out.println("Tu es déjà en pleine forme ! Pas besoin de gaspiller de la nourriture.");
+                    return;
+                }
+
+                // 1. Appliquer les effets du Steak
+                this.heal(3);       // Donne 3 cœurs
+                this.energy = 10;   // Rétablit toute l'énergie instantanément
+
+                // 2. Consommer l'item (Ta méthode qui enlève 1 du slot et gère le null si 0)
+                consumeSelectedItem();
+                
+                System.out.println("Miam ! Un bon steak. +3 coeurs et énergie restaurée !");
+                return;
+            }
 
 			ItemDefinition def = stackInHand.getDefinition();
 			if (def == null || !def.placeable) {
@@ -343,10 +420,34 @@ public class Player {
             return false;
         }
 
+        // On applique les dégâts avec ta méthode sécurisée
         setHealth(this.health - damage);
-        this.damageFlashTimer=15;
+        this.damageFlashTimer = 15;
+        this.invulnerabilityTimer = 15;
         System.out.println("Aie ! Le joueur a pris " + damage + " degats. Vie restante : " + this.health);
+
+        // --- NOUVEAU : On vérifie si le coup a été fatal ---
+        if (this.health <= 0) {
+            die();
+        }
+
         return true;
+    }
+
+    private void die() {
+        System.out.println("☠️ VOUS ÊTES MORT ! Réapparition au dernier point de sauvegarde...");
+        
+        // 1. Téléportation au lit (ou point de départ)
+        this.x = this.respawnX;
+        this.y = this.respawnY;
+        
+        // 2. Le personnage guérit
+        setHealth(this.maxHealth); 
+        this.energy = 10;
+
+        // --- LE BOUCLIER DE SPAWN ---
+        this.damageFlashTimer = 60; 
+        this.invulnerabilityTimer = 60;
     }
 
     public void heal(int amount) {
@@ -450,6 +551,15 @@ public class Player {
                 }
             }
         }
+
+        // Frapper les moutons
+        if (level.getSheepBots() != null) { 
+            for (SheepBot sheep : level.getSheepBots()) {
+                if (isHit(sheep.getX(), sheep.getY(), targetX, targetY)) {
+                    sheep.takeDamage(damage, level);
+                }
+            }
+        }
     }
 
     // Vérifie si le monstre est assez proche de la case attaquée
@@ -463,9 +573,11 @@ public class Player {
     }
 
 	public void loseEnergy(int amount) {
-		energy -= amount;
-		if (energy<=0) energy=10;
-	}
+        this.energy -= amount;
+        if (this.energy < 0) {
+            this.energy = 0;
+    }
+}
 
 	public int getHealth() { return health; }
 	public int getMaxHealth() { return maxHealth; }
