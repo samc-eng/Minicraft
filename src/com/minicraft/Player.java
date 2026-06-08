@@ -338,6 +338,24 @@ public class Player {
 				return;
 			}
 
+            if (stackInHand.getItemId() == 113) { 
+                // Empêcher de manger si on est déjà au max partout
+                if (this.health >= this.maxHealth && this.energy >= 10) {
+                    System.out.println("Tu es déjà en pleine forme ! Pas besoin de gaspiller de la nourriture.");
+                    return;
+                }
+
+                // 1. Appliquer les effets du Steak
+                this.heal(3);       // Donne 3 cœurs
+                this.energy = 10;   // Rétablit toute l'énergie instantanément
+
+                // 2. Consommer l'item (Ta méthode qui enlève 1 du slot et gère le null si 0)
+                consumeSelectedItem();
+                
+                System.out.println("Miam ! Un bon steak. +3 coeurs et énergie restaurée !");
+                return;
+            }
+
 			ItemDefinition def = stackInHand.getDefinition();
 			if (def == null || !def.placeable) {
 				System.out.println("Cet objet n'est pas un bloc posable.");
