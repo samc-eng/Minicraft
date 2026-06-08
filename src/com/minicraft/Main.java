@@ -373,7 +373,7 @@ public class Main extends Application {
                 lastTime = now;
 
                 // =======================================================
-                // 1. LE CERVEAU (La Logique - Verrouillé à 60 calculs/s)
+                // 1. LE CERVEAU
                 // =======================================================
                 while (delta >= 1) {
                     
@@ -454,7 +454,7 @@ public class Main extends Application {
                 }
 
                 // =======================================================
-                // 2. LES YEUX (Le Dessin - Aussi rapide que ton écran 144Hz)
+                // 2. LES YEUX
                 // =======================================================
                 widthScreen = canva.getWidth();
                 heightScreen = canva.getHeight();

@@ -18,6 +18,9 @@ public class Player {
 	private int maxHealth = Config.PLAYER_MAX_HEALTH;
 	private int health = maxHealth;
 	private int energy = 10;
+    private int energyTimer = 0;
+    private int sprintTimer = 0;
+    private int regenTimer = 0;
 	private int invulnerabilityTimer = 0;
 	private int selectedSlot = 0;
 	private ItemStack[] slot = new ItemStack[9];
@@ -44,16 +47,34 @@ public class Player {
 	}
 	
 	public void tick(Level level, InputHandler input) {
-        System.out.println("Vitesse actuelle : " + this.vitesse);
 		this.isMoved = false;
-    
-        // 1. On détermine d'abord l'état actuel du joueur
+
+        // 1. On détermine d'abord l'état actuel du joueur et sa récuparétion ou non d'néergie
         this.isSwimming = this.isInWater(level);
         boolean isSprinting = input.isPressed(KeyCode.SHIFT) && energy > 3;
 
+        if (isSprinting) { 
+            sprintTimer++;
+            regenTimer = 0; // On arrête la régénération
+            if (sprintTimer >= 60) {
+                this.loseEnergy(1);
+                sprintTimer = 0;
+            }
+        } else {
+            sprintTimer = 0; // On arrête le sprint
+            if (this.energy < 10) {
+
+                regenTimer++;
+                if (regenTimer >= 60) {
+                    this.energy++;
+                    regenTimer = 0;
+                }
+            }
+        }
+
         // 2. On calcule la vitesse APPLIQUÉE (La seule fois où on touche à 'vitesse')
         if (this.isSwimming) {
-            this.vitesse = isSprinting ? 1.2 * Config.PLAYER_WALK_SPEED : 0.2 * Config.PLAYER_WALK_SPEED;
+            this.vitesse = isSprinting ? 1.2 * Config.PLAYER_WALK_SPEED : 0.5 * Config.PLAYER_WALK_SPEED;
         } else {
             this.vitesse = isSprinting ? Config.PLAYER_SPRINT_SPEED : Config.PLAYER_WALK_SPEED;
         }
@@ -78,7 +99,17 @@ public class Player {
 		if (input.isClicked(KeyCode.DIGIT8) || input.isClicked(KeyCode.F8)) { setSelectedSlot(7); }
 		if (input.isClicked(KeyCode.DIGIT9) || input.isClicked(KeyCode.F9)) { setSelectedSlot(8); }
 
-
+        // Régénération automatique
+        // Si le joueur ne sprint pas, il récupère 1 point d'énergie toutes les ~1 secondes (60 ticks)
+        if (this.energy < 10 && !isSprinting) { 
+            energyTimer++;
+            if (energyTimer >= 60) {
+                this.energy++;
+                energyTimer = 0; // On réinitialise le compteur
+            }
+        } else {
+            energyTimer = 0; // Si on est au max, on reset le timer
+        }
 		
 		boolean bloque= (level.isSolid(futurX+4, futurY+4) ||
 				level.isSolid(futurX+Config.blockSize-4, futurY+4) ||
@@ -287,15 +318,17 @@ public class Player {
 		if (dir==2) {cibleX--;}
 		
 		if (!placeMode) {
-            // MODE DESTRUCTION (Blocs)
-            int cibleBlock = level.getBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize);
-            if (cibleBlock != 0) {
-                level.setBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize, 0);
-                this.loseEnergy(3);
-            }
-            
-            // --- NOUVEAU : MODE COMBAT (Monstres) ---
-            attackEnemies(level, cibleX * Config.blockSize, cibleY * Config.blockSize);
+            if (this.energy >= 3) {
+                int cibleBlock = level.getBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize);
+                if (cibleBlock != 0) {
+                    level.setBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize, 0);
+                    this.loseEnergy(3);
+                }
+                attackEnemies(level, cibleX * Config.blockSize, cibleY * Config.blockSize);
+            } else {
+                System.out.println("Épuisé ! Attends de récupérer de l'énergie.");
+                // Optionnel : faire un petit effet sonore d'erreur ici
+            }   
         } else {
             // MODE CONSTRUCTION
 			ItemStack stackInHand = getSelectedItem();
@@ -466,9 +499,11 @@ public class Player {
     }
 
 	public void loseEnergy(int amount) {
-		energy -= amount;
-		if (energy<=0) energy=10;
-	}
+        this.energy -= amount;
+        if (this.energy < 0) {
+            this.energy = 0;
+    }
+}
 
 	public int getHealth() { return health; }
 	public int getMaxHealth() { return maxHealth; }
