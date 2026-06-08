@@ -54,7 +54,6 @@ public class SheepBot {
         }
     }
 
-    // --- NOUVELLES MÉTHODES DE COMBAT ET DE LOOT ---
     
     public void takeDamage(int damage, Level level) {
         if (this.isDead) return; 
@@ -79,8 +78,7 @@ public class SheepBot {
         int quantiteViande = 1 + random.nextInt(2);
         level.dropItem(this.x, this.y, new ItemStack(idViande, quantiteViande));
         
-        // Drop de la laine (1 chance sur 2 d'en avoir une)
-        if (random.nextDouble() > 0.5) {
+        if (random.nextDouble() > 0.1) {
             level.dropItem(this.x + 8, this.y + 8, new ItemStack(idLaine, 1)); // Légèrement décalé pour pas qu'ils se superposent
         }
     }

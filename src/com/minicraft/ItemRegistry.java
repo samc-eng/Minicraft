@@ -91,7 +91,7 @@ public class ItemRegistry {
         register(new ItemDefinition(127, "Air Totem",      1,  false, false, 0, "items/air_totem.png"));
         register(new ItemDefinition(128, "Cactus Item",    64, false, false, 0, "items/cactus_item.png"));
         register(new ItemDefinition(129, "Black Wool",     64, false, false, 0, "items/black_wool.png"));
-        register(new ItemDefinition(130, "Black Bed",      1,  false, false, 0, "items/black_bed.png"));
+        register(new ItemDefinition(130, "Black Bed",      1,  true, false, 0, "items/black_bed.png"));
  
         // =====================
         // TOOLS (200-299)

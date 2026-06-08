@@ -26,6 +26,9 @@ public class Player {
 	private ItemStack[] slot = new ItemStack[9];
 	private boolean isSwimming = false;
     private int damageFlashTimer =0;
+    private double respawnX;
+    private double respawnY;
+    private boolean isShiftPressed = false;
 
 	public boolean up;
 	public boolean down;
@@ -38,6 +41,9 @@ public class Player {
         this.vitesse=Config.PLAYER_WALK_SPEED;
         this.invulnerabilityTimer=300;
 
+        this.respawnX = this.x;
+        this.respawnY = this.y;
+
 		try {
 			this.skin=new Image("file:resources/skins.png");
 		} catch (Exception e){
@@ -48,6 +54,14 @@ public class Player {
 	
 	public void tick(Level level, InputHandler input) {
 		this.isMoved = false;
+        this.isShiftPressed = input.isPressed(KeyCode.SHIFT);
+
+        if (this.damageFlashTimer > 0) {
+            this.damageFlashTimer--; 
+        }
+        if (this.invulnerabilityTimer > 0) {
+            this.invulnerabilityTimer--; 
+        }
 
         // 1. On détermine d'abord l'état actuel du joueur et sa récuparétion ou non d'néergie
         this.isSwimming = this.isInWater(level);
@@ -320,15 +334,24 @@ public class Player {
 		if (!placeMode) {
             if (this.energy >= 3) {
                 int cibleBlock = level.getBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize);
-                if (cibleBlock != 0) {
+                
+                // Interaction avec le lit
+                if (cibleBlock == 130 && !this.isShiftPressed) {
+                    // Si on clique sur le lit SANS maintenir SHIFT : on sauvegarde le spawn
+                    this.respawnX = this.x;
+                    this.respawnY = this.y;
+                    System.out.println("Zzz... Point de réapparition sauvegardé ! (Maintiens SHIFT + Clic pour casser le lit)");
+                } 
+                // --- DESTRUCTION CLASSIQUE (Si ce n'est pas un lit, ou si on maintient SHIFT) ---
+                else if (cibleBlock != 0) {
                     level.setBlocks(cibleX * Config.blockSize, cibleY * Config.blockSize, 0);
                     this.loseEnergy(3);
                 }
+                
                 attackEnemies(level, cibleX * Config.blockSize, cibleY * Config.blockSize);
             } else {
                 System.out.println("Épuisé ! Attends de récupérer de l'énergie.");
-                // Optionnel : faire un petit effet sonore d'erreur ici
-            }   
+            } 
         } else {
             // MODE CONSTRUCTION
 			ItemStack stackInHand = getSelectedItem();
@@ -397,10 +420,34 @@ public class Player {
             return false;
         }
 
+        // On applique les dégâts avec ta méthode sécurisée
         setHealth(this.health - damage);
-        this.damageFlashTimer=15;
+        this.damageFlashTimer = 15;
+        this.invulnerabilityTimer = 15;
         System.out.println("Aie ! Le joueur a pris " + damage + " degats. Vie restante : " + this.health);
+
+        // --- NOUVEAU : On vérifie si le coup a été fatal ---
+        if (this.health <= 0) {
+            die();
+        }
+
         return true;
+    }
+
+    private void die() {
+        System.out.println("☠️ VOUS ÊTES MORT ! Réapparition au dernier point de sauvegarde...");
+        
+        // 1. Téléportation au lit (ou point de départ)
+        this.x = this.respawnX;
+        this.y = this.respawnY;
+        
+        // 2. Le personnage guérit
+        setHealth(this.maxHealth); 
+        this.energy = 10;
+
+        // --- LE BOUCLIER DE SPAWN ---
+        this.damageFlashTimer = 60; 
+        this.invulnerabilityTimer = 60;
     }
 
     public void heal(int amount) {
