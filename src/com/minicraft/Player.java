@@ -486,6 +486,15 @@ public class Player {
                 }
             }
         }
+
+        // Frapper les moutons
+        if (level.getSheepBots() != null) { 
+            for (SheepBot sheep : level.getSheepBots()) {
+                if (isHit(sheep.getX(), sheep.getY(), targetX, targetY)) {
+                    sheep.takeDamage(damage, level);
+                }
+            }
+        }
     }
 
     // Vérifie si le monstre est assez proche de la case attaquée

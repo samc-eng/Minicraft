@@ -13,6 +13,10 @@ public class SheepBot {
     private double directionY;
     private int decisionTicks;
 
+    // --- NOUVELLES VARIABLES DE COMBAT ---
+    private int health = 3; // 3 coups de poings ou 1 coup d'épée en pierre
+    private boolean isDead = false;
+
     public SheepBot(double x, double y) {
         this.x = x;
         this.y = y;
@@ -20,6 +24,8 @@ public class SheepBot {
     }
 
     public void tick(Level level) {
+        if (isDead) return; // Un mouton mort ne bouge plus
+
         if (decisionTicks <= 0) {
             chooseNextMove();
         }
@@ -48,6 +54,43 @@ public class SheepBot {
         }
     }
 
+    // --- NOUVELLES MÉTHODES DE COMBAT ET DE LOOT ---
+    
+    public void takeDamage(int damage, Level level) {
+        if (this.isDead) return; 
+        
+        this.health -= damage;
+        System.out.println("Bêêê ! Le mouton prend " + damage + " dégâts.");
+        
+        if (this.health <= 0) {
+            this.die(level);
+        }
+    }
+
+    private void die(Level level) {
+        this.isDead = true;
+        System.out.println("Le mouton est mort !");
+        
+        // --- GÉNÉRATION DES LOOTS ---
+        int idViande = 113; 
+        int idLaine = 129;  
+        
+        // Drop de la viande (1 à 2 morceaux)
+        int quantiteViande = 1 + random.nextInt(2);
+        level.dropItem(this.x, this.y, new ItemStack(idViande, quantiteViande));
+        
+        // Drop de la laine (1 chance sur 2 d'en avoir une)
+        if (random.nextDouble() > 0.5) {
+            level.dropItem(this.x + 8, this.y + 8, new ItemStack(idLaine, 1)); // Légèrement décalé pour pas qu'ils se superposent
+        }
+    }
+
+    public boolean isDead() {
+        return this.isDead;
+    }
+
+    // -----------------------------------------------
+
     private void chooseNextMove() {
         decisionTicks = Config.SHEEP_MIN_DIRECTION_TICKS
                 + random.nextInt(Config.SHEEP_MAX_DIRECTION_TICKS - Config.SHEEP_MIN_DIRECTION_TICKS + 1);
@@ -64,6 +107,8 @@ public class SheepBot {
     }
 
     public void render(GraphicsContext gc) {
+        if (isDead) return; // On ne dessine pas un mouton mort
+
         double size = Config.blockSize;
 
         gc.setFill(Color.rgb(0, 0, 0, 0.20));
@@ -90,19 +135,8 @@ public class SheepBot {
         gc.strokeOval(x + 2, y + 4, 11, 8);
     }
 
-    public double getX() {
-        return x;
-    }
-
-    public double getY() {
-        return y;
-    }
-
-    public double getCenterX() {
-        return x + Config.blockSize / 2.0;
-    }
-
-    public double getCenterY() {
-        return y + Config.blockSize / 2.0;
-    }
+    public double getX() { return x; }
+    public double getY() { return y; }
+    public double getCenterX() { return x + Config.blockSize / 2.0; }
+    public double getCenterY() { return y + Config.blockSize / 2.0; }
 }

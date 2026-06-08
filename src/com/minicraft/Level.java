@@ -375,6 +375,9 @@ public class Level {
         if (archerBots != null) {
             archerBots.removeIf(archer -> archer.isDead());
         }
+		if (sheepBots != null) { 
+            sheepBots.removeIf(sheep -> sheep.isDead()); 
+        }
     }
 
 	private boolean isValidPassiveSpawn(double x, double y, double anchorCenterX, double anchorCenterY,
