@@ -133,31 +133,20 @@ public class ItemRegistry {
         register(new ItemDefinition(244, "Gem Hoe",           1, false, true, 500, "tools/gem_hoe.png"));
         register(new ItemDefinition(245, "Gem Bow",           1, false, true, 500, "tools/gem_bow.png"));
         // =====================
-        // ARMURES (300-399) : 4 pieces par materiau
-        // Cuir : 300-303 | Fer : 310-313 | Or : 320-323 | Gem : 330-333
-        // piece 0=casque, 1=plastron, 2=jambieres, 3=bottes
+        // ARMURES (300-399) : 1 piece par materiau
+        // Fer : 300 | Or : 310 | Gem : 320
         // =====================
-        // Cuir
-        register(new ItemDefinition(300, "Casque en cuir",     1, false, true, 80,  "tools/leather_helmet.png"));
-        register(new ItemDefinition(301, "Plastron en cuir",   1, false, true, 80,  "tools/leather_chestplate.png"));
-        register(new ItemDefinition(302, "Jambieres en cuir",  1, false, true, 80,  "tools/leather_leggings.png"));
-        register(new ItemDefinition(303, "Bottes en cuir",     1, false, true, 80,  "tools/leather_boots.png"));
+
         // Fer
-        register(new ItemDefinition(310, "Casque en fer",      1, false, true, 200, "tools/iron_helmet.png"));
-        register(new ItemDefinition(311, "Plastron en fer",    1, false, true, 200, "tools/iron_chestplate.png"));
-        register(new ItemDefinition(312, "Jambieres en fer",   1, false, true, 200, "tools/iron_leggings.png"));
-        register(new ItemDefinition(313, "Bottes en fer",      1, false, true, 200, "tools/iron_boots.png"));
+        register(new ItemDefinition(300, "Armure en fer",    1, false, true, 200, "tools/iron_armor.png"));
+   
         // Or
-        register(new ItemDefinition(320, "Casque en or",       1, false, true, 150, "tools/gold_helmet.png"));
-        register(new ItemDefinition(321, "Plastron en or",     1, false, true, 150, "tools/gold_chestplate.png"));
-        register(new ItemDefinition(322, "Jambieres en or",    1, false, true, 150, "tools/gold_leggings.png"));
-        register(new ItemDefinition(323, "Bottes en or",       1, false, true, 150, "tools/gold_boots.png"));
+        register(new ItemDefinition(310, "Armure en or",    1, false, true, 200, "tools/gold_armor.png"));
+
         // Gem
-        register(new ItemDefinition(330, "Casque en gem",      1, false, true, 500, "tools/gem_helmet.png"));
-        register(new ItemDefinition(331, "Plastron en gem",    1, false, true, 500, "tools/gem_chestplate.png"));
-        register(new ItemDefinition(332, "Jambieres en gem",   1, false, true, 500, "tools/gem_leggings.png"));
-        register(new ItemDefinition(333, "Bottes en gem",      1, false, true, 500, "tools/gem_boots.png"));
-    }
+        register(new ItemDefinition(320, "Armure en gem",    1, false, true, 200, "tools/gem_armor.png"));
+
+        }
 
 
     private static void register(ItemDefinition def) {

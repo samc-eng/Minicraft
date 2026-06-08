@@ -294,6 +294,32 @@ public class Main extends Application {
         // =============================================
         // RECETTES D'ÉTABLI (touche B)
         // =============================================
+
+        // PORTES ET CLÔTURES
+        craftingUI.addWorkbenchRecipe(new Recipe("Porte en bois",     21, 1).addCost(100, 6));
+        craftingUI.addWorkbenchRecipe(new Recipe("Porte en pierre",   19, 1).addCost(101, 6));
+        craftingUI.addWorkbenchRecipe(new Recipe("Cloture en bois x3",17, 3).addCost(100, 4));
+        craftingUI.addWorkbenchRecipe(new Recipe("Cloture pierre x3", 16, 3).addCost(101, 4));
+        
+        // Le fameux lit (indispensable !)
+        craftingUI.addWorkbenchRecipe(new Recipe("Lit Noir", 130, 1).addCost(129, 3).addCost(100, 3));
+        
+        // Le Coffre pour ranger son loot
+        craftingUI.addWorkbenchRecipe(new Recipe("Coffre", 122, 1).addCost(100, 8));
+        
+        // Cuisson de la viande (Steak + Charbon)
+        craftingUI.addWorkbenchRecipe(new Recipe("Steak Cuit", 114, 1).addCost(113, 1).addCost(102, 1));
+        
+        // Véhicules et outils avancés
+        craftingUI.addWorkbenchRecipe(new Recipe("Bateau", 123, 1).addCost(100, 5));
+        craftingUI.addWorkbenchRecipe(new Recipe("Seau", 119, 1).addCost(105, 3));
+        
+        // Munitions
+        craftingUI.addWorkbenchRecipe(new Recipe("Fleches x4", 118, 4).addCost(100, 1).addCost(101, 1)); // Bois + Pierre
+        
+        // La Pomme en Or (Soin ultime)
+        craftingUI.addWorkbenchRecipe(new Recipe("Pomme en Or", 111, 1).addCost(110, 1).addCost(106, 8));
+
         // Épées
         craftingUI.addWorkbenchRecipe(new Recipe("Epee en bois",   200, 1).addCost(100, 2));
         craftingUI.addWorkbenchRecipe(new Recipe("Epee en pierre", 210, 1).addCost(101, 3).addCost(100, 1));
@@ -319,6 +345,8 @@ public class Main extends Application {
         craftingUI.addWorkbenchRecipe(new Recipe("Pelle en bois",   203, 1).addCost(100, 2));
         craftingUI.addWorkbenchRecipe(new Recipe("Pelle en pierre", 213, 1).addCost(101, 2).addCost(100, 2));
         craftingUI.addWorkbenchRecipe(new Recipe("Pelle en fer",    223, 1).addCost(105, 2).addCost(100, 2));
+        craftingUI.addWorkbenchRecipe(new Recipe("Pelle en or",  233, 1).addCost(106, 2).addCost(100, 2));
+        craftingUI.addWorkbenchRecipe(new Recipe("Pelle en gem", 243, 1).addCost(107, 2).addCost(100, 2));
 
         // Arcs
         craftingUI.addWorkbenchRecipe(new Recipe("Arc en bois",   205, 1).addCost(100, 3).addCost(118, 3));
@@ -332,29 +360,15 @@ public class Main extends Application {
         craftingUI.addWorkbenchRecipe(new Recipe("Lingot de fer",    105, 1).addCost(103, 2).addCost(102, 1));
         craftingUI.addWorkbenchRecipe(new Recipe("Lingot d'or",      106, 1).addCost(104, 2).addCost(102, 1));
 
-        // Armures en cuir
-        craftingUI.addWorkbenchRecipe(new Recipe("Casque en cuir",    300, 1).addCost(100, 5));
-        craftingUI.addWorkbenchRecipe(new Recipe("Plastron en cuir",  301, 1).addCost(100, 8));
-        craftingUI.addWorkbenchRecipe(new Recipe("Jambieres en cuir", 302, 1).addCost(100, 7));
-        craftingUI.addWorkbenchRecipe(new Recipe("Bottes en cuir",    303, 1).addCost(100, 4));
-
         // Armures en fer
-        craftingUI.addWorkbenchRecipe(new Recipe("Casque en fer",    310, 1).addCost(105, 5));
-        craftingUI.addWorkbenchRecipe(new Recipe("Plastron en fer",  311, 1).addCost(105, 8));
-        craftingUI.addWorkbenchRecipe(new Recipe("Jambieres en fer", 312, 1).addCost(105, 7));
-        craftingUI.addWorkbenchRecipe(new Recipe("Bottes en fer",    313, 1).addCost(105, 4));
+        craftingUI.addWorkbenchRecipe(new Recipe("Armure en fer",    300, 1).addCost(105, 5));
 
         // Armures en or
-        craftingUI.addWorkbenchRecipe(new Recipe("Casque en or",    320, 1).addCost(106, 5));
-        craftingUI.addWorkbenchRecipe(new Recipe("Plastron en or",  321, 1).addCost(106, 8));
-        craftingUI.addWorkbenchRecipe(new Recipe("Jambieres en or", 322, 1).addCost(106, 7));
-        craftingUI.addWorkbenchRecipe(new Recipe("Bottes en or",    323, 1).addCost(106, 4));
+        craftingUI.addWorkbenchRecipe(new Recipe("Armure en or",    310, 1).addCost(106, 5));
 
         // Armures en gem
-        craftingUI.addWorkbenchRecipe(new Recipe("Casque en gem",    330, 1).addCost(107, 5));
-        craftingUI.addWorkbenchRecipe(new Recipe("Plastron en gem",  331, 1).addCost(107, 8));
-        craftingUI.addWorkbenchRecipe(new Recipe("Jambieres en gem", 332, 1).addCost(107, 7));
-        craftingUI.addWorkbenchRecipe(new Recipe("Bottes en gem",    333, 1).addCost(107, 4));
+        craftingUI.addWorkbenchRecipe(new Recipe("Armure en gem",  320, 1).addCost(107, 8));
+
 
         AnimationTimer timer = new AnimationTimer() {
             private long lastTime = 0;
