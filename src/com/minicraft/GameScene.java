@@ -11,10 +11,9 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 /**
- * Cette classe gère l'écran de jeu.
+ * Cette classe gère l'écran de jeu avec le bouton style HUD.
  */
 public class GameScene {
-    // --- VARIABLES DE CLASSE ---
     private MainMenu mainMenu;
     private Stage stage;
     private Scene scene;
@@ -31,8 +30,9 @@ public class GameScene {
         this.gameEngine = new Main();
         this.gameView = gameEngine.getGameView(stage, this.scene);
 
+        // --- BOUTON STYLE HUD (Noir transparent comme Roche/Vie) ---
         Button btnBack = new Button("Menu principal (ESC)");
-        styleButton(btnBack);
+        styleButtonHUD(btnBack);
 
         btnBack.setOnAction(e -> returnToMenu());
         btnBack.setFocusTraversable(false);
@@ -42,26 +42,38 @@ public class GameScene {
         }
 
         StackPane.setAlignment(btnBack, Pos.TOP_RIGHT);
-        StackPane.setMargin(btnBack, new Insets(15));
+        StackPane.setMargin(btnBack, new Insets(10)); // Marge pour coller au bord
         this.root.getChildren().add(btnBack);
     }
 
-    /**
-     * Méthode corrigée : On a enlevé l'accolade qui fermait trop tôt !
-     */
     private void returnToMenu() {
-        System.out.println(">>> ACTION : Sauvegarde effectuée et retour au menu <<<");
-
-        // On appelle la sauvegarde en passant le joueur ET le niveau
-        SaveManager.saveGame(gameEngine.getPlayer(), gameEngine.getLevel());
-
-        // On retourne au menu
+        SaveManager.saveGame(gameEngine.getPlayer(), gameEngine);
         mainMenu.show(stage);
     }
 
-    private void styleButton(Button btn) {
-        String styleNormal = "-fx-background-color: #2c3e50; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 5;";
-        String styleHover = "-fx-background-color: #34495e; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 5;";
+    /**
+     * Applique le style Noir Transparent (HUD)
+     */
+    private void styleButtonHUD(Button btn) {
+        // Même couleur que : pinceau.setFill(Color.color(0, 0, 0, 0.5));
+        String styleNormal =
+                "-fx-background-color: rgba(0, 0, 0, 0.5); " +
+                        "-fx-text-fill: white; " +
+                        "-fx-font-family: 'Arial'; " +
+                        "-fx-font-size: 14px; " +
+                        "-fx-background-radius: 0; " + // Rectangulaire comme tes barres
+                        "-fx-border-color: transparent; " +
+                        "-fx-padding: 5 15;";
+
+        // Un peu plus clair au survol pour savoir qu'on peut cliquer
+        String styleHover =
+                "-fx-background-color: rgba(0, 0, 0, 0.7); " +
+                        "-fx-text-fill: #FFD700; " + // Texte doré au survol pour le retour visuel
+                        "-fx-font-family: 'Arial'; " +
+                        "-fx-font-size: 14px; " +
+                        "-fx-background-radius: 0; " +
+                        "-fx-padding: 5 15; " +
+                        "-fx-cursor: hand;";
 
         btn.setStyle(styleNormal);
         btn.setOnMouseEntered(e -> btn.setStyle(styleHover));
@@ -70,19 +82,13 @@ public class GameScene {
 
     public void show() {
         stage.setScene(this.scene);
-
         stage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             if (event.getCode() == KeyCode.ESCAPE) {
-                System.out.println(">>> TOUCHE ESC DETECTÉE <<<");
                 returnToMenu();
                 event.consume();
             }
         });
-
         root.requestFocus();
-        if (gameView != null) {
-            gameView.requestFocus();
-        }
     }
 
     public Main getGameEngine() {

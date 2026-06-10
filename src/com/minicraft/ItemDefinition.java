@@ -20,4 +20,6 @@ public class ItemDefinition {
         this.maxDurability = maxDurability;
         this.texture=TextureManager.getTexture(imagePath);
     }
+
+    public Image getTexture(){ return this.texture; }
 }

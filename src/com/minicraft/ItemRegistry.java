@@ -91,7 +91,7 @@ public class ItemRegistry {
         register(new ItemDefinition(127, "Air Totem",      1,  false, false, 0, "items/air_totem.png"));
         register(new ItemDefinition(128, "Cactus Item",    64, false, false, 0, "items/cactus_item.png"));
         register(new ItemDefinition(129, "Black Wool",     64, false, false, 0, "items/black_wool.png"));
-        register(new ItemDefinition(130, "Black Bed",      1,  false, false, 0, "items/black_bed.png"));
+        register(new ItemDefinition(130, "Black Bed",      1,  true, false, 0, "items/black_bed.png"));
  
         // =====================
         // TOOLS (200-299)
@@ -132,11 +132,21 @@ public class ItemRegistry {
         register(new ItemDefinition(243, "Gem Shovel",        1, false, true, 500, "tools/gem_shovel.png"));
         register(new ItemDefinition(244, "Gem Hoe",           1, false, true, 500, "tools/gem_hoe.png"));
         register(new ItemDefinition(245, "Gem Bow",           1, false, true, 500, "tools/gem_bow.png"));
-        // Armures
-        register(new ItemDefinition(250, "Iron Armor",        1, false, true, 300, "tools/iron_armor.png"));
-        register(new ItemDefinition(251, "Gold Armor",        1, false, true, 250, "tools/gold_armor.png"));
-        register(new ItemDefinition(252, "Gem Armor",         1, false, true, 600, "tools/gem_armor.png"));
-    }
+        // =====================
+        // ARMURES (300-399) : 1 piece par materiau
+        // Fer : 300 | Or : 310 | Gem : 320
+        // =====================
+
+        // Fer
+        register(new ItemDefinition(300, "Armure en fer",    1, false, true, 200, "tools/iron_armor.png"));
+   
+        // Or
+        register(new ItemDefinition(310, "Armure en or",    1, false, true, 200, "tools/gold_armor.png"));
+
+        // Gem
+        register(new ItemDefinition(320, "Armure en gem",    1, false, true, 200, "tools/gem_armor.png"));
+
+        }
 
 
     private static void register(ItemDefinition def) {

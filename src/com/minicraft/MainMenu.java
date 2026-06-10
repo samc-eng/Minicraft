@@ -16,234 +16,212 @@ import javafx.scene.text.Text;
 import javafx.scene.media.*;
 import java.util.*;
 
-/**
- * Interface graphique d'accueil du jeu.
- * Permet au joueur de lancer une nouvelle partie ou d'en charger une.
- * @author Ali KIES
- */
-
 public class MainMenu {
-    private MediaPlayer mediaPlayer; // déclaration du mediaPlayer pour lancer la musique
-    int largeurBouton = 200;
-    // -- Définition du style CSS (Arrondi, Gras, Couleurs vives) -- //
+    private MediaPlayer mediaPlayer;
+    int largeurBouton = 200; // Retour à ta taille originale
+
     String styleBouton =
-            "-fx-background-color: linear-gradient(#5dade2, #2e86c1); " + // Dégradé bleu
-                    "-fx-background-radius: 30; " +                             // Bords très arrondis
-                    "-fx-background-insets: 0; " +
-                    "-fx-text-fill: white; " +                                  // Texte blanc
-                    "-fx-font-family: 'Arial Rounded MT Bold'; " +              // Police arrondie
-                    "-fx-font-weight: bold; " +                                 // TEXTE EN GRAS
-                    "-fx-font-size: 18px; " +
-                    "-fx-padding: 10 20 10 20; " +                              // Espace interne
-                    "-fx-cursor: hand; " +                                      // Curseur "main"
-                    "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 5, 0, 0, 4);"; // Ombre
-
-    // TODO : Gestion des sauvegardes de partie
-    //private SaveManager saveManager; //déclaration de la variable que l'on va utiliser pour gérer les sauvergardes de parties
-
-    public MainMenu() {
-        /*this.saveManager = new SaveManager(); */ //initialisation du gestionnaire de sauvegarde que je vais créer
-    }
-
-    /**
-     * Construit et affiche le menu principal sur la fenêtre du jeu.
-     * @param window La fenêtre principale (Stage) de JavaFX.
-     */
+            "-fx-background-color: linear-gradient(#5dade2, #2e86c1); " +
+                    "-fx-background-radius: 30; " +
+                    "-fx-text-fill: white; " +
+                    "-fx-font-family: 'Arial Rounded MT Bold'; " +
+                    "-fx-font-weight: bold; " +
+                    "-fx-font-size: 18px; " + // Retour à tes 18px
+                    "-fx-padding: 10 20 10 20; " + // Retour à ton épaisseur
+                    "-fx-cursor: hand; " +
+                    "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 5, 0, 0, 4);";
 
     public void show(Stage window) {
-
-// -- I. Mise en place de la musique de fond -- //
-        try {
-            Media hit = new Media(new java.io.File("resources/menu_music.mp3").toURI().toString());
-            this.mediaPlayer = new MediaPlayer(hit);
-            this.mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
-            this.mediaPlayer.setVolume(0.5);
-            this.mediaPlayer.play();
-        } catch (Exception e) {
-            System.out.println("Erreur audio : " + e.getMessage());
-        }
-
-// -- II. CRÉATION DU LAYOUT -- //
-        StackPane root = new StackPane(); // superposition des éléments (fond + menu)
-
-        // --- II.1 Chargement de l'image de fond, avec test suite au différent problème du départ -- //
-        try {
-            java.io.File fichier = new java.io.File("resources/bg.png");
-            if (!fichier.exists()) {
-                System.out.println("❌ Fichier bg.png introuvable !");
-                root.setStyle("-fx-background-color: red;");
-            } else {
-                javafx.scene.image.Image backgroundImage = new javafx.scene.image.Image(fichier.toURI().toString());
-                javafx.scene.image.ImageView backgroundView = new javafx.scene.image.ImageView(backgroundImage);
-                backgroundView.fitWidthProperty().bind(window.widthProperty());
-                backgroundView.fitHeightProperty().bind(window.heightProperty());
-                backgroundView.setPreserveRatio(false);
-                root.getChildren().add(0, backgroundView);
-                System.out.println("✅ Image chargée !");
+        // on lance la musique une seule fois pour pas qu'elle se double quand on revient au menu
+        if (this.mediaPlayer == null) {
+            try {
+                Media hit = new Media(new java.io.File("resources/menu_music.mp3").toURI().toString());
+                this.mediaPlayer = new MediaPlayer(hit);
+                this.mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+                this.mediaPlayer.setVolume(0.5);
+                this.mediaPlayer.play();
+            } catch (Exception e) { 
+                
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
 
-        // -- II.2 Ajout du nom du jeu AVEC EFFETS ET ANIMATION -- //
-        Text title = new Text("MINICRAFT");
+        StackPane root = new StackPane();
 
-        // style du texte //
-        title.setFont(Font.font("VERDANA", FontWeight.BOLD, 100)); // Très grand
-        title.setFill(Color.GOLD); // Intérieur blanc
-        title.setStroke(Color.BROWN); // Contour noir épais
+        try {
+        java.io.File fichier = new java.io.File("resources/bg.png");
+        if (fichier.exists()) {
+            javafx.scene.image.Image backgroundImage = new javafx.scene.image.Image(fichier.toURI().toString());
+            javafx.scene.image.ImageView backgroundView = new javafx.scene.image.ImageView(backgroundImage);
+            backgroundView.fitWidthProperty().bind(window.widthProperty());
+            backgroundView.fitHeightProperty().bind(window.heightProperty());
+            backgroundView.setPreserveRatio(false);
+            root.getChildren().add(0, backgroundView);
+        }
+        } catch (Exception e) { }
+
+        Text title = new Text("MINICRAFT");
+        title.setFont(Font.font("VERDANA", FontWeight.BOLD, 100));
+        title.setFill(Color.GOLD);
+        title.setStroke(Color.BROWN);
         title.setStrokeWidth(3);
 
-        // configuration de l'animation du texte //
         ScaleTransition pulse = new ScaleTransition(Duration.seconds(2), title);
-
-        // définition de la taille de départ //
-        pulse.setFromX(0.8); // 80% de la taille
-        pulse.setFromY(0.8);
-
-        //définition l'agrandissement maximal //
-        pulse.setToX(1.2); // Zoom sur l'axe X (largeur)
-        pulse.setToY(1.2); // Zoom sur l'axe Y (hauteur)
-
-        // Mouvement fluide ("Ease-both" pour ralentir au début et à la fin) //
-        pulse.setInterpolator(javafx.animation.Interpolator.EASE_BOTH);
-
-        // Activation de l'effet "Yoyo" (s'agrandit PUIS rétrécit au lieu de recommencer à zéro) //
+        pulse.setFromX(0.8); pulse.setFromY(0.8);
+        pulse.setToX(1.1); pulse.setToY(1.1);
         pulse.setAutoReverse(true);
-
-        // Répétition à l'infini de l'animation //
         pulse.setCycleCount(Animation.INDEFINITE);
-
-        // Lancement de l'animation //
         pulse.play();
 
+        VBox menuBox = new VBox(40);
+        menuBox.setAlignment(Pos.CENTER);
 
-
-        // -- II.3 Création des bouton et d style de ma page -- //
-
-        VBox menuBox = new VBox(60); // VBox(40) : On crée une colonne verticale avec 20 pixels d'espace entre chaque bouton
-        menuBox.setAlignment(Pos.CENTER); // Aligne tout le contenu de la colonne exactement au milieu de l'écran
-        menuBox.setStyle("-fx-background-color: transparent; -fx-padding: 50;");
-
-        // Création du Bouton 1 permettant de débuter une nouvelle partie
-        Button btnNewGame = new Button("Créer un nouveau monde");
-        btnNewGame.setMinWidth(largeurBouton);
-        btnNewGame.setStyle(null); // On repasse en style par défaut (rectangle gris)
+        Button btnNewGame = createStyledButton("Créer un nouveau monde");
         btnNewGame.setOnAction(e -> startNewGame(window));
-        btnNewGame.setOnMouseEntered(e-> btnNewGame.setStyle(styleBouton + "-fx-background-color: #3498db; -fx-scale-x: 1.1; -fx-scale-y: 1.1;"));
-        btnNewGame.setOnMouseExited(e -> btnNewGame.setStyle(null));
 
-        // Création du Bouton 2 pour continuer
-        Button btnLoadGame = new Button("Continuer la partie");
-        btnLoadGame.setMinWidth(largeurBouton);
-        btnLoadGame.setStyle(null);
+        Button btnLoadGame = createStyledButton("Continuer la partie");
         btnLoadGame.setOnAction(e -> loadExistingGame(window));
-        btnLoadGame.setOnMouseEntered(e-> btnLoadGame.setStyle(styleBouton + "-fx-background-color: #3498db; -fx-scale-x: 1.1; -fx-scale-y: 1.1;"));
-        btnLoadGame.setOnMouseExited(e -> btnLoadGame.setStyle(null));
 
-        // Création du Bouton 3: quitter
-        Button btnQuitter= new Button ("Quitter");
-        btnQuitter.setMinWidth(largeurBouton);
-        btnQuitter.setStyle(null);
-        btnQuitter.setOnMouseEntered(e-> btnQuitter.setStyle(styleBouton + "-fx-background-color: #3498db; -fx-scale-x: 1.1; -fx-scale-y: 1.1;"));
-        btnQuitter.setOnMouseExited(e -> btnQuitter.setStyle(null));
+        Button btnQuitter = createStyledButton("Quitter");
         btnQuitter.setOnAction(e -> window.close());
 
-        // Création du Bouton 4: Information
-        Button btnInfos= new Button ("Informations");
-        btnInfos.setMinWidth(largeurBouton);
-        btnInfos.setStyle(null);
-        btnInfos.setOnMouseEntered(e-> btnInfos.setStyle(styleBouton + "-fx-background-color: #3498db; -fx-scale-x: 1.1; -fx-scale-y: 1.1;"));
-        btnInfos.setOnMouseExited(e -> btnInfos.setStyle(null));
-
-// -- III : Assemblage --//
-
-        // On ajoute les 4 boutons dans la colonne (VBox) //
-        menuBox.getChildren().addAll(title, btnNewGame, btnLoadGame, btnQuitter, btnInfos);
+        menuBox.getChildren().addAll(title, btnNewGame, btnLoadGame, btnQuitter);
         root.getChildren().add(menuBox);
+
         Scene menuScene = new Scene(root, 1000, 700);
-
-        // On place la scène dans la fenêtre (Stage) //
         window.setScene(menuScene);
-        window.setTitle("Minicraft - Menu Principal");
 
-        // Affichage de la fenêtre //
+        // On demande le focus sur le root pour virer le contour bleu sur le bouton 1
         root.requestFocus();
+
         window.show();
     }
 
-    /**
-     * Callback : Action déclenchée par le bouton "créer un nouveau Monde".
-     */
+    private Button createStyledButton(String text) {
+        Button btn = new Button(text);
+        btn.setMinWidth(largeurBouton);
+
+        // C'est cette ligne qui empêche le contour bleu de focus
+        btn.setFocusTraversable(false);
+
+        // On remet les réglages : neutre au départ, style au survol
+        btn.setStyle(null);
+        btn.setOnMouseEntered(e -> btn.setStyle(styleBouton + "-fx-scale-x: 1.1; -fx-scale-y: 1.1;"));
+        btn.setOnMouseExited(e -> btn.setStyle(null));
+
+        return btn;
+    }
 
     private void startNewGame(Stage window) {
-        System.out.println("Création d'un nouveau monde !");
-
-        if (mediaPlayer != null) {
-            mediaPlayer.stop();
-        }
-
         GameScene gameScene = new GameScene(window, this);
         gameScene.show();
     }
 
-    /**
-     * Callback : Action déclenchée par le bouton "Continuer".
-     */
-
     private void loadExistingGame(Stage window) {
         Scanner sc = SaveManager.getSaveScanner();
-
-        if (sc != null && sc.hasNextLine()) {
-            if (mediaPlayer != null) mediaPlayer.stop();
-
-            // 1. Lire les données du joueur
+        if (sc == null) return;
+        try {
+            // position du joueur
             String[] pData = sc.nextLine().split(",");
-            double px = Double.parseDouble(pData[0]);
-            double py = Double.parseDouble(pData[1]);
-            int roche = Integer.parseInt(pData[2]);
-            int bois = Integer.parseInt(pData[3]);
 
-            // 2. Créer le moteur et la scène
+            // on cree la scene (le moteur genere une surface temporaire, on la remplacera)
             GameScene gameScene = new GameScene(window, this);
-            Level lvl = gameScene.getGameEngine().getLevel();
 
-            // 3. Lire les dimensions et les maps
-            String[] dimensions = sc.nextLine().split(",");
-            int w = Integer.parseInt(dimensions[0]);
-            int h = Integer.parseInt(dimensions[1]);
+            // profondeur et coordonnees du portail d'entree de la grotte
+            String[] stateData = sc.nextLine().split(",");
+            int savedDepth = Integer.parseInt(stateData[0]);
+            int lpx = Integer.parseInt(stateData[1]);
+            int lpy = Integer.parseInt(stateData[2]);
+            int[] lastPortal = (lpx >= 0 && lpy >= 0) ? new int[]{lpx, lpy} : null;
 
-            // Charger le sol
-            String[] floorData = sc.nextLine().split(",");
-            int[][] newFloor = new int[w][h];
-            int idx = 0;
-            for(int i=0; i<w; i++) for(int j=0; j<h; j++) newFloor[i][j] = Integer.parseInt(floorData[idx++]);
+            // on lit la surface
+            Level surface = readLevel(sc);
 
-            // Charger les blocs (Arbres/Roches)
-            String[] blocksData = sc.nextLine().split(",");
-            int[][] newBlocks = new int[w][h];
-            idx = 0;
-            for(int i=0; i<w; i++) for(int j=0; j<h; j++) newBlocks[i][j] = Integer.parseInt(blocksData[idx++]);
+            // et la grotte si elle existe
+            Level cave = null;
+            String cavePresent = sc.nextLine().trim();
+            if (cavePresent.equals("1")) {
+                cave = readLevel(sc);
+            }
 
-            // 4. Appliquer tout au jeu
-            lvl.setFloorArray(newFloor);
-            lvl.setBlocksArray(newBlocks);
-
-            // 5. Régénérer la minimap avec les données chargées
-            gameScene.getGameEngine().getMiniMap().generate(newFloor, newBlocks, w, h,
-                    gameScene.getGameEngine().getLevel().getPortals());
+            // on remplace l'etat du moteur par ce qu'on a charge
+            gameScene.getGameEngine().loadGameState(surface, cave, savedDepth, lastPortal);
 
             Player p = gameScene.getGameEngine().getPlayer();
-            p.setX(px);
-            p.setY(py);
+            p.setX(Double.parseDouble(pData[0]));
+            p.setY(Double.parseDouble(pData[1]));
 
-            // --- REDONNER L'INVENTAIRE AU JOUEUR ---
-            // On utilise la méthode add de Samuel pour injecter les ressources chargées
-            p.getInventory().add(new ItemStack(1, roche));    // ID 1 = Grass
-            p.getInventory().add(new ItemStack(100, bois));   // ID 100 = Wood
+            if (pData.length > 4) {
+                p.setHealth(Integer.parseInt(pData[4]));
+            }
+            gameScene.getGameEngine().clearEnemiesForCurrentLevel();
+            int loadedEnemyCount = 0;
 
+            // 7. Inventaire complet (Ton code)
+            String line = "";
+            while (sc.hasNextLine()) { line = sc.nextLine().trim(); if (!line.isEmpty()) break; }
+            if (!line.isEmpty()) {
+                int nInv = Integer.parseInt(line);
+                for (int i = 0; i < nInv; i++) {
+                    String[] st = sc.nextLine().split(",");
+                    int id  = Integer.parseInt(st[0]);
+                    int qty = Integer.parseInt(st[1]);
+                    int dur = Integer.parseInt(st[2]);
+                    p.getInventory().add(new ItemStack(id, qty, dur));
+                }
+            }
+            
+
+            // et la hotbar
+            line = "";
+            while (sc.hasNextLine()) { line = sc.nextLine().trim(); if (!line.isEmpty()) break; }
+            if (!line.isEmpty()) {
+                String[] slots = line.split(";", -1);
+                ItemStack[] hb = p.getHotbar();
+                for (int i = 0; i < slots.length && i < hb.length; i++) {
+                    String s = slots[i];
+                    if (s.equals("-") || s.isEmpty()) {
+                        hb[i] = null;
+                    } else {
+                        String[] parts = s.split(",");
+                        hb[i] = new ItemStack(Integer.parseInt(parts[0]),
+                                              Integer.parseInt(parts[1]),
+                                              Integer.parseInt(parts[2]));
+                    }
+                }
+            }
+
+
+            // 9. Archers (Ajout de Yazid)
+            // On détermine dans quel niveau le joueur se trouve pour y placer les archers
+            Level currentLevel = (savedDepth == 1 && cave != null) ? cave : surface;
+            
+            line = "";
+            while (sc.hasNextLine()) { line = sc.nextLine().trim(); if (!line.isEmpty()) break; }
+            if (!line.isEmpty()) {
+                int nArchers = Integer.parseInt(line);
+                for (int i = 0; i < nArchers; i++) {
+                    String[] archer = sc.nextLine().split(",");
+                    if (currentLevel != null) {
+                        currentLevel.addArcherBot(Double.parseDouble(archer[0]), Double.parseDouble(archer[1]));
+                    }
+                }
+                loadedEnemyCount += nArchers;
+            }
+
+            // 10. Gestion du spawn de secours
+            if (loadedEnemyCount == 0) {
+                gameScene.getGameEngine().spawnEnemiesForCurrentLevel();
+            }
+
+            //11. gestion des moutons
+            gameScene.getGameEngine().spawnSheepForCurrentLevel();
+            
             gameScene.show();
-            sc.close();
-        }
+        } catch (Exception e) { e.printStackTrace(); } finally { sc.close(); }
+    }
+
+    // on reconstruit un niveau a partir du fichier de save (delegue a SaveManager)
+    private Level readLevel(Scanner sc) {
+        return SaveManager.readLevel(sc);
     }
 }
