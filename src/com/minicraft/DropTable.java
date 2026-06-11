@@ -30,6 +30,7 @@ public class DropTable {
         register(37, new Drop(104, 1, 2, 1.0));  // Gold Ore
         register(38, new Drop(107, 1, 1, 1.0));  // Gem Ore
         register(39, new Drop(108, 1, 3, 1.0));  // Lapis Ore
+        register(47, new Drop(102, 1, 3, 1.0));  // Coal Ore → Coal (102)
  
         // Plantes
         register(26, new Drop(128, 1, 2, 1.0));  // Cactus

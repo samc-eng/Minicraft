@@ -57,6 +57,7 @@ public class Tools {
     public static int requiredPickaxeTier(int blockId) {
         switch (blockId) {
             case 5:  return 1; // Pierre (BLOCK_ROCK)
+            case 47: return 1; // Minerai de charbon → pioche bois minimum
             case 36: return 2; // Minerai de fer
             case 37: return 3; // Minerai d'or
             case 38: return 4; // Minerai de gemme

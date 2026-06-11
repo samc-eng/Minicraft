@@ -19,6 +19,7 @@ public class MapGenerator {
     public static final int BLOCK_ORE_IRON      = 36;  // Iron Ore       (iron_ore.png)
     public static final int BLOCK_ORE_GOLD      = 37;  // Gold Ore       (gold_ore.png)
     public static final int BLOCK_ORE_GEM       = 38;  // Gem Ore        (gem_ore.png)
+    public static final int BLOCK_ORE_COAL      = 47;  // Coal Ore       (coal_ore.png)
 
     // =========================================================================
     // PARAMÈTRES DE GÉNÉRATION — modifie ces valeurs pour ajuster le rendu
@@ -340,19 +341,21 @@ public class MapGenerator {
     public void placeOres(int width, int height, int[][] blocks, long seed, int depth) {
         java.util.Random rng = new java.util.Random(seed + depth * 53L);
 
-        // Probabilités par profondeur (cumulées, testées dans l'ordre gem > or > fer)
+        // Probabilités par profondeur (cumulées, testées dans l'ordre gem > or > fer > charbon)
         double gemChance  = 0.008 + (depth - 1) * 0.004;
         double goldChance = 0.025 + (depth - 1) * 0.008;
         double ironChance = 0.070 - (depth - 1) * 0.005;
+        double coalChance = 0.090;  // charbon : commun et présent à toutes les profondeurs
 
         for (int x = 1; x < width - 1; x++) {
             for (int y = 1; y < height - 1; y++) {
                 if (blocks[x][y] != BLOCK_ROCK) continue;
 
                 double roll = rng.nextDouble();
-                if      (roll < gemChance)                        blocks[x][y] = BLOCK_ORE_GEM;
-                else if (roll < gemChance + goldChance)           blocks[x][y] = BLOCK_ORE_GOLD;
-                else if (roll < gemChance + goldChance + ironChance) blocks[x][y] = BLOCK_ORE_IRON;
+                if      (roll < gemChance)                                       blocks[x][y] = BLOCK_ORE_GEM;
+                else if (roll < gemChance + goldChance)                          blocks[x][y] = BLOCK_ORE_GOLD;
+                else if (roll < gemChance + goldChance + ironChance)             blocks[x][y] = BLOCK_ORE_IRON;
+                else if (roll < gemChance + goldChance + ironChance + coalChance) blocks[x][y] = BLOCK_ORE_COAL;
             }
         }
     }

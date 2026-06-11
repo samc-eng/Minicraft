@@ -49,6 +49,7 @@ public class ItemRegistry {
         register(new ItemDefinition(37, "Gold Ore",           64, true,  false, 0, "blocks/gold_ore.png"));
         register(new ItemDefinition(38, "Gem Ore",            64, true,  false, 0, "blocks/gem_ore.png"));
         register(new ItemDefinition(39, "Lapis Ore",          64, true,  false, 0, "blocks/lapis_ore.png"));
+        register(new ItemDefinition(47, "Coal Ore",           64, true,  false, 0, "blocks/coal_ore.png"));
         register(new ItemDefinition(40, "Iris",               64, true,  false, 0, "blocks/iris.png"));
         register(new ItemDefinition(41, "Stairs Up",          64, true,  false, 0, "blocks/stairs_up.png"));
         register(new ItemDefinition(42, "Stairs Down",        64, true,  false, 0, "blocks/stairs_down.png"));
